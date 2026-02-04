@@ -13,9 +13,22 @@ The QY700 follows the **Yamaha XG specification** for MIDI parameters.
 | Property | Value |
 |----------|-------|
 | File Extension | .Q7P |
-| File Size | 3072 bytes (fixed) |
+| File Size | **3072 bytes** (basic) or **5120 bytes** (full) |
 | Encoding | Raw binary (8-bit) |
 | Byte Order | Big-endian |
+| Max Sections | 6 (3072-byte) or 12 (5120-byte) |
+| Tracks per Section | 8 |
+
+### File Size Variants
+
+The QY700 uses two file formats:
+
+| Format | Size | Sections | Description |
+|--------|------|----------|-------------|
+| Basic | 3072 bytes | 6 | Template/simplified patterns |
+| Full | 5120 bytes | 12 | Complete patterns with all sections |
+
+The header and section pointer area (0x000-0x11F) are identical between formats. Key data offsets differ in the second half of the file.
 
 ## Complete File Structure Map
 
@@ -360,6 +373,30 @@ def write_q7p_from_template(template_path, output_path, pattern_name):
 | Aspect | QY70 | QY700 |
 |--------|------|-------|
 | Format | SysEx (.syx) | Binary (.Q7P) |
+| Size | Variable | Fixed 3072 or 5120 bytes |
+| Encoding | 7-bit packed | Raw 8-bit |
+| Checksum | Per-message | None |
+| Sections | 6 | 6 (basic) or 12 (full) |
+| Tracks | 8 | 8 (same names) |
+
+## Section Names
+
+The QY700 supports up to 12 sections:
+
+| Index | Name | Description |
+|-------|------|-------------|
+| 0 | Intro | Introduction section |
+| 1 | Main A | Primary main pattern |
+| 2 | Main B | Secondary main pattern |
+| 3 | Fill AB | Fill from A to B |
+| 4 | Fill BA | Fill from B to A |
+| 5 | Ending | Ending section |
+| 6 | Fill AA | Fill within A |
+| 7 | Fill BB | Fill within B |
+| 8 | Intro 2 | Secondary intro |
+| 9 | Main C | Third main pattern |
+| 10 | Main D | Fourth main pattern |
+| 11 | Ending 2 | Secondary ending |
 | Size | Variable | Fixed 3072 bytes |
 | Encoding | 7-bit packed | Raw 8-bit |
 | Checksum | Per-message | None |

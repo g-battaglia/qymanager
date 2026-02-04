@@ -154,10 +154,14 @@ class Q7PAnalyzer:
     """
     Complete analyzer for QY700 Q7P pattern files.
 
+    Supports two file formats:
+    - 3072 bytes: Basic/template pattern (6 sections max)
+    - 5120 bytes: Full pattern (12 sections max)
+
     Extracts every byte of information from the file structure.
     """
 
-    # File structure offsets
+    # File structure offsets (common to both formats)
     HEADER_START = 0x000
     HEADER_SIZE = 16
     HEADER_MAGIC = b"YQ7PAT     V1.00"
@@ -176,77 +180,67 @@ class Q7PAnalyzer:
     SECTION_DATA_START = 0x120
     SECTION_DATA_SIZE = 96
 
-    # Tempo and timing
-    TEMPO_AREA_START = 0x180
-    TEMPO_AREA_SIZE = 16
-    TEMPO_VALUE = 0x188
-    TIME_SIG = 0x18A
+    # Supported file sizes
+    FILE_SIZE_SMALL = 3072  # Basic/template format
+    FILE_SIZE_LARGE = 5120  # Full pattern format
+    VALID_FILE_SIZES = (FILE_SIZE_SMALL, FILE_SIZE_LARGE)
 
-    # Channel configuration
-    CHANNEL_START = 0x190
-    CHANNEL_SIZE = 16
+    # Offset tables for different file sizes
+    # Format: {file_size: {offset_name: offset_value}}
+    OFFSETS = {
+        3072: {
+            "TEMPO_AREA_START": 0x180,
+            "TEMPO_VALUE": 0x188,
+            "TIME_SIG": 0x18A,
+            "CHANNEL_START": 0x190,
+            "TRACK_CONFIG_START": 0x1DC,
+            "TRACK_NUMBERS": 0x1DC,
+            "TRACK_FLAGS": 0x1E4,
+            "VOLUME_TABLE_START": 0x220,
+            "VOLUME_DATA_START": 0x226,
+            "REVERB_TABLE_START": 0x250,
+            "REVERB_DATA_START": 0x256,
+            "PAN_TABLE_START": 0x270,
+            "PAN_DATA_START": 0x276,
+            "TABLE_3_START": 0x2C0,
+            "PHRASE_START": 0x360,
+            "PHRASE_SIZE": 792,
+            "SEQUENCE_START": 0x678,
+            "SEQUENCE_SIZE": 504,
+            "TEMPLATE_NAME": 0x876,
+            "PATTERN_NAME": 0x876,
+            "FILL_AREA_START": 0x9C0,
+            "PAD_AREA_START": 0xB10,
+            "MAX_SECTIONS": 6,
+        },
+        5120: {
+            "TEMPO_AREA_START": 0xA00,
+            "TEMPO_VALUE": 0xA08,
+            "TIME_SIG": 0xA0A,
+            "CHANNEL_START": 0xA14,
+            "TRACK_CONFIG_START": 0xA5C,
+            "TRACK_NUMBERS": 0xA5C,
+            "TRACK_FLAGS": 0xA64,
+            "VOLUME_TABLE_START": 0xAA0,
+            "VOLUME_DATA_START": 0xAA6,
+            "REVERB_TABLE_START": 0xAD0,
+            "REVERB_DATA_START": 0xAD6,
+            "PAN_TABLE_START": 0xAF0,
+            "PAN_DATA_START": 0xAF6,
+            "TABLE_3_START": 0xB40,
+            "PHRASE_START": 0x200,
+            "PHRASE_SIZE": 2048,
+            "SEQUENCE_START": 0xBE0,
+            "SEQUENCE_SIZE": 800,
+            "TEMPLATE_NAME": 0x10F6,
+            "PATTERN_NAME": 0xA00,
+            "FILL_AREA_START": 0x1240,
+            "PAD_AREA_START": 0x1390,
+            "MAX_SECTIONS": 12,
+        },
+    }
 
-    # Reserved area
-    RESERVED_1_START = 0x1A0
-    RESERVED_1_SIZE = 60  # 0x1A0 - 0x1DB
-
-    # Track configuration
-    TRACK_CONFIG_START = 0x1DC
-    TRACK_NUMBERS = 0x1DC  # 8 bytes
-    TRACK_FLAGS = 0x1E4  # 2 bytes
-    TRACK_CONFIG_SIZE = 36  # 0x1DC - 0x1FF
-
-    # Reserved area
-    RESERVED_2_START = 0x200
-    RESERVED_2_SIZE = 32  # 0x200 - 0x21F
-
-    # Volume table (with 6-byte header)
-    VOLUME_TABLE_START = 0x220
-    VOLUME_DATA_START = 0x226  # Actual volume data starts here
-    VOLUME_TABLE_SIZE = 80  # 0x220 - 0x26F
-
-    # Reverb Send table (discovered from XG default 0x28)
-    REVERB_TABLE_START = 0x250
-    REVERB_DATA_START = 0x256  # Actual reverb data starts here
-    REVERB_TABLE_SIZE = 32
-
-    # Pan table (with 6-byte header) - FIXED offset
-    PAN_TABLE_START = 0x270
-    PAN_DATA_START = 0x276  # Actual pan data starts here (was incorrectly 0x270)
-    PAN_TABLE_SIZE = 80  # 0x270 - 0x2BF
-
-    # Additional tables (unknown purpose)
-    TABLE_3_START = 0x2C0
-    TABLE_3_SIZE = 160  # 0x2C0 - 0x35F
-
-    # Phrase data area
-    PHRASE_START = 0x360
-    PHRASE_SIZE = 792  # 0x360 - 0x677
-
-    # Sequence/event data
-    SEQUENCE_START = 0x678
-    SEQUENCE_SIZE = 504  # 0x678 - 0x86F
-
-    # Template info
-    TEMPLATE_START = 0x870
-    TEMPLATE_PADDING = 0x870  # 6 bytes
-    TEMPLATE_NAME = 0x876  # 10 bytes
-    TEMPLATE_SIZE = 144  # 0x870 - 0x8FF
-
-    # Pattern mapping area
-    PATTERN_MAP_START = 0x900
-    PATTERN_MAP_SIZE = 192  # 0x900 - 0x9BF
-
-    # Fill area (0xFE)
-    FILL_AREA_START = 0x9C0
-    FILL_AREA_SIZE = 336  # 0x9C0 - 0xB0F
-
-    # Padding area (0xF8)
-    PAD_AREA_START = 0xB10
-    PAD_AREA_SIZE = 240  # 0xB10 - 0xBFF
-
-    FILE_SIZE = 3072
-
+    # Section names (extended for 12 sections)
     SECTION_NAMES = [
         "Intro",
         "Main A",
@@ -254,11 +248,12 @@ class Q7PAnalyzer:
         "Fill AB",
         "Fill BA",
         "Ending",
+        "Fill AA",
+        "Fill BB",
+        "Intro 2",
         "Main C",
         "Main D",
-        "Intro 2",
         "Ending 2",
-        "Break",
     ]
 
     TRACK_NAMES = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5"]
@@ -283,6 +278,26 @@ class Q7PAnalyzer:
 
     def __init__(self):
         self.data: bytes = b""
+        self.file_size: int = 0
+        self._offsets: Dict[str, int] = {}
+
+    def _init_offsets(self) -> None:
+        """Initialize offset table based on file size."""
+        self.file_size = len(self.data)
+        if self.file_size in self.OFFSETS:
+            self._offsets = self.OFFSETS[self.file_size]
+        else:
+            # Default to small format for unknown sizes
+            self._offsets = self.OFFSETS[self.FILE_SIZE_SMALL]
+
+    def _get_offset(self, name: str) -> int:
+        """Get offset value for current file format."""
+        return self._offsets.get(name, 0)
+
+    @property
+    def max_sections(self) -> int:
+        """Maximum number of sections for current format."""
+        return self._offsets.get("MAX_SECTIONS", 6)
 
     def analyze_file(self, filepath: str) -> Q7PAnalysis:
         """Analyze a Q7P file completely."""
@@ -291,18 +306,20 @@ class Q7PAnalyzer:
         with open(path, "rb") as f:
             self.data = f.read()
 
+        self._init_offsets()
         return self._analyze(str(path))
 
     def analyze_bytes(self, data: bytes, name: str = "memory") -> Q7PAnalysis:
         """Analyze Q7P data from bytes."""
         self.data = data
+        self._init_offsets()
         return self._analyze(name)
 
     def _analyze(self, filepath: str) -> Q7PAnalysis:
         """Perform complete analysis."""
 
-        # Basic validation
-        valid = len(self.data) == self.FILE_SIZE and self.data[:16] == self.HEADER_MAGIC
+        # Basic validation - accept both file sizes
+        valid = len(self.data) in self.VALID_FILE_SIZES and self.data[:16] == self.HEADER_MAGIC
 
         ts_tuple, ts_raw = self._get_time_signature()
 
@@ -322,7 +339,7 @@ class Q7PAnalyzer:
             time_signature_raw=ts_raw,
         )
 
-        # Extract raw areas
+        # Extract raw areas using dynamic offsets
         analysis.header_raw = self.data[self.HEADER_START : self.HEADER_START + self.HEADER_SIZE]
         analysis.section_pointers_raw = self.data[
             self.SECTION_PTR_START : self.SECTION_PTR_START + self.SECTION_PTR_SIZE
@@ -330,50 +347,40 @@ class Q7PAnalyzer:
         analysis.section_data_raw = self.data[
             self.SECTION_DATA_START : self.SECTION_DATA_START + self.SECTION_DATA_SIZE
         ]
-        analysis.tempo_area_raw = self.data[
-            self.TEMPO_AREA_START : self.TEMPO_AREA_START + self.TEMPO_AREA_SIZE
-        ]
-        analysis.channel_area_raw = self.data[
-            self.CHANNEL_START : self.CHANNEL_START + self.CHANNEL_SIZE
-        ]
-        analysis.track_config_raw = self.data[
-            self.TRACK_CONFIG_START : self.TRACK_CONFIG_START + self.TRACK_CONFIG_SIZE
-        ]
-        analysis.volume_table_raw = self.data[
-            self.VOLUME_TABLE_START : self.VOLUME_TABLE_START + self.VOLUME_TABLE_SIZE
-        ]
-        analysis.pan_table_raw = self.data[
-            self.PAN_TABLE_START : self.PAN_TABLE_START + self.PAN_TABLE_SIZE
-        ]
-        analysis.reverb_table_raw = self.data[
-            self.REVERB_TABLE_START : self.REVERB_TABLE_START + self.REVERB_TABLE_SIZE
-        ]
-        analysis.phrase_area_raw = self.data[
-            self.PHRASE_START : self.PHRASE_START + self.PHRASE_SIZE
-        ]
-        analysis.sequence_area_raw = self.data[
-            self.SEQUENCE_START : self.SEQUENCE_START + self.SEQUENCE_SIZE
-        ]
-        analysis.template_area_raw = self.data[
-            self.TEMPLATE_START : self.TEMPLATE_START + self.TEMPLATE_SIZE
-        ]
 
-        # Unknown/reserved areas
+        tempo_start = self._get_offset("TEMPO_AREA_START")
+        analysis.tempo_area_raw = self.data[tempo_start : tempo_start + 16]
+
+        channel_start = self._get_offset("CHANNEL_START")
+        analysis.channel_area_raw = self.data[channel_start : channel_start + 16]
+
+        track_start = self._get_offset("TRACK_CONFIG_START")
+        analysis.track_config_raw = self.data[track_start : track_start + 36]
+
+        vol_start = self._get_offset("VOLUME_TABLE_START")
+        analysis.volume_table_raw = self.data[vol_start : vol_start + 48]
+
+        pan_start = self._get_offset("PAN_TABLE_START")
+        analysis.pan_table_raw = self.data[pan_start : pan_start + 80]
+
+        rev_start = self._get_offset("REVERB_TABLE_START")
+        analysis.reverb_table_raw = self.data[rev_start : rev_start + 32]
+
+        phrase_start = self._get_offset("PHRASE_START")
+        phrase_size = self._get_offset("PHRASE_SIZE")
+        analysis.phrase_area_raw = self.data[phrase_start : phrase_start + phrase_size]
+
+        seq_start = self._get_offset("SEQUENCE_START")
+        seq_size = self._get_offset("SEQUENCE_SIZE")
+        analysis.sequence_area_raw = self.data[seq_start : seq_start + seq_size]
+
+        tmpl_name = self._get_offset("TEMPLATE_NAME")
+        analysis.template_area_raw = self.data[tmpl_name : tmpl_name + 128]
+
+        # Unknown/reserved areas (simplified for dual format)
         analysis.unknown_areas = {
             "0x012-0x02F": self.data[0x012:0x030],
             "0x032-0x0FF": self.data[0x032:0x100],
-            "0x1A0-0x1DB": self.data[
-                self.RESERVED_1_START : self.RESERVED_1_START + self.RESERVED_1_SIZE
-            ],
-            "0x1E6-0x1FF": self.data[0x1E6:0x200],
-            "0x200-0x21F": self.data[
-                self.RESERVED_2_START : self.RESERVED_2_START + self.RESERVED_2_SIZE
-            ],
-            "0x2C0-0x35F": self.data[self.TABLE_3_START : self.TABLE_3_START + self.TABLE_3_SIZE],
-            "0x880-0x8FF": self.data[0x880:0x900],
-            "0x900-0x9BF": self.data[
-                self.PATTERN_MAP_START : self.PATTERN_MAP_START + self.PATTERN_MAP_SIZE
-            ],
         }
 
         # Global settings
@@ -382,7 +389,7 @@ class Q7PAnalyzer:
         analysis.global_pans = self._get_pans()
         analysis.global_reverb_sends = self._get_reverb_sends()
 
-        # Analyze sections
+        # Analyze sections (dynamic count based on format)
         analysis.sections = self._analyze_sections()
         analysis.active_section_count = sum(1 for s in analysis.sections if s.enabled)
 
@@ -408,24 +415,39 @@ class Q7PAnalyzer:
 
     def _get_template_name(self) -> str:
         """Extract template/pattern name."""
-        if len(self.data) >= self.TEMPLATE_NAME + 10:
-            name_bytes = self.data[self.TEMPLATE_NAME : self.TEMPLATE_NAME + 10]
+        name_offset = self._get_offset("PATTERN_NAME")
+        if len(self.data) >= name_offset + 10:
+            # For 5120-byte files, the pattern name is 8 chars followed by tempo
+            # For 3072-byte files, it's 10 chars
+            if self.file_size == self.FILE_SIZE_LARGE:
+                name_bytes = self.data[name_offset : name_offset + 8]
+            else:
+                name_bytes = self.data[name_offset : name_offset + 10]
             try:
-                return name_bytes.decode("ascii").rstrip("\x00 ")
+                # Filter out non-printable characters
+                decoded = ""
+                for b in name_bytes:
+                    if 0x20 <= b < 0x7F:  # Printable ASCII
+                        decoded += chr(b)
+                    else:
+                        break  # Stop at first non-printable
+                return decoded.rstrip()
             except:
                 return name_bytes.hex()
         return ""
 
     def _get_tempo(self) -> float:
         """Get tempo in BPM."""
-        raw = self._get_word(self.TEMPO_VALUE)
+        tempo_offset = self._get_offset("TEMPO_VALUE")
+        raw = self._get_word(tempo_offset)
         if raw > 0:
             return raw / 10.0
         return 120.0
 
     def _get_tempo_raw(self) -> Tuple[int, int]:
         """Get raw tempo bytes."""
-        return (self._get_byte(self.TEMPO_VALUE), self._get_byte(self.TEMPO_VALUE + 1))
+        tempo_offset = self._get_offset("TEMPO_VALUE")
+        return (self._get_byte(tempo_offset), self._get_byte(tempo_offset + 1))
 
     def _get_time_signature(self) -> Tuple[Tuple[int, int], int]:
         """
@@ -434,7 +456,8 @@ class Q7PAnalyzer:
         Returns:
             Tuple of ((numerator, denominator), raw_byte)
         """
-        ts_byte = self._get_byte(self.TIME_SIG)
+        ts_offset = self._get_offset("TIME_SIG")
+        ts_byte = self._get_byte(ts_offset)
 
         # Use lookup table if available
         if ts_byte in self.TIME_SIGNATURE_MAP:
@@ -454,8 +477,9 @@ class Q7PAnalyzer:
         - Other values -> use as-is or default
         """
         channels = []
+        channel_start = self._get_offset("CHANNEL_START")
         for i in range(8):
-            ch_raw = self._get_byte(self.CHANNEL_START + i)
+            ch_raw = self._get_byte(channel_start + i)
 
             if ch_raw == 0x00:
                 # Value 0 = use default channel for this track type
@@ -472,9 +496,10 @@ class Q7PAnalyzer:
     def _get_volumes(self) -> List[int]:
         """Get volume values for 8 tracks."""
         volumes = []
+        vol_start = self._get_offset("VOLUME_DATA_START")
         # Skip first 6 bytes which are header
         for i in range(8):
-            vol = self._get_byte(self.VOLUME_DATA_START + i)
+            vol = self._get_byte(vol_start + i)
             volumes.append(vol if vol <= 127 else 100)
         return volumes
 
@@ -487,12 +512,11 @@ class Q7PAnalyzer:
         - 1-63 = Left (L63-L1)
         - 64 = Center
         - 65-127 = Right (R1-R63)
-
-        FIXED: Now reading from correct offset 0x276 (was 0x270)
         """
         pans = []
+        pan_start = self._get_offset("PAN_DATA_START")
         for i in range(8):
-            pan = self._get_byte(self.PAN_DATA_START + i)
+            pan = self._get_byte(pan_start + i)
             pans.append(pan if pan <= 127 else 64)
         return pans
 
@@ -501,19 +525,23 @@ class Q7PAnalyzer:
         Get reverb send levels for 8 tracks.
 
         XG default reverb send = 40 (0x28)
-        Found at offset 0x256
         """
         sends = []
+        rev_start = self._get_offset("REVERB_DATA_START")
         for i in range(8):
-            send = self._get_byte(self.REVERB_DATA_START + i)
+            send = self._get_byte(rev_start + i)
             sends.append(send if send <= 127 else 40)
         return sends
 
     def _analyze_sections(self) -> List[SectionInfo]:
-        """Analyze all sections."""
+        """Analyze all sections (dynamic count based on file format)."""
         sections = []
 
-        for idx in range(6):  # QY700 has 6 main sections like QY70
+        # Use dynamic max sections based on file format
+        max_sections = self.max_sections
+        phrase_start = self._get_offset("PHRASE_START")
+
+        for idx in range(max_sections):
             ptr_offset = self.SECTION_PTR_START + (idx * 2)
             ptr_bytes = self.data[ptr_offset : ptr_offset + 2]
             ptr_value = self._get_word(ptr_offset)
@@ -523,7 +551,11 @@ class Q7PAnalyzer:
 
             # Get section config data
             config_offset = self.SECTION_DATA_START + (idx * 16)
-            config_data = self.data[config_offset : config_offset + 16]
+            config_data = (
+                self.data[config_offset : config_offset + 16]
+                if config_offset + 16 <= len(self.data)
+                else b""
+            )
 
             section = SectionInfo(
                 index=idx,
@@ -534,7 +566,7 @@ class Q7PAnalyzer:
                 length_measures=4,  # Default, actual parsing needed
                 time_signature=(4, 4),
                 raw_config=config_data,
-                phrase_data_offset=self.PHRASE_START + (idx * 80),
+                phrase_data_offset=phrase_start + (idx * 80),
                 phrase_data_size=80,
             )
 
@@ -554,8 +586,9 @@ class Q7PAnalyzer:
         pans = self._get_pans()
         reverb_sends = self._get_reverb_sends()
 
-        # Track flags at 0x1E4-0x1E5
-        track_flags = self._get_word(self.TRACK_FLAGS)
+        # Track flags
+        track_flags_offset = self._get_offset("TRACK_FLAGS")
+        track_flags = self._get_word(track_flags_offset)
 
         for i in range(8):
             # Check if track is enabled via flags
@@ -601,15 +634,19 @@ class Q7PAnalyzer:
         """
         Analyze phrase and sequence data areas.
 
-        Phrase area (0x360-0x677): 792 bytes - contains phrase/pattern data
-        Sequence area (0x678-0x86F): 504 bytes - contains event/timing data
+        Dynamically uses offsets based on file format.
 
         Returns:
             PhraseStats with comprehensive analysis of both areas
         """
-        # Extract data areas
-        phrase_data = self.data[self.PHRASE_START : self.PHRASE_START + self.PHRASE_SIZE]
-        seq_data = self.data[self.SEQUENCE_START : self.SEQUENCE_START + self.SEQUENCE_SIZE]
+        # Extract data areas using dynamic offsets
+        phrase_start = self._get_offset("PHRASE_START")
+        phrase_size = self._get_offset("PHRASE_SIZE")
+        seq_start = self._get_offset("SEQUENCE_START")
+        seq_size = self._get_offset("SEQUENCE_SIZE")
+
+        phrase_data = self.data[phrase_start : phrase_start + phrase_size]
+        seq_data = self.data[seq_start : seq_start + seq_size]
 
         # Filler bytes to ignore (common padding values)
         filler_bytes = {0x00, 0x40, 0x7F, 0xFE, 0xF8, 0x20}
@@ -637,23 +674,21 @@ class Q7PAnalyzer:
                 potential_velocities += 1
 
         # Calculate density
-        phrase_density = (
-            (phrase_non_filler / self.PHRASE_SIZE * 100) if self.PHRASE_SIZE > 0 else 0.0
-        )
-        seq_density = (seq_non_filler / self.SEQUENCE_SIZE * 100) if self.SEQUENCE_SIZE > 0 else 0.0
+        phrase_density = (phrase_non_filler / phrase_size * 100) if phrase_size > 0 else 0.0
+        seq_density = (seq_non_filler / seq_size * 100) if seq_size > 0 else 0.0
 
         # Get byte ranges (excluding 0x00 for min)
         non_zero_phrase = [b for b in phrase_data if b != 0x00]
         non_zero_seq = [b for b in seq_data if b != 0x00]
 
         return PhraseStats(
-            phrase_total_bytes=self.PHRASE_SIZE,
+            phrase_total_bytes=phrase_size,
             phrase_non_zero_bytes=phrase_non_zero,
             phrase_non_filler_bytes=phrase_non_filler,
             phrase_density=phrase_density,
             phrase_unique_values=len(phrase_histogram),
             phrase_value_histogram=phrase_histogram,
-            sequence_total_bytes=self.SEQUENCE_SIZE,
+            sequence_total_bytes=seq_size,
             sequence_non_zero_bytes=seq_non_zero,
             sequence_non_filler_bytes=seq_non_filler,
             sequence_density=seq_density,

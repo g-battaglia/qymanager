@@ -7,7 +7,7 @@ Yamaha QY70 SysEx (.syx) and QY700 binary (.Q7P) formats. Both use Yamaha XG.
 
 **Key domains**: MIDI, SysEx, binary file parsing, Yamaha XG synthesizers.
 
-**Version**: 0.3.0
+**Version**: 0.4.0
 
 ---
 

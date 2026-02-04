@@ -18,7 +18,7 @@ Example usage:
     QY700Writer.write(qy700_data, "pattern.Q7P")
 """
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
 __author__ = "QYConv Contributors"
 
 from qyconv.formats.qy70.reader import QY70Reader

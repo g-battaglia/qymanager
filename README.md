@@ -36,7 +36,7 @@ QYConv provides a modern command-line interface powered by [Typer](https://typer
 
 ```bash
 qyconv --help              # Show all commands
-qyconv --version           # Show version (v0.3.0)
+qyconv --version           # Show version (v0.4.0)
 ```
 
 **Analysis Commands:**

@@ -17,7 +17,7 @@ from cli.commands.tracks import tracks
 from cli.commands.sections import sections
 from cli.commands.phrase import phrase
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 console = Console()
 

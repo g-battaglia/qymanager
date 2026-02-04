@@ -47,7 +47,7 @@ class Q7PValidator:
     """Validate Q7P file structure and content."""
 
     HEADER_MAGIC = b"YQ7PAT     V1.00"
-    EXPECTED_SIZE = 3072
+    EXPECTED_SIZES = (3072, 5120)  # Both valid file sizes
 
     # Known valid ranges for various fields
     VALID_TEMPO_RANGE = (200, 3000)  # 20.0 to 300.0 BPM
@@ -62,6 +62,7 @@ class Q7PValidator:
         self.data = data
         self.filepath = filepath
         self.issues: List[ValidationIssue] = []
+        self.file_size = len(data)
 
     def validate(self) -> ValidationResult:
         """Perform full validation and return result."""
@@ -117,19 +118,25 @@ class Q7PValidator:
         )
 
     def _validate_file_size(self) -> None:
-        """Check file size is exactly 3072 bytes."""
-        if len(self.data) != self.EXPECTED_SIZE:
+        """Check file size is one of the valid sizes (3072 or 5120 bytes)."""
+        if len(self.data) not in self.EXPECTED_SIZES:
             self._add_issue(
                 "error",
                 "File Size",
                 0,
                 "Invalid file size",
-                f"{self.EXPECTED_SIZE} bytes",
+                f"{self.EXPECTED_SIZES[0]} or {self.EXPECTED_SIZES[1]} bytes",
                 f"{len(self.data)} bytes",
             )
         else:
+            size_type = "small (3072)" if len(self.data) == 3072 else "large (5120)"
             self._add_issue(
-                "info", "File Size", 0, "File size is correct", "3072 bytes", "3072 bytes"
+                "info",
+                "File Size",
+                0,
+                f"File size is valid ({size_type})",
+                f"{len(self.data)} bytes",
+                f"{len(self.data)} bytes",
             )
 
     def _validate_header(self) -> None:
