@@ -67,6 +67,9 @@ def verify_sysex_checksum(message: Union[bytes, List[int]]) -> bool:
 
     Expects format: F0 43 0n 5F BH BL AH AM AL [data...] CS F7
 
+    The QY70 checksum is calculated over BH BL AH AM AL + data
+    (not just AH AM AL + data as documented in some Yamaha manuals).
+
     Args:
         message: Complete SysEx message including F0 and F7
 
@@ -82,10 +85,11 @@ def verify_sysex_checksum(message: Union[bytes, List[int]]) -> bool:
     if message[0] != 0xF0 or message[-1] != 0xF7:
         return False
 
-    # Extract address and data (from AH to last data byte, before checksum)
+    # Extract byte count + address + data (from BH to last data byte, before checksum)
     # Format: F0 43 0n 5F BH BL AH AM AL [data...] CS F7
     #         0  1  2  3  4  5  6  7  8  ...      -2 -1
-    checksum_data = message[6:-2]  # AH AM AL + data
+    # QY70 checksum includes BH BL, not just AH AM AL
+    checksum_data = message[4:-2]  # BH BL AH AM AL + data
     expected_checksum = message[-2]
 
     return verify_checksum(checksum_data, expected_checksum)

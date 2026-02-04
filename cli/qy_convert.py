@@ -127,32 +127,36 @@ def show_info(input_path: Path, suffix: str, verbose: bool) -> int:
 
 def convert_qy70_to_qy700(input_path: Path, output: str, template: str, verbose: bool) -> int:
     """Convert QY70 SysEx to QY700 Q7P."""
-    from qyconv.formats.qy70.reader import QY70Reader
-    from qyconv.formats.qy700.writer import QY700Writer
+    from qyconv.converters.qy70_to_qy700 import QY70ToQY700Converter
 
     output_path = Path(output) if output else input_path.with_suffix(".Q7P")
 
     if verbose:
         print(f"Reading: {input_path}")
+        print(f"Using converter: QY70ToQY700Converter")
 
     try:
-        pattern = QY70Reader.read(input_path)
-    except Exception as e:
-        print(f"Error reading QY70 file: {e}", file=sys.stderr)
-        return 1
+        converter = QY70ToQY700Converter(template)
 
-    if verbose:
-        print(f"Pattern: {pattern.name}")
-        print(f"Sections: {len(pattern.sections)}")
-        print(f"Writing: {output_path}")
+        if verbose:
+            print("Parsing QY70 SysEx...")
 
-    try:
-        if template:
-            QY700Writer.write_using_template(pattern, template, output_path)
-        else:
-            QY700Writer.write(pattern, output_path)
+        q7p_data = converter.convert(input_path)
+
+        if verbose:
+            print(f"Generated Q7P: {len(q7p_data)} bytes")
+            print(f"Writing: {output_path}")
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "wb") as f:
+            f.write(q7p_data)
+
     except Exception as e:
-        print(f"Error writing Q7P file: {e}", file=sys.stderr)
+        print(f"Error during conversion: {e}", file=sys.stderr)
+        if verbose:
+            import traceback
+
+            traceback.print_exc()
         return 1
 
     print(f"Converted: {input_path} -> {output_path}")
@@ -161,29 +165,36 @@ def convert_qy70_to_qy700(input_path: Path, output: str, template: str, verbose:
 
 def convert_qy700_to_qy70(input_path: Path, output: str, verbose: bool) -> int:
     """Convert QY700 Q7P to QY70 SysEx."""
-    from qyconv.formats.qy700.reader import QY700Reader
-    from qyconv.formats.qy70.writer import QY70Writer
+    from qyconv.converters.qy700_to_qy70 import QY700ToQY70Converter
 
     output_path = Path(output) if output else input_path.with_suffix(".syx")
 
     if verbose:
         print(f"Reading: {input_path}")
+        print(f"Using converter: QY700ToQY70Converter")
 
     try:
-        pattern = QY700Reader.read(input_path)
-    except Exception as e:
-        print(f"Error reading Q7P file: {e}", file=sys.stderr)
-        return 1
+        converter = QY700ToQY70Converter()
 
-    if verbose:
-        print(f"Pattern: {pattern.name}")
-        print(f"Sections: {len(pattern.sections)}")
-        print(f"Writing: {output_path}")
+        if verbose:
+            print("Parsing Q7P file...")
 
-    try:
-        QY70Writer.write(pattern, output_path)
+        syx_data = converter.convert(input_path)
+
+        if verbose:
+            print(f"Generated SysEx: {len(syx_data)} bytes")
+            print(f"Writing: {output_path}")
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "wb") as f:
+            f.write(syx_data)
+
     except Exception as e:
-        print(f"Error writing SysEx file: {e}", file=sys.stderr)
+        print(f"Error during conversion: {e}", file=sys.stderr)
+        if verbose:
+            import traceback
+
+            traceback.print_exc()
         return 1
 
     print(f"Converted: {input_path} -> {output_path}")
