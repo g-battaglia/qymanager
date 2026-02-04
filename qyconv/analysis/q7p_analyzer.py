@@ -196,6 +196,10 @@ class Q7PAnalyzer:
             "TRACK_CONFIG_START": 0x1DC,
             "TRACK_NUMBERS": 0x1DC,
             "TRACK_FLAGS": 0x1E4,
+            # Voice selection offsets (16 bytes each, may be unused in template)
+            "BANK_MSB_START": 0x1E6,  # Bank MSB for 16 tracks
+            "PROGRAM_START": 0x1F6,  # Program number for 16 tracks
+            "BANK_LSB_START": 0x206,  # Bank LSB for 16 tracks
             "VOLUME_TABLE_START": 0x220,
             "VOLUME_DATA_START": 0x226,
             "REVERB_TABLE_START": 0x250,
@@ -221,6 +225,10 @@ class Q7PAnalyzer:
             "TRACK_CONFIG_START": 0xA5C,
             "TRACK_NUMBERS": 0xA5C,
             "TRACK_FLAGS": 0xA64,
+            # Voice selection offsets (16 bytes each)
+            "BANK_MSB_START": 0xA66,  # Bank MSB for 16 tracks
+            "PROGRAM_START": 0xA86,  # Program number for 16 tracks
+            "BANK_LSB_START": 0xA96,  # Bank LSB for 16 tracks
             "VOLUME_TABLE_START": 0xAA0,
             "VOLUME_DATA_START": 0xAA6,
             "REVERB_TABLE_START": 0xAD0,
@@ -556,6 +564,48 @@ class Q7PAnalyzer:
             sends.append(send if send <= 127 else 40)
         return sends
 
+    def _get_bank_msb(self) -> List[int]:
+        """
+        Get Bank MSB values for 16 tracks.
+
+        XG Bank MSB encoding:
+        - 0 = Normal voice
+        - 64 = SFX voice
+        - 127 = Drum kit
+        """
+        banks = []
+        msb_start = self._get_offset("BANK_MSB_START")
+        for i in range(self.NUM_TRACKS):
+            msb = self._get_byte(msb_start + i)
+            banks.append(msb if msb <= 127 else 0)
+        return banks
+
+    def _get_bank_lsb(self) -> List[int]:
+        """
+        Get Bank LSB values for 16 tracks.
+
+        Bank LSB selects voice variations within the bank.
+        """
+        banks = []
+        lsb_start = self._get_offset("BANK_LSB_START")
+        for i in range(self.NUM_TRACKS):
+            lsb = self._get_byte(lsb_start + i)
+            banks.append(lsb if lsb <= 127 else 0)
+        return banks
+
+    def _get_programs(self) -> List[int]:
+        """
+        Get Program (instrument) numbers for 16 tracks.
+
+        Program 0-127 selects the voice within the current bank.
+        """
+        programs = []
+        prog_start = self._get_offset("PROGRAM_START")
+        for i in range(self.NUM_TRACKS):
+            prog = self._get_byte(prog_start + i)
+            programs.append(prog if prog <= 127 else 0)
+        return programs
+
     def _analyze_sections(self) -> List[SectionInfo]:
         """Analyze all sections (dynamic count based on file format)."""
         sections = []
@@ -602,12 +652,17 @@ class Q7PAnalyzer:
 
     def _analyze_section_tracks(self, section_idx: int) -> List[TrackInfo]:
         """Analyze 16 tracks for a section."""
+        from qyconv.utils.xg_voices import get_voice_name
+
         tracks = []
 
         channels = self._get_channels()
         volumes = self._get_volumes()
         pans = self._get_pans()
         reverb_sends = self._get_reverb_sends()
+        bank_msbs = self._get_bank_msb()
+        bank_lsbs = self._get_bank_lsb()
+        programs = self._get_programs()
 
         # Track flags (16-bit for 16 tracks)
         track_flags_offset = self._get_offset("TRACK_FLAGS")
@@ -617,24 +672,29 @@ class Q7PAnalyzer:
             # Check if track is enabled via flags
             enabled = bool(track_flags & (1 << i))
 
-            # Determine if this is a drum track (TR1/TR2 typically drums)
-            is_drum = i < 2  # First two tracks are rhythm
+            channel = (
+                channels[i]
+                if i < len(channels)
+                else self.DEFAULT_CHANNELS[i % len(self.DEFAULT_CHANNELS)]
+            )
+            bank_msb = bank_msbs[i] if i < len(bank_msbs) else 0
+            bank_lsb = bank_lsbs[i] if i < len(bank_lsbs) else 0
+            program = programs[i] if i < len(programs) else 0
 
-            # Set default bank based on track type
-            bank_msb = 127 if is_drum else 0  # 127 = drum kit, 0 = normal
+            # Resolve voice name using the XG lookup
+            voice_name = get_voice_name(program, bank_msb, bank_lsb, channel)
 
             track = TrackInfo(
                 number=i + 1,
                 name=self.TRACK_NAMES[i] if i < len(self.TRACK_NAMES) else f"TR{i + 1}",
-                channel=channels[i]
-                if i < len(channels)
-                else self.DEFAULT_CHANNELS[i % len(self.DEFAULT_CHANNELS)],
+                channel=channel,
                 volume=volumes[i] if i < len(volumes) else 100,
                 pan=pans[i] if i < len(pans) else 64,
                 enabled=enabled,
-                program=0,  # Default, offset not yet found
+                program=program,
                 bank_msb=bank_msb,
-                bank_lsb=0,
+                bank_lsb=bank_lsb,
+                voice_name=voice_name,
                 reverb_send=reverb_sends[i] if i < len(reverb_sends) else 40,
                 chorus_send=0,  # XG default
                 variation_send=0,  # XG default

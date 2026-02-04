@@ -305,6 +305,435 @@ def display_full_q7p_info(filepath: str) -> None:
     console.print()
 
 
+def display_full_syx_info(filepath: str) -> None:
+    """Display complete SysEx analysis using all available information."""
+    from qyconv.analysis.syx_analyzer import SyxAnalyzer
+    from qyconv.utils.xg_effects import XG_DEFAULTS
+    from cli.display.formatters import value_bar, pan_bar
+    from rich.table import Table
+    from rich import box
+
+    analyzer = SyxAnalyzer()
+    analysis = analyzer.analyze_file(filepath)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 1: OVERVIEW
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("═" * 80)
+    console.print("[bold cyan]                    QY70 SYSEX COMPLETE ANALYSIS[/bold cyan]")
+    console.print("═" * 80)
+    console.print()
+
+    status = "[green]Valid[/green]" if analysis.valid else "[red]Invalid[/red]"
+
+    # Determine file type (Pattern or Style)
+    file_type = "Style" if analysis.active_section_count > 1 else "Pattern"
+
+    overview = f"""[bold]File:[/bold] {filepath}
+[bold]Pattern/Style Name:[/bold] {analysis.pattern_name or "N/A"}
+[bold]Type:[/bold] {file_type} (QY70 SysEx)
+[bold]Status:[/bold] {status}
+[bold]File Size:[/bold] {analysis.filesize} bytes
+[bold]Data Density:[/bold] {analysis.data_density:.1f}%
+[bold]Active Sections:[/bold] {analysis.active_section_count} of 6
+[bold]Active Tracks:[/bold] {analysis.active_track_count} of 8"""
+
+    console.print(Panel(overview, title="[bold]Overview[/bold]", border_style="blue"))
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 2: TIMING
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ TIMING[/bold yellow]")
+    console.print("─" * 40)
+
+    timing_table = Table(box=box.SIMPLE, show_header=False)
+    timing_table.add_column("Property", style="cyan", width=20)
+    timing_table.add_column("Value", width=50)
+
+    timing_table.add_row("Tempo", f"{analysis.tempo} BPM")
+    timing_table.add_row(
+        "Time Signature", f"{analysis.time_signature[0]}/{analysis.time_signature[1]}"
+    )
+    timing_table.add_row("Time Sig Raw", f"0x{analysis.time_signature_raw:02X}")
+
+    console.print(timing_table)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 3: GLOBAL EFFECTS
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ GLOBAL EFFECTS[/bold yellow]")
+    console.print("─" * 40)
+
+    effects_table = Table(box=box.SIMPLE, show_header=False)
+    effects_table.add_column("Effect", style="cyan", width=12)
+    effects_table.add_column("Type", width=20)
+    effects_table.add_column("MSB/LSB", width=12)
+
+    effects_table.add_row(
+        "Reverb",
+        analysis.reverb_type,
+        f"0x{analysis.reverb_type_msb:02X}/0x{analysis.reverb_type_lsb:02X}",
+    )
+    effects_table.add_row(
+        "Chorus",
+        analysis.chorus_type,
+        f"0x{analysis.chorus_type_msb:02X}/0x{analysis.chorus_type_lsb:02X}",
+    )
+    effects_table.add_row(
+        "Variation",
+        analysis.variation_type,
+        f"0x{analysis.variation_type_msb:02X}/0x{analysis.variation_type_lsb:02X}",
+    )
+
+    console.print(effects_table)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 4: SYSEX MESSAGE STATISTICS
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ SYSEX MESSAGE STATISTICS[/bold yellow]")
+    console.print("─" * 40)
+
+    stats_table = Table(box=box.SIMPLE, show_header=False)
+    stats_table.add_column("Property", style="cyan", width=25)
+    stats_table.add_column("Value", width=40)
+
+    checksum_status = (
+        f"[green]{analysis.valid_checksums} valid[/green]"
+        if analysis.invalid_checksums == 0
+        else f"[green]{analysis.valid_checksums} valid[/green], [red]{analysis.invalid_checksums} invalid[/red]"
+    )
+
+    stats_table.add_row("Total Messages", str(analysis.total_messages))
+    stats_table.add_row("Bulk Dump Messages", str(analysis.bulk_dump_messages))
+    stats_table.add_row("Parameter Messages", str(analysis.parameter_messages))
+    stats_table.add_row("Checksums", checksum_status)
+    stats_table.add_row("Total Encoded", f"{analysis.total_encoded_bytes} bytes")
+    stats_table.add_row("Total Decoded", f"{analysis.total_decoded_bytes} bytes")
+    stats_table.add_row(
+        "Compression Ratio",
+        f"{(1 - analysis.total_decoded_bytes / analysis.total_encoded_bytes) * 100:.1f}% expansion"
+        if analysis.total_encoded_bytes > 0
+        else "N/A",
+    )
+
+    console.print(stats_table)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 5: TRACK CONFIGURATION (with bar graphics)
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ TRACK CONFIGURATION (8 tracks)[/bold yellow]")
+    console.print("─" * 80)
+
+    # Use simple table format for better fit
+    track_table = Table(box=box.SIMPLE, show_header=True, header_style="bold", expand=False)
+    track_table.add_column("Track", style="cyan", no_wrap=True)
+    track_table.add_column("Ch", no_wrap=True)
+    track_table.add_column("Instrument", no_wrap=True)
+    track_table.add_column("B/P", no_wrap=True)
+    track_table.add_column("Vol", no_wrap=True)
+    track_table.add_column("Pan", no_wrap=True)
+    track_table.add_column("Rv", no_wrap=True)
+    track_table.add_column("Ch", no_wrap=True)
+
+    for track in analysis.qy70_tracks:
+        if track.has_data:
+            voice = track.voice_name[:18] if track.voice_name else f"Prog {track.program}"
+            bank_prg = f"{track.bank_msb}/{track.program}"
+            # Simple volume display
+            vol_pct = int(track.volume / 127 * 100)
+            vol_bar = f"{track.volume:3d} [{'█' * (vol_pct // 10)}{'░' * (10 - vol_pct // 10)}]"
+            # Simple pan display
+            if track.pan == 64:
+                pan_str = "  C  "
+            elif track.pan < 64:
+                pan_str = f"L{64 - track.pan:2d}"
+            else:
+                pan_str = f"R{track.pan - 64:2d}"
+            status_icon = "[green]●[/green]"
+        else:
+            voice = "[dim]---[/dim]"
+            bank_prg = "[dim]-[/dim]"
+            vol_bar = "[dim]---[/dim]"
+            pan_str = "[dim]-[/dim]"
+
+        rev_str = str(track.reverb_send) if track.has_data else "[dim]-[/dim]"
+        cho_str = str(track.chorus_send) if track.has_data else "[dim]-[/dim]"
+
+        track_table.add_row(
+            track.name,
+            str(track.channel),
+            voice,
+            bank_prg,
+            vol_bar,
+            pan_str,
+            rev_str,
+            cho_str,
+        )
+
+    console.print(track_table)
+
+    # QY70 track descriptions
+    console.print()
+    console.print(
+        "[dim]Track Types: RHY1/RHY2=Rhythm (drums), BASS=Bass, CHD1/CHD2=Chords, PAD=Pad, PHR1/PHR2=Phrase[/dim]"
+    )
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 5b: TRACK NOTE RANGES AND EVENTS
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ TRACK NOTE RANGES & EVENTS[/bold yellow]")
+    console.print("─" * 80)
+
+    range_table = Table(box=box.SIMPLE, show_header=True, header_style="bold", expand=False)
+    range_table.add_column("Track", style="cyan", no_wrap=True)
+    range_table.add_column("Note Range", no_wrap=True)
+    range_table.add_column("Events", no_wrap=True)
+    range_table.add_column("Density", no_wrap=True)
+    range_table.add_column("Activity", no_wrap=True)
+
+    for track in analysis.qy70_tracks:
+        if track.has_data:
+            # Note range (only for melody tracks)
+            if track.note_range_str:
+                range_str = track.note_range_str
+            elif track.is_drum_track:
+                range_str = "[dim]Drums[/dim]"
+            else:
+                range_str = f"{track.note_low}-{track.note_high}"
+
+            # Event count
+            event_str = str(track.event_count) if track.event_count > 0 else "[dim]0[/dim]"
+
+            # Data density
+            density_str = f"{track.data_density:.0f}%"
+
+            # Activity bar (based on events)
+            activity_level = min(10, track.event_count // 5)
+            activity_bar = f"[{'█' * activity_level}{'░' * (10 - activity_level)}]"
+        else:
+            range_str = "[dim]---[/dim]"
+            event_str = "[dim]---[/dim]"
+            density_str = "[dim]---[/dim]"
+            activity_bar = "[dim]---[/dim]"
+
+        range_table.add_row(
+            track.name,
+            range_str,
+            event_str,
+            density_str,
+            activity_bar,
+        )
+
+    console.print(range_table)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 6: SECTIONS (6 style sections)
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ STYLE SECTIONS (6 sections)[/bold yellow]")
+    console.print("─" * 80)
+
+    section_table = Table(box=box.SIMPLE, show_header=True, header_style="bold", expand=False)
+    section_table.add_column("#", no_wrap=True)
+    section_table.add_column("Name", no_wrap=True)
+    section_table.add_column("Status", no_wrap=True)
+    section_table.add_column("Bars", no_wrap=True)
+    section_table.add_column("Phrase", no_wrap=True)
+    section_table.add_column("Track Data", no_wrap=True)
+    section_table.add_column("Active Tracks", no_wrap=True)
+
+    for sec in analysis.qy70_sections:
+        status_str = "[green]Active[/green]" if sec.has_data else "[dim]Empty[/dim]"
+        bars_str = f"~{sec.bar_count}" if sec.bar_count > 0 else "[dim]-[/dim]"
+        phrase_str = f"{sec.phrase_bytes}B" if sec.phrase_bytes > 0 else "[dim]-[/dim]"
+        track_str = f"{sec.track_bytes}B" if sec.track_bytes > 0 else "[dim]-[/dim]"
+        tracks_str = (
+            ", ".join(str(t) for t in sec.active_tracks) if sec.active_tracks else "[dim]None[/dim]"
+        )
+
+        section_table.add_row(
+            str(sec.index),
+            sec.name,
+            status_str,
+            bars_str,
+            phrase_str,
+            track_str,
+            tracks_str,
+        )
+
+    console.print(section_table)
+    console.print("[dim]Note: Bar count is estimated from phrase data size[/dim]")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 7: AL ADDRESS BREAKDOWN (all data sections)
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ DATA SECTIONS BY AL ADDRESS[/bold yellow]")
+    console.print("─" * 40)
+
+    al_table = Table(box=box.SIMPLE, show_header=True, header_style="dim")
+    al_table.add_column("AL", width=6)
+    al_table.add_column("Name", width=22)
+    al_table.add_column("Msgs", width=5)
+    al_table.add_column("Bytes", width=8)
+    al_table.add_column("Density", width=10)
+    al_table.add_column("Preview (first 12 bytes)", width=40)
+
+    for al in sorted(analysis.sections.keys()):
+        section = analysis.sections[al]
+        density = (
+            (section.non_zero_bytes / section.total_decoded_bytes * 100)
+            if section.total_decoded_bytes > 0
+            else 0
+        )
+        # Get first 12 bytes for preview
+        preview_bytes = section.decoded_data[:12] if section.decoded_data else b""
+        preview = " ".join(f"{b:02X}" for b in preview_bytes)
+
+        al_table.add_row(
+            f"0x{al:02X}",
+            section.name[:22],
+            str(section.message_count),
+            str(section.total_decoded_bytes),
+            f"{density:.0f}%",
+            preview,
+        )
+
+    console.print(al_table)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 8: TRACK VS XG DEFAULTS COMPARISON
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ TRACK SETTINGS vs XG DEFAULTS[/bold yellow]")
+    console.print("─" * 40)
+
+    defaults_table = Table(box=box.SIMPLE, show_header=True, header_style="dim")
+    defaults_table.add_column("Track", width=8)
+    defaults_table.add_column("Vol", width=10)
+    defaults_table.add_column("Pan", width=10)
+    defaults_table.add_column("Rev", width=10)
+    defaults_table.add_column("Cho", width=10)
+    defaults_table.add_column("Differs?", width=20)
+
+    for track in analysis.qy70_tracks:
+        if not track.has_data:
+            continue
+
+        differs = []
+        if track.volume != XG_DEFAULTS["volume"]:
+            differs.append(f"Vol({track.volume}≠{XG_DEFAULTS['volume']})")
+        if track.pan != XG_DEFAULTS["pan"]:
+            differs.append(f"Pan({track.pan}≠{XG_DEFAULTS['pan']})")
+        if track.reverb_send != XG_DEFAULTS["reverb_send"]:
+            differs.append(f"Rev({track.reverb_send}≠{XG_DEFAULTS['reverb_send']})")
+        if track.chorus_send != XG_DEFAULTS["chorus_send"]:
+            differs.append(f"Cho({track.chorus_send}≠{XG_DEFAULTS['chorus_send']})")
+
+        diff_str = (
+            "[yellow]" + ", ".join(differs) + "[/yellow]"
+            if differs
+            else "[green]All Default[/green]"
+        )
+
+        defaults_table.add_row(
+            track.name,
+            str(track.volume),
+            str(track.pan),
+            str(track.reverb_send),
+            str(track.chorus_send),
+            diff_str,
+        )
+
+    console.print(defaults_table)
+    console.print("[dim]XG Defaults: Volume=100, Pan=64 (C), Reverb=40, Chorus=0[/dim]")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 9: HEADER HEX DUMP
+    # ═══════════════════════════════════════════════════════════════════════════
+    if analysis.header_decoded:
+        console.print()
+        console.print("[bold yellow]▶ HEADER DATA (AL=0x7F) DECODED[/bold yellow]")
+        console.print("─" * 40)
+
+        hex_lines = []
+        data = analysis.header_decoded
+        for i in range(0, len(data), 16):
+            chunk = data[i : i + 16]
+            hex_str = " ".join(f"{b:02X}" for b in chunk)
+            ascii_str = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+            hex_lines.append(f"{i:04X}: {hex_str:<48}  {ascii_str}")
+
+        console.print("\n".join(hex_lines))
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 10: FIRST TRACK DATA SAMPLE
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ TRACK DATA SAMPLES (first 32 bytes each)[/bold yellow]")
+    console.print("─" * 40)
+
+    for track_idx in range(8):
+        # Find first section with data for this track
+        for sec_idx in range(6):
+            al = 0x08 + (sec_idx * 8) + track_idx
+            if al in analysis.sections:
+                section = analysis.sections[al]
+                if section.total_decoded_bytes > 0:
+                    track_name = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "PAD", "PHR1", "PHR2"][
+                        track_idx
+                    ]
+                    preview_data = section.decoded_data[:32]
+                    hex_str = " ".join(f"{b:02X}" for b in preview_data)
+                    console.print(f"[cyan]{track_name}:[/cyan] {hex_str}")
+                    break
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SECTION 11: MESSAGE LIST (first 20)
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("[bold yellow]▶ MESSAGE LIST (first 20)[/bold yellow]")
+    console.print("─" * 40)
+
+    msg_table = Table(box=box.SIMPLE, show_header=True, header_style="dim")
+    msg_table.add_column("#", width=4)
+    msg_table.add_column("Type", width=15)
+    msg_table.add_column("Address", width=12)
+    msg_table.add_column("Encoded", width=10)
+    msg_table.add_column("Decoded", width=10)
+    msg_table.add_column("CS", width=6)
+
+    for msg in analysis.messages[:20]:
+        cs_status = "[green]OK[/green]" if msg.checksum_valid else "[red]BAD[/red]"
+        msg_table.add_row(
+            str(msg.index),
+            msg.message_type,
+            msg.address_hex,
+            f"{msg.data_size} B",
+            f"{msg.decoded_size} B",
+            cs_status,
+        )
+
+    console.print(msg_table)
+    if len(analysis.messages) > 20:
+        console.print(f"[dim](Showing first 20 of {len(analysis.messages)} messages)[/dim]")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # END
+    # ═══════════════════════════════════════════════════════════════════════════
+    console.print()
+    console.print("═" * 80)
+    console.print("[bold cyan]                         END OF ANALYSIS[/bold cyan]")
+    console.print("═" * 80)
+    console.print()
+
+
 @app.command()
 def info(
     file: Path = typer.Argument(..., help="Pattern file to analyze (.Q7P or .syx)"),
@@ -363,15 +792,20 @@ def info(
                 display_q7p_info(analysis, show_hex=hex, show_raw=raw)
 
     elif suffix == ".syx":
-        from qyconv.analysis.syx_analyzer import SyxAnalyzer
-
-        analyzer = SyxAnalyzer()
-        analysis = analyzer.analyze_file(str(file))
-
-        if json_output:
-            _output_json(analysis)
+        if full:
+            display_full_syx_info(str(file))
         else:
-            display_syx_info(analysis, show_sections=sections, show_messages=messages, show_hex=hex)
+            from qyconv.analysis.syx_analyzer import SyxAnalyzer
+
+            analyzer = SyxAnalyzer()
+            analysis = analyzer.analyze_file(str(file))
+
+            if json_output:
+                _output_json(analysis)
+            else:
+                display_syx_info(
+                    analysis, show_sections=sections, show_messages=messages, show_hex=hex
+                )
     else:
         console.print(f"[red]Error: Unknown file type: {suffix}[/red]")
         console.print("Supported formats: .Q7P (QY700), .syx (QY70)")

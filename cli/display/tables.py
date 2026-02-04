@@ -14,7 +14,7 @@ from rich.columns import Columns
 from rich import box
 
 from qyconv.analysis.q7p_analyzer import Q7PAnalysis, SectionInfo, TrackInfo, PhraseStats
-from qyconv.analysis.syx_analyzer import SyxAnalysis, SectionData
+from qyconv.analysis.syx_analyzer import SyxAnalysis, SectionData, QY70TrackInfo, QY70SectionInfo
 from qyconv.utils.xg_voices import get_voice_name
 
 
@@ -264,6 +264,7 @@ def display_syx_info(
     show_sections: bool = True,
     show_messages: bool = False,
     show_hex: bool = False,
+    full: bool = False,
 ) -> None:
     """Display complete SysEx file information with Rich formatting."""
 
@@ -275,41 +276,162 @@ def display_syx_info(
         else f"[green]{analysis.valid_checksums}[/green]/[red]{analysis.invalid_checksums}[/red]"
     )
 
+    # Build header content like Q7P
     header_content = f"""[bold]File:[/bold] {analysis.filepath}
-[bold]Size:[/bold] {analysis.filesize} bytes
-[bold]Status:[/bold] {status}
 [bold]Pattern Name:[/bold] {analysis.pattern_name or "N/A"}
-[bold]Tempo:[/bold] {analysis.tempo} BPM"""
+[bold]Format:[/bold] QY70 SysEx
+[bold]Status:[/bold] {status}
+[bold]File Size:[/bold] {analysis.filesize} bytes
+[bold]Data Density:[/bold] {analysis.data_density:.1f}%
+[bold]Active Sections:[/bold] {analysis.active_section_count} of 6
+[bold]Active Tracks:[/bold] {analysis.active_track_count} of 8"""
 
     console.print(
         Panel(
             header_content,
-            title="[bold blue]QY70 SysEx Info[/bold blue]",
+            title="[bold blue]QY70 Pattern/Style Info[/bold blue]",
             border_style="blue",
             expand=False,
         )
     )
 
-    # Message statistics
-    stats_table = Table(title="Message Statistics", box=box.ROUNDED, show_header=False)
+    # Timing panel (like Q7P)
+    timing_content = f"""[bold]Tempo:[/bold] {analysis.tempo} BPM
+[bold]Time Signature:[/bold] {analysis.time_signature[0]}/{analysis.time_signature[1]} [dim](assumed)[/dim]"""
+
+    console.print(
+        Panel(
+            timing_content, title="[bold cyan]Timing[/bold cyan]", border_style="cyan", expand=False
+        )
+    )
+
+    # Global Effects panel
+    effects_content = f"""[bold]Reverb:[/bold] {analysis.reverb_type}
+[bold]Chorus:[/bold] {analysis.chorus_type}
+[bold]Variation:[/bold] {analysis.variation_type}"""
+
+    console.print(
+        Panel(
+            effects_content,
+            title="[bold green]Global Effects[/bold green]",
+            border_style="green",
+            expand=False,
+        )
+    )
+
+    # QY70 Sections table (6 sections)
+    if analysis.qy70_sections:
+        section_table = Table(
+            title="Style Sections (QY70 has 6 sections)",
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold magenta",
+        )
+        section_table.add_column("#", style="dim", width=3)
+        section_table.add_column("Name", style="cyan", width=12)
+        section_table.add_column("Status", width=10)
+        section_table.add_column("Phrase", width=10)
+        section_table.add_column("Track Data", width=12)
+        section_table.add_column("Active Tracks", width=30)
+
+        for sec in analysis.qy70_sections:
+            status_str = "[green]Active[/green]" if sec.has_data else "[dim]Empty[/dim]"
+            phrase_str = f"{sec.phrase_bytes} bytes" if sec.phrase_bytes > 0 else "[dim]None[/dim]"
+            track_str = f"{sec.track_bytes} bytes" if sec.track_bytes > 0 else "[dim]None[/dim]"
+            tracks_str = (
+                ", ".join(str(t) for t in sec.active_tracks)
+                if sec.active_tracks
+                else "[dim]None[/dim]"
+            )
+
+            section_table.add_row(
+                str(sec.index), sec.name, status_str, phrase_str, track_str, tracks_str
+            )
+
+        console.print(section_table)
+
+    # QY70 Tracks table (8 tracks) - detailed version with voice info
+    if analysis.qy70_tracks:
+        track_table = Table(
+            title="Track Configuration (QY70 has 8 tracks)",
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold yellow",
+        )
+        track_table.add_column("Track", style="cyan", width=6)
+        track_table.add_column("Ch", width=3)
+        track_table.add_column("Voice", width=18)
+        track_table.add_column("Vol", width=4)
+        track_table.add_column("Pan", width=5)
+        track_table.add_column("Rev", width=4)
+        track_table.add_column("Cho", width=4)
+        track_table.add_column("Status", width=8)
+
+        for track in analysis.qy70_tracks:
+            status_str = "[green]Active[/green]" if track.has_data else "[dim]Empty[/dim]"
+
+            # Voice info
+            if track.has_data and track.voice_name:
+                voice_str = track.voice_name[:18]
+            elif track.has_data:
+                if track.is_drum_track:
+                    voice_str = f"Drum Kit {track.program}"
+                else:
+                    voice_str = f"Bank {track.bank_msb}:{track.program}"
+            else:
+                voice_str = "[dim]---[/dim]"
+
+            # Volume
+            vol_str = str(track.volume) if track.has_data else "[dim]---[/dim]"
+
+            # Pan (convert to L/C/R format)
+            if track.has_data:
+                if track.pan == 64:
+                    pan_str = "C"
+                elif track.pan < 64:
+                    pan_str = f"L{64 - track.pan}"
+                else:
+                    pan_str = f"R{track.pan - 64}"
+            else:
+                pan_str = "[dim]---[/dim]"
+
+            # Effect sends
+            rev_str = str(track.reverb_send) if track.has_data else "[dim]---[/dim]"
+            cho_str = str(track.chorus_send) if track.has_data else "[dim]---[/dim]"
+
+            track_table.add_row(
+                track.name,
+                str(track.channel),
+                voice_str,
+                vol_str,
+                pan_str,
+                rev_str,
+                cho_str,
+                status_str,
+            )
+
+        console.print(track_table)
+
+    # Message statistics (compact)
+    stats_table = Table(title="SysEx Message Statistics", box=box.ROUNDED, show_header=False)
     stats_table.add_column("Property", style="cyan")
     stats_table.add_column("Value", style="white")
 
     stats_table.add_row("Total Messages", str(analysis.total_messages))
     stats_table.add_row("Bulk Dump Messages", str(analysis.bulk_dump_messages))
     stats_table.add_row("Parameter Messages", str(analysis.parameter_messages))
-    stats_table.add_row("Style Data Messages", str(analysis.style_data_messages))
     stats_table.add_row("Valid Checksums", checksum_status)
-    stats_table.add_row("Total Encoded Bytes", str(analysis.total_encoded_bytes))
-    stats_table.add_row("Total Decoded Bytes", str(analysis.total_decoded_bytes))
-    stats_table.add_row("Unique AL Addresses", str(len(analysis.al_addresses)))
+    stats_table.add_row(
+        "Total Encoded/Decoded",
+        f"{analysis.total_encoded_bytes} / {analysis.total_decoded_bytes} bytes",
+    )
 
     console.print(stats_table)
 
     if show_sections:
-        # Section summary table
+        # Detailed section summary table (by AL Address)
         section_table = Table(
-            title="Section Summary (by AL Address)",
+            title="Section Data (by AL Address)",
             box=box.ROUNDED,
             show_header=True,
             header_style="bold magenta",
