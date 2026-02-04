@@ -243,29 +243,107 @@ class QY700ToQY70Converter:
         return messages
 
     def _extract_track_data(self, section_idx: int, track_num: int) -> bytes:
-        """Extract track data from Q7P for a specific section and track."""
+        """
+        Extract track data from Q7P and build proper QY70 track structure.
+
+        QY70 Track Block Structure (128 bytes):
+        - Offset 0-11: Common header: 08 04 82 01 00 40 20 08 04 82 01 00
+        - Offset 12-13: Constant: 06 1C
+        - Offset 14-15: Voice encoding (0x40 0x80 = default, or Bank MSB / Program)
+        - Offset 16-17: Note range (Low / High for melody, 0x87 0xF8 for drums)
+        - Offset 18-20: Unknown (differs drum vs melody)
+        - Offset 21: Flag (0x41 = pan valid, 0x00 = use default)
+        - Offset 22: Pan value (0-127, 64=center)
+        - Offset 23: Unknown
+        - Offset 24+: MIDI sequence data placeholder
+
+        Args:
+            section_idx: Section index (0-5)
+            track_num: Track number (0-7)
+
+        Returns:
+            128-byte QY70 track data block
+        """
         if not self.q7p_data:
             return b""
 
-        # Volume from volume table
-        vol_offset = Q7POffsets.VOLUME_TABLE_START + 6 + (section_idx * 8) + track_num
+        # Track names for reference: RHY1, RHY2, BASS, CHD1, CHD2, PAD, PHR1, PHR2
+        is_drum_track = track_num in (0, 1)  # RHY1 and RHY2 are drum tracks
+
+        # Correct Q7P offsets (verified from actual files):
+        # Volume: 0x226 + (section_idx * 8) + track_num
+        # Reverb: 0x256 + (section_idx * 8) + track_num
+        # Pan:    0x276 + (section_idx * 8) + track_num
+        # Chorus: 0x296 + (section_idx * 8) + track_num
+
+        vol_offset = 0x226 + (section_idx * 8) + track_num
+        reverb_offset = 0x256 + (section_idx * 8) + track_num
+        pan_offset = 0x276 + (section_idx * 8) + track_num
+        chorus_offset = 0x296 + (section_idx * 8) + track_num
+
         volume = self.q7p_data[vol_offset] if vol_offset < len(self.q7p_data) else 100
-
-        # Pan from pan table
-        pan_offset = Q7POffsets.PAN_TABLE_START + track_num
+        reverb = self.q7p_data[reverb_offset] if reverb_offset < len(self.q7p_data) else 40
         pan = self.q7p_data[pan_offset] if pan_offset < len(self.q7p_data) else 64
+        chorus = self.q7p_data[chorus_offset] if chorus_offset < len(self.q7p_data) else 0
 
-        # Channel from channel table
-        ch_offset = Q7POffsets.CHANNEL_ASSIGN + track_num
+        # Channel from channel table (0x190)
+        ch_offset = 0x190 + track_num
         channel = self.q7p_data[ch_offset] if ch_offset < len(self.q7p_data) else track_num
 
-        # Build track data structure
-        # This is a simplified representation - actual format may vary
-        track_data = bytearray(32)
-        track_data[0] = track_num
-        track_data[1] = channel
-        track_data[2] = volume
-        track_data[3] = pan
+        # Build 128-byte QY70 track block
+        track_data = bytearray(128)
+
+        # Common header (bytes 0-11) - observed in all QY70 track dumps
+        track_data[0:12] = bytes(
+            [0x08, 0x04, 0x82, 0x01, 0x00, 0x40, 0x20, 0x08, 0x04, 0x82, 0x01, 0x00]
+        )
+
+        # Constant bytes (12-13)
+        track_data[12:14] = bytes([0x06, 0x1C])
+
+        # Voice encoding (bytes 14-15)
+        # 0x40 0x80 = use track-type default voice
+        # Otherwise: Bank MSB, Program
+        # For now, use default encoding since Q7P doesn't store QY70-style voice info
+        track_data[14] = 0x40
+        track_data[15] = 0x80
+
+        # Note range (bytes 16-17)
+        if is_drum_track:
+            # Drum tracks use special note range encoding
+            track_data[16] = 0x87
+            track_data[17] = 0xF8
+            # Bytes 18-20 for drums
+            track_data[18] = 0x6E
+            track_data[19] = 0x01
+            track_data[20] = 0x7E
+        else:
+            # Melody tracks: full range (C-2 to G8 = 0 to 127)
+            track_data[16] = 0x00  # Note low
+            track_data[17] = 0x7F  # Note high
+            # Bytes 18-20 for melody
+            track_data[18] = 0x4E
+            track_data[19] = 0x00
+            track_data[20] = 0x08
+
+        # Pan flag and value (bytes 21-22)
+        if pan != 64:  # Non-default pan
+            track_data[21] = 0x41  # Pan valid flag
+            track_data[22] = pan & 0x7F
+        else:
+            track_data[21] = 0x00  # Use default
+            track_data[22] = 0x40  # Center
+
+        # Byte 23: Unknown, typically 0x00
+        track_data[23] = 0x00
+
+        # Volume can be encoded in the sequence data, but for now
+        # we'll add it as a controller message placeholder
+        # Bytes 24+: Minimal sequence data placeholder
+        track_data[24] = volume & 0x7F
+        track_data[25] = reverb & 0x7F
+        track_data[26] = chorus & 0x7F
+        track_data[27] = channel & 0x0F
 
         return bytes(track_data)
 

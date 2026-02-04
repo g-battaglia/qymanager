@@ -59,8 +59,10 @@ class QY70ToQY700Converter:
         CHANNELS = 0x190  # 8 bytes
         TRACK_NUMS = 0x1DC  # 8 bytes
         TRACK_FLAGS = 0x1E4  # 2 bytes
-        VOLUME_TABLE = 0x220  # 80 bytes
-        PAN_TABLE = 0x270  # 16 bytes
+        VOLUME_TABLE = 0x226  # Volume data starts at 0x226, not 0x220
+        REVERB_TABLE = 0x256  # Reverb send values
+        PAN_TABLE = 0x276  # Pan data starts at 0x276, not 0x270
+        CHORUS_TABLE = 0x296  # Chorus send values
         PHRASE_DATA = 0x360  # Variable
         SEQUENCE_DATA = 0x678  # Variable
         TEMPLATE_NAME = 0x876  # 10 bytes
@@ -81,7 +83,7 @@ class QY70ToQY700Converter:
             self.template_data = self._create_minimal_template()
 
         self._buffer: bytearray = bytearray()
-        self._qy70_section_data: Dict[int, bytes] = {}
+        self._qy70_section_data: Dict[int, bytearray] = {}
 
     def _load_template(self, path: Union[str, Path]) -> bytes:
         """Load Q7P template file."""
@@ -131,13 +133,21 @@ class QY70ToQY700Converter:
         data[0x1E4] = 0x00
         data[0x1E5] = 0x1F
 
-        # Volume table (100 = 0x64)
-        for i in range(80):
-            data[0x220 + i] = 0x64
+        # Volume table (100 = 0x64) - starts at 0x226
+        for i in range(48):  # 8 tracks x 6 sections
+            data[0x226 + i] = 0x64
 
-        # Pan table (64 = center)
-        for i in range(16):
-            data[0x270 + i] = 0x40
+        # Reverb send (40 = 0x28) - starts at 0x256
+        for i in range(48):
+            data[0x256 + i] = 0x28
+
+        # Pan table (64 = center) - starts at 0x276
+        for i in range(48):
+            data[0x276 + i] = 0x40
+
+        # Chorus send (0 = default) - starts at 0x296
+        for i in range(48):
+            data[0x296 + i] = 0x00
 
         # Fill areas
         for i in range(0x9C0, 0xB10):
@@ -258,7 +268,7 @@ class QY70ToQY700Converter:
             if section_data:
                 self._convert_section_data(self.SECTION_MAP[section_type], section_data)
 
-    def _convert_section_data(self, q7p_section_idx: int, data: bytes) -> None:
+    def _convert_section_data(self, q7p_section_idx: int, data: Union[bytes, bytearray]) -> None:
         """
         Convert single section's phrase data to Q7P format.
 
@@ -384,7 +394,7 @@ def convert_pattern_to_q7p(
     buffer[converter.Offsets.PATTERN_NUMBER] = pattern.number & 0xFF
 
     # Write volumes from tracks
-    vol_offset = converter.Offsets.VOLUME_TABLE + 6  # Skip first 6 bytes
+    vol_offset = converter.Offsets.VOLUME_TABLE  # Starts at 0x226
     for section_type in [
         SectionType.INTRO,
         SectionType.MAIN_A,
@@ -396,7 +406,7 @@ def convert_pattern_to_q7p(
         section = pattern.sections.get(section_type)
         if section:
             for track in section.tracks[:8]:
-                if vol_offset < converter.Offsets.PAN_TABLE:
+                if vol_offset < converter.Offsets.REVERB_TABLE:
                     buffer[vol_offset] = min(127, track.settings.volume)
                     vol_offset += 1
 
