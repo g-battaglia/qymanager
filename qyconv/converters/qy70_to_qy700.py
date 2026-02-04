@@ -4,17 +4,24 @@ QY70 to QY700 format converter.
 Converts QY70 SysEx (.syx) patterns to QY700 Q7P (.Q7P) binary format.
 Uses a template-based approach to preserve unknown structure areas.
 
+IMPORTANT: This converter uses a known-good Q7P template (TXX.Q7P) as the base
+and only modifies SAFE fields (tempo, name, volumes, pan). It does NOT modify
+the critical section configuration area (0x120-0x180) to avoid corrupting
+the file structure which could cause hardware issues.
+
 The conversion process:
 1. Parse QY70 SysEx bulk dump
 2. Decode 7-bit encoded section data
-3. Map sections (Intro, MainA/B, Fills, Ending) to Q7P offsets
-4. Apply template for unknown areas
+3. Extract only safe values (tempo, volume, pan, name)
+4. Apply to template without modifying critical structures
 5. Write complete Q7P file
 """
 
+import base64
+import struct
+import zlib
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-import struct
 
 from qyconv.models.pattern import Pattern, PatternSettings
 from qyconv.models.section import Section, SectionType
@@ -22,12 +29,38 @@ from qyconv.formats.qy70.reader import QY70Reader
 from qyconv.formats.qy70.sysex_parser import SysExParser
 
 
+# Embedded TXX.Q7P template (compressed with zlib, base64 encoded)
+# This is a known-good empty Q7P file with correct structure
+_EMBEDDED_TEMPLATE_B64 = (
+    "eNqLDDQPcAxRAIEwQz0DA0YGNIAmwDmBYXgBBQZNBiMGawalf1jBB4bfQEUHWD4BGYwMjBAGEwMT"
+    "hMHMwAxkfHQgHyhAAcsGGQYGHoiTmKFAgULAwMjEzMLKxs4gT2kgRQNBChJA9wW6eg00gC7P70Bd"
+    "UM/gMKhBWqV9fWxJfX1cUniCob6Jrn+9d31JfVp9bH1edX50YWJGQnh6fUlmRXZFfVl9Vl5euGdk"
+    "fnR8Tk5UenpeTVZEdkJidn19VrVLPQQYA4GJCXarJHzVfU18HYJdM5SU9BwcfI0l9fLy1CWBMkpK"
+    "MqKpqfF5DhkZokqSksGZMC3x8fX19vbeQAw1H0gr1CsogNkKYAgTB6kAKQeilBSQenv7eAgfphci"
+    "b2/PQC3jqAwcRsFgAYwMQlwcvIYODo4MbGa+WcA8zMDKwMDLytYs3CHcweDFoAAuWeodCJZPKQQA"
+    "qeVdCoWgRb5ZSVWtvh5Iq2nUg2klEK2lowdOhB3tkMQor9SsqgYUlJUHKgcqaGmCiGtoqABLzfp6"
+    "JSUVJSUgX01NWQ1oXL21sSlYXk8Los7OTtHOzs01SEpKWlJGur5eVRUiTqn7Ka0vmNEAesyHBrsG"
+    "KYT4BvgoDHwDgHHAIcWAGRRn/4YFGOjU8GOEAQDr1a6U"
+)
+
+
+def _get_embedded_template() -> bytes:
+    """Decompress and return the embedded Q7P template."""
+    compressed = base64.b64decode(_EMBEDDED_TEMPLATE_B64)
+    return zlib.decompress(compressed)
+
+
 class QY70ToQY700Converter:
     """
     Converter from QY70 SysEx format to QY700 Q7P format.
 
     Uses a template-based approach where a valid Q7P file is used as
-    the base, and only known fields are overwritten with converted data.
+    the base, and only SAFE known fields are overwritten with converted data.
+
+    SAFETY: This converter intentionally does NOT modify:
+    - Section configuration area (0x120-0x180)
+    - Section pointers beyond what the template has
+    - Any unknown/undocumented areas
 
     Attributes:
         template_data: Q7P template file data (3072 bytes)
@@ -47,27 +80,36 @@ class QY70ToQY700Converter:
         SectionType.ENDING: 5,
     }
 
-    # Q7P offset map for writable fields
+    # Q7P offset map for SAFE writable fields only
     class Offsets:
-        HEADER = 0x000  # 16 bytes
-        PATTERN_NUMBER = 0x010  # 1 byte
-        PATTERN_FLAGS = 0x011  # 1 byte
-        SIZE_MARKER = 0x030  # 2 bytes
-        SECTION_PTRS = 0x100  # 32 bytes
-        SECTION_DATA = 0x120  # 96 bytes
-        TEMPO = 0x188  # 2 bytes (big-endian, /10 for BPM)
-        CHANNELS = 0x190  # 8 bytes
-        TRACK_NUMS = 0x1DC  # 8 bytes
-        TRACK_FLAGS = 0x1E4  # 2 bytes
-        VOLUME_TABLE = 0x226  # Volume data starts at 0x226, not 0x220
+        HEADER = 0x000  # 16 bytes - DO NOT MODIFY
+        PATTERN_NUMBER = 0x010  # 1 byte - safe to modify
+        PATTERN_FLAGS = 0x011  # 1 byte - safe to modify
+        SIZE_MARKER = 0x030  # 2 bytes - DO NOT MODIFY
+
+        # DANGER ZONE - DO NOT MODIFY THESE AREAS:
+        # SECTION_PTRS = 0x100  # 32 bytes - critical structure
+        # SECTION_DATA = 0x120  # 96 bytes - critical structure
+        # TEMPO_AREA = 0x180    # 8 bytes padding - must be spaces (0x20)
+
+        TEMPO = 0x188  # 2 bytes (big-endian, /10 for BPM) - safe
+        TIME_SIG = 0x18A  # 2 bytes - safe
+        CHANNELS = 0x190  # 8 bytes - safe
+        TRACK_NUMS = 0x1DC  # 8 bytes - safe
+        TRACK_FLAGS = 0x1E4  # 2 bytes - safe
+
+        # Volume/Pan tables - safe to modify
+        VOLUME_TABLE = 0x226  # Volume data starts at 0x226
         REVERB_TABLE = 0x256  # Reverb send values
-        PAN_TABLE = 0x276  # Pan data starts at 0x276, not 0x270
+        PAN_TABLE = 0x276  # Pan data starts at 0x276
         CHORUS_TABLE = 0x296  # Chorus send values
-        PHRASE_DATA = 0x360  # Variable
-        SEQUENCE_DATA = 0x678  # Variable
+
+        # Name - safe to modify
         TEMPLATE_NAME = 0x876  # 10 bytes
-        FILL_AREA = 0x9C0  # Filled with 0xFE
-        PAD_AREA = 0xB10  # Filled with 0xF8
+
+        # Fill areas - DO NOT MODIFY
+        # FILL_AREA = 0x9C0  # Filled with 0xFE
+        # PAD_AREA = 0xB10   # Filled with 0xF8
 
     def __init__(self, template_path: Optional[Union[str, Path]] = None):
         """
@@ -75,15 +117,17 @@ class QY70ToQY700Converter:
 
         Args:
             template_path: Path to Q7P template file.
-                          If None, generates a minimal template.
+                          If None, uses embedded known-good template.
         """
         if template_path:
             self.template_data = self._load_template(template_path)
         else:
-            self.template_data = self._create_minimal_template()
+            # Use embedded template - this is a known-good Q7P structure
+            self.template_data = _get_embedded_template()
 
         self._buffer: bytearray = bytearray()
         self._qy70_section_data: Dict[int, bytearray] = {}
+        self._qy70_track_data: Dict[int, bytearray] = {}
 
     def _load_template(self, path: Union[str, Path]) -> bytes:
         """Load Q7P template file."""
@@ -98,67 +142,6 @@ class QY70ToQY700Converter:
             raise ValueError("Invalid Q7P header in template")
 
         return data
-
-    def _create_minimal_template(self) -> bytes:
-        """Create minimal valid Q7P template."""
-        data = bytearray(self.Q7P_SIZE)
-
-        # Header
-        data[0:16] = self.Q7P_HEADER
-
-        # Pattern info
-        data[0x10] = 0x01  # Pattern number
-        data[0x11] = 0x00  # Flags
-
-        # Size marker
-        struct.pack_into(">H", data, 0x30, 0x0990)
-
-        # Section pointers (all empty)
-        for i in range(0x100, 0x120, 2):
-            data[i] = 0xFE
-            data[i + 1] = 0xFE
-
-        # Tempo (120 BPM = 1200 / 10)
-        struct.pack_into(">H", data, 0x188, 1200)
-
-        # Channels (all to default)
-        for i in range(8):
-            data[0x190 + i] = 0x03
-
-        # Track numbers 0-7
-        for i in range(8):
-            data[0x1DC + i] = i
-
-        # Track flags
-        data[0x1E4] = 0x00
-        data[0x1E5] = 0x1F
-
-        # Volume table (100 = 0x64) - starts at 0x226
-        for i in range(48):  # 8 tracks x 6 sections
-            data[0x226 + i] = 0x64
-
-        # Reverb send (40 = 0x28) - starts at 0x256
-        for i in range(48):
-            data[0x256 + i] = 0x28
-
-        # Pan table (64 = center) - starts at 0x276
-        for i in range(48):
-            data[0x276 + i] = 0x40
-
-        # Chorus send (0 = default) - starts at 0x296
-        for i in range(48):
-            data[0x296 + i] = 0x00
-
-        # Fill areas
-        for i in range(0x9C0, 0xB10):
-            data[i] = 0xFE
-        for i in range(0xB10, 0xC00):
-            data[i] = 0xF8
-
-        # Template name
-        data[0x876:0x880] = b"NEW STYLE "
-
-        return bytes(data)
 
     def convert(self, source_path: Union[str, Path]) -> bytes:
         """
@@ -182,6 +165,9 @@ class QY70ToQY700Converter:
         """
         Convert QY70 SysEx bytes to Q7P format.
 
+        SAFETY: Only modifies known-safe fields in the template.
+        Does NOT modify critical structure areas.
+
         Args:
             syx_data: Raw SysEx file data
 
@@ -194,37 +180,46 @@ class QY70ToQY700Converter:
 
         # Group decoded data by section (AL value)
         self._qy70_section_data = {}
+        self._qy70_track_data = {}
+
         for msg in messages:
             if msg.is_style_data and msg.decoded_data:
                 al = msg.address_low
-                if al not in self._qy70_section_data:
-                    self._qy70_section_data[al] = bytearray()
-                self._qy70_section_data[al].extend(msg.decoded_data)
+                if al == 0x7F:
+                    # Header data
+                    if al not in self._qy70_section_data:
+                        self._qy70_section_data[al] = bytearray()
+                    self._qy70_section_data[al].extend(msg.decoded_data)
+                elif 0x00 <= al <= 0x05:
+                    # Section phrase data
+                    if al not in self._qy70_section_data:
+                        self._qy70_section_data[al] = bytearray()
+                    self._qy70_section_data[al].extend(msg.decoded_data)
+                elif 0x08 <= al <= 0x37:
+                    # Track data: AL = 0x08 + (section * 8) + track
+                    if al not in self._qy70_track_data:
+                        self._qy70_track_data[al] = bytearray()
+                    self._qy70_track_data[al].extend(msg.decoded_data)
 
-        # Start with template
+        # Start with template - this has correct structure
         self._buffer = bytearray(self.template_data)
 
-        # Extract pattern info from header section (0x7F)
-        self._convert_header()
-
-        # Convert sections
-        self._convert_sections()
-
-        # Update section pointers
-        self._update_section_pointers()
+        # Only modify SAFE fields:
+        self._extract_and_apply_name()
+        self._extract_and_apply_tempo()
+        self._extract_and_apply_volumes()
+        self._extract_and_apply_pans()
 
         return bytes(self._buffer)
 
-    def _convert_header(self) -> None:
-        """Convert pattern header from QY70 section 0x7F."""
+    def _extract_and_apply_name(self) -> None:
+        """Extract name from QY70 header and apply to Q7P (SAFE)."""
         header_data = self._qy70_section_data.get(0x7F, b"")
 
         if not header_data:
             return
 
-        # Try to extract name from header
-        # The name location in QY70 header needs verification
-        # For now, use first 10 printable chars as possible name
+        # Extract first 10 printable chars as name
         name_bytes = bytearray(10)
         name_idx = 0
         for byte in header_data[:64]:
@@ -241,8 +236,14 @@ class QY70ToQY700Converter:
                 name_idx += 1
             self._buffer[self.Offsets.TEMPLATE_NAME : self.Offsets.TEMPLATE_NAME + 10] = name_bytes
 
-        # Try to extract tempo from header
-        # Common locations for tempo in QY70 header
+    def _extract_and_apply_tempo(self) -> None:
+        """Extract tempo from QY70 header and apply to Q7P (SAFE)."""
+        header_data = self._qy70_section_data.get(0x7F, b"")
+
+        if not header_data:
+            return
+
+        # Try to extract tempo from common locations in QY70 header
         for offset in [0x0A, 0x0C, 0x10]:
             if offset < len(header_data):
                 potential_tempo = header_data[offset]
@@ -252,74 +253,44 @@ class QY70ToQY700Converter:
                     struct.pack_into(">H", self._buffer, self.Offsets.TEMPO, tempo_value)
                     break
 
-    def _convert_sections(self) -> None:
-        """Convert section phrase data from QY70 format."""
-        # QY70 sections 0x00-0x05 map to Q7P sections 0-5
-        for qy70_al, section_type in [
-            (0x00, SectionType.INTRO),
-            (0x01, SectionType.MAIN_A),
-            (0x02, SectionType.MAIN_B),
-            (0x03, SectionType.FILL_AB),
-            (0x04, SectionType.FILL_BA),
-            (0x05, SectionType.ENDING),
-        ]:
-            section_data = self._qy70_section_data.get(qy70_al, b"")
+    def _extract_and_apply_volumes(self) -> None:
+        """Extract volumes from QY70 track data and apply to Q7P (SAFE)."""
+        # QY70 track data structure (after 7-bit decode):
+        # Offset 24: volume value
+        # Track AL = 0x08 + (section_idx * 8) + track_num
 
-            if section_data:
-                self._convert_section_data(self.SECTION_MAP[section_type], section_data)
+        for section_idx in range(6):  # 6 sections
+            for track_num in range(8):  # 8 tracks
+                al = 0x08 + (section_idx * 8) + track_num
+                track_data = self._qy70_track_data.get(al, b"")
 
-    def _convert_section_data(self, q7p_section_idx: int, data: Union[bytes, bytearray]) -> None:
-        """
-        Convert single section's phrase data to Q7P format.
+                if len(track_data) > 24:
+                    volume = track_data[24] & 0x7F
+                    if 0 < volume <= 127:
+                        # Q7P volume offset: 0x226 + (section * 8) + track
+                        vol_offset = self.Offsets.VOLUME_TABLE + (section_idx * 8) + track_num
+                        if vol_offset < self.Offsets.REVERB_TABLE:
+                            self._buffer[vol_offset] = volume
 
-        The phrase data structure differs between QY70 and QY700.
-        This method attempts to preserve as much musical content as possible.
+    def _extract_and_apply_pans(self) -> None:
+        """Extract pan values from QY70 track data and apply to Q7P (SAFE)."""
+        # QY70 track data structure (after 7-bit decode):
+        # Offset 21: pan flag (0x41 = valid, 0x00 = use default)
+        # Offset 22: pan value (0-127, 64=center)
 
-        Args:
-            q7p_section_idx: Target section index (0-5)
-            data: Decoded QY70 section data
-        """
-        if not data:
-            return
+        for section_idx in range(6):
+            for track_num in range(8):
+                al = 0x08 + (section_idx * 8) + track_num
+                track_data = self._qy70_track_data.get(al, b"")
 
-        # The section encoded area at 0x120 contains section configuration
-        # Each section has ~16 bytes of config data
-        config_offset = self.Offsets.SECTION_DATA + (q7p_section_idx * 16)
-
-        # Write section config bytes (first 16 bytes of phrase data typically)
-        config_bytes = data[:16] if len(data) >= 16 else data.ljust(16, b"\x00")
-
-        if config_offset + 16 <= len(self._buffer):
-            self._buffer[config_offset : config_offset + 16] = config_bytes[:16]
-
-        # If there's phrase data, try to place it in phrase area (0x360)
-        # This is a simplified approach - full conversion would need
-        # to understand the phrase event format
-        if len(data) > 16:
-            phrase_start = self.Offsets.PHRASE_DATA
-            # Calculate offset for this section's phrase data
-            phrase_offset = phrase_start + (q7p_section_idx * 80)
-
-            phrase_bytes = data[16:96]  # Limit to 80 bytes per section
-            if phrase_offset + len(phrase_bytes) <= self.Offsets.SEQUENCE_DATA:
-                self._buffer[phrase_offset : phrase_offset + len(phrase_bytes)] = phrase_bytes
-
-    def _update_section_pointers(self) -> None:
-        """Update section pointer table based on which sections have data."""
-        ptr_offset = self.Offsets.SECTION_PTRS
-
-        for section_type, idx in self.SECTION_MAP.items():
-            qy70_al = section_type.to_index()  # 0-5 for the 6 section types
-
-            if qy70_al in self._qy70_section_data and self._qy70_section_data[qy70_al]:
-                # Section has data - set pointer
-                # Pointer format based on template analysis
-                self._buffer[ptr_offset + (idx * 2)] = 0x00
-                self._buffer[ptr_offset + (idx * 2) + 1] = 0x20 + (idx * 9)
-            else:
-                # Section empty - mark as 0xFE FE
-                self._buffer[ptr_offset + (idx * 2)] = 0xFE
-                self._buffer[ptr_offset + (idx * 2) + 1] = 0xFE
+                if len(track_data) > 22:
+                    pan_flag = track_data[21]
+                    if pan_flag == 0x41:  # Pan value is valid
+                        pan = track_data[22] & 0x7F
+                        # Q7P pan offset: 0x276 + (section * 8) + track
+                        pan_offset = self.Offsets.PAN_TABLE + (section_idx * 8) + track_num
+                        if pan_offset < self.Offsets.CHORUS_TABLE:
+                            self._buffer[pan_offset] = pan
 
     def convert_and_save(
         self, source_path: Union[str, Path], output_path: Union[str, Path]
@@ -380,34 +351,35 @@ def convert_pattern_to_q7p(
     # Start with template
     buffer = bytearray(converter.template_data)
 
-    # Write pattern name
+    # Write pattern name (SAFE)
     name = pattern.name[:10].upper().ljust(10)
     buffer[converter.Offsets.TEMPLATE_NAME : converter.Offsets.TEMPLATE_NAME + 10] = name.encode(
         "ascii", errors="replace"
     )
 
-    # Write tempo
-    tempo_value = pattern.settings.tempo * 10
+    # Write tempo (SAFE)
+    tempo_value = int(pattern.settings.tempo * 10)
     struct.pack_into(">H", buffer, converter.Offsets.TEMPO, tempo_value)
 
-    # Write pattern number
+    # Write pattern number (SAFE)
     buffer[converter.Offsets.PATTERN_NUMBER] = pattern.number & 0xFF
 
-    # Write volumes from tracks
-    vol_offset = converter.Offsets.VOLUME_TABLE  # Starts at 0x226
-    for section_type in [
-        SectionType.INTRO,
-        SectionType.MAIN_A,
-        SectionType.MAIN_B,
-        SectionType.FILL_AB,
-        SectionType.FILL_BA,
-        SectionType.ENDING,
-    ]:
+    # Write volumes from tracks (SAFE)
+    for section_idx, section_type in enumerate(
+        [
+            SectionType.INTRO,
+            SectionType.MAIN_A,
+            SectionType.MAIN_B,
+            SectionType.FILL_AB,
+            SectionType.FILL_BA,
+            SectionType.ENDING,
+        ]
+    ):
         section = pattern.sections.get(section_type)
         if section:
-            for track in section.tracks[:8]:
+            for track_num, track in enumerate(section.tracks[:8]):
+                vol_offset = converter.Offsets.VOLUME_TABLE + (section_idx * 8) + track_num
                 if vol_offset < converter.Offsets.REVERB_TABLE:
                     buffer[vol_offset] = min(127, track.settings.volume)
-                    vol_offset += 1
 
     return bytes(buffer)
