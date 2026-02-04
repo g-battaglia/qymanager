@@ -17,7 +17,7 @@ The QY700 follows the **Yamaha XG specification** for MIDI parameters.
 | Encoding | Raw binary (8-bit) |
 | Byte Order | Big-endian |
 | Max Sections | 6 (3072-byte) or 12 (5120-byte) |
-| Tracks per Section | 8 |
+| Tracks per Pattern | **16** (TR1-TR16) |
 
 ### File Size Variants
 
@@ -397,11 +397,11 @@ The QY700 supports up to 12 sections:
 | 9 | Main C | Third main pattern |
 | 10 | Main D | Fourth main pattern |
 | 11 | Ending 2 | Secondary ending |
-| Size | Variable | Fixed 3072 bytes |
+| Size | Variable | Fixed 3072 or 5120 bytes |
 | Encoding | 7-bit packed | Raw 8-bit |
 | Checksum | Per-message | None |
-| Sections | 6 | 6 (same structure) |
-| Tracks | 8 | 8 (same names) |
+| Sections | 6 | 6 (basic) or 12 (full) |
+| Tracks | 8 | **16** (TR1-TR16) |
 
 ## Unknown/Reserved Areas
 

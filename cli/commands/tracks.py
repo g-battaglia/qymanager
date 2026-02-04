@@ -30,20 +30,48 @@ XG_DEFAULTS = {
     "bank_lsb": 0,
 }
 
-# Default channels per track
-DEFAULT_CHANNELS = [10, 10, 2, 3, 4, 5, 6, 7]
+# Default channels per track (16 tracks)
+DEFAULT_CHANNELS = [10, 10, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16]
 
-TRACK_NAMES = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5"]
-TRACK_DESCRIPTIONS = [
-    "Rhythm 1 (Drums)",
-    "Rhythm 2 (Percussion)",
-    "Bass line",
-    "Chord 1",
-    "Chord 2",
-    "Chord 3",
-    "Chord 4",
-    "Chord 5",
+# 16 track names
+TRACK_NAMES = [
+    "TR1",
+    "TR2",
+    "TR3",
+    "TR4",
+    "TR5",
+    "TR6",
+    "TR7",
+    "TR8",
+    "TR9",
+    "TR10",
+    "TR11",
+    "TR12",
+    "TR13",
+    "TR14",
+    "TR15",
+    "TR16",
 ]
+TRACK_DESCRIPTIONS = [
+    "Track 1 (Drums)",
+    "Track 2 (Percussion)",
+    "Track 3 (Bass)",
+    "Track 4",
+    "Track 5",
+    "Track 6",
+    "Track 7",
+    "Track 8",
+    "Track 9",
+    "Track 10",
+    "Track 11",
+    "Track 12",
+    "Track 13",
+    "Track 14",
+    "Track 15",
+    "Track 16",
+]
+
+NUM_TRACKS = 16
 
 
 def highlight_if_different(value: int, default: int, format_str: str = "{}") -> Text:
@@ -183,7 +211,7 @@ def display_tracks_summary(analysis) -> None:
 @app.command()
 def tracks(
     file: Path = typer.Argument(..., help="Q7P file to analyze"),
-    track: int = typer.Option(0, "--track", "-t", help="Show specific track (1-8), 0=all"),
+    track: int = typer.Option(0, "--track", "-t", help="Show specific track (1-16), 0=all"),
     summary: bool = typer.Option(False, "--summary", "-s", help="Show summary table only"),
     compare_defaults: bool = typer.Option(
         True, "--compare/--no-compare", "-c", help="Highlight non-default values"
@@ -192,7 +220,7 @@ def tracks(
     """
     Display detailed track/channel information.
 
-    Shows for each track:
+    Shows for each of 16 tracks:
     - MIDI channel assignment (raw and interpreted)
     - Program/Bank selection with voice name
     - Volume with bar graphic
@@ -242,15 +270,15 @@ def tracks(
         tracks_to_show = analysis.sections[0].tracks
 
         if track > 0:
-            if 1 <= track <= 8:
+            if 1 <= track <= NUM_TRACKS:
                 tracks_to_show = [tracks_to_show[track - 1]]
             else:
-                console.print(f"[red]Invalid track number: {track}. Use 1-8.[/red]")
+                console.print(f"[red]Invalid track number: {track}. Use 1-{NUM_TRACKS}.[/red]")
                 raise typer.Exit(1)
 
         for i, t in enumerate(tracks_to_show):
             track_idx = t.number - 1 if track == 0 else track - 1
-            is_drum = track_idx < 2  # RHY1, RHY2
+            is_drum = track_idx < 2  # TR1, TR2
 
             # Get raw channel value
             channel_raw = data[0x190 + track_idx] if len(data) > 0x190 + track_idx else 0

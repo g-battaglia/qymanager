@@ -212,11 +212,11 @@ class Q7PValidator:
             )
 
     def _validate_channels(self) -> None:
-        """Check MIDI channel assignments."""
-        if len(self.data) < 0x198:
+        """Check MIDI channel assignments for 16 tracks."""
+        if len(self.data) < 0x1A0:
             return
 
-        for i in range(8):
+        for i in range(16):
             ch = self.data[0x190 + i]
             if ch > 15:
                 self._add_issue(
@@ -229,11 +229,11 @@ class Q7PValidator:
                 )
 
     def _validate_volumes(self) -> None:
-        """Check volume values."""
-        if len(self.data) < 0x22E:
+        """Check volume values for 16 tracks."""
+        if len(self.data) < 0x236:
             return
 
-        for i in range(8):
+        for i in range(16):
             vol = self.data[0x226 + i]
             if vol > 127:
                 self._add_issue(
@@ -246,11 +246,11 @@ class Q7PValidator:
                 )
 
     def _validate_pans(self) -> None:
-        """Check pan values."""
-        if len(self.data) < 0x27E:
+        """Check pan values for 16 tracks."""
+        if len(self.data) < 0x286:
             return
 
-        for i in range(8):
+        for i in range(16):
             pan = self.data[0x276 + i]
             if pan > 127:
                 self._add_issue(

@@ -256,12 +256,36 @@ class Q7PAnalyzer:
         "Ending 2",
     ]
 
-    TRACK_NAMES = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5"]
+    # QY700 has 16 tracks per pattern (TR1-TR16)
+    # Track naming convention based on typical use
+    TRACK_NAMES = [
+        "TR1",
+        "TR2",
+        "TR3",
+        "TR4",
+        "TR5",
+        "TR6",
+        "TR7",
+        "TR8",
+        "TR9",
+        "TR10",
+        "TR11",
+        "TR12",
+        "TR13",
+        "TR14",
+        "TR15",
+        "TR16",
+    ]
+
+    # Legacy names for backward compatibility (first 8 tracks)
+    TRACK_NAMES_LEGACY = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5"]
 
     # Default MIDI channels for each track type (XG convention)
-    # RHY1, RHY2 = Channel 10 (drums)
-    # BASS = Channel 2, CHD1-5 = Channels 3-7
-    DEFAULT_CHANNELS = [10, 10, 2, 3, 4, 5, 6, 7]
+    # TR1, TR2 = Channel 10 (drums), TR3 = Channel 2, TR4-16 = Channels 3-15
+    DEFAULT_CHANNELS = [10, 10, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16]
+
+    # Number of tracks
+    NUM_TRACKS = 16
 
     # Time signature lookup table (needs hardware verification)
     # Known: 0x1C = 4/4
@@ -469,43 +493,42 @@ class Q7PAnalyzer:
 
     def _get_channels(self) -> List[int]:
         """
-        Get MIDI channel assignments for 8 tracks.
+        Get MIDI channel assignments for 16 tracks.
 
         Encoding (based on observation):
-        - 0x00 appears on RHY1/RHY2 -> interpret as Channel 10 (drums)
+        - 0x00 appears on TR1/TR2 -> interpret as Channel 10 (drums)
         - 0x01-0x0F -> Channel 2-16 (value + 1)
         - Other values -> use as-is or default
         """
         channels = []
         channel_start = self._get_offset("CHANNEL_START")
-        for i in range(8):
+        for i in range(self.NUM_TRACKS):
             ch_raw = self._get_byte(channel_start + i)
 
             if ch_raw == 0x00:
                 # Value 0 = use default channel for this track type
-                channels.append(self.DEFAULT_CHANNELS[i])
+                channels.append(self.DEFAULT_CHANNELS[i] if i < len(self.DEFAULT_CHANNELS) else 1)
             elif ch_raw <= 0x0F:
                 # Value 1-15 = MIDI channel 2-16
                 channels.append(ch_raw + 1)
             else:
                 # Unknown encoding, use default
-                channels.append(self.DEFAULT_CHANNELS[i])
+                channels.append(self.DEFAULT_CHANNELS[i] if i < len(self.DEFAULT_CHANNELS) else 1)
 
         return channels
 
     def _get_volumes(self) -> List[int]:
-        """Get volume values for 8 tracks."""
+        """Get volume values for 16 tracks."""
         volumes = []
         vol_start = self._get_offset("VOLUME_DATA_START")
-        # Skip first 6 bytes which are header
-        for i in range(8):
+        for i in range(self.NUM_TRACKS):
             vol = self._get_byte(vol_start + i)
             volumes.append(vol if vol <= 127 else 100)
         return volumes
 
     def _get_pans(self) -> List[int]:
         """
-        Get pan values for 8 tracks.
+        Get pan values for 16 tracks.
 
         XG Pan encoding:
         - 0 = Random
@@ -515,20 +538,20 @@ class Q7PAnalyzer:
         """
         pans = []
         pan_start = self._get_offset("PAN_DATA_START")
-        for i in range(8):
+        for i in range(self.NUM_TRACKS):
             pan = self._get_byte(pan_start + i)
             pans.append(pan if pan <= 127 else 64)
         return pans
 
     def _get_reverb_sends(self) -> List[int]:
         """
-        Get reverb send levels for 8 tracks.
+        Get reverb send levels for 16 tracks.
 
         XG default reverb send = 40 (0x28)
         """
         sends = []
         rev_start = self._get_offset("REVERB_DATA_START")
-        for i in range(8):
+        for i in range(self.NUM_TRACKS):
             send = self._get_byte(rev_start + i)
             sends.append(send if send <= 127 else 40)
         return sends
@@ -578,7 +601,7 @@ class Q7PAnalyzer:
         return sections
 
     def _analyze_section_tracks(self, section_idx: int) -> List[TrackInfo]:
-        """Analyze tracks for a section."""
+        """Analyze 16 tracks for a section."""
         tracks = []
 
         channels = self._get_channels()
@@ -586,15 +609,15 @@ class Q7PAnalyzer:
         pans = self._get_pans()
         reverb_sends = self._get_reverb_sends()
 
-        # Track flags
+        # Track flags (16-bit for 16 tracks)
         track_flags_offset = self._get_offset("TRACK_FLAGS")
         track_flags = self._get_word(track_flags_offset)
 
-        for i in range(8):
+        for i in range(self.NUM_TRACKS):
             # Check if track is enabled via flags
             enabled = bool(track_flags & (1 << i))
 
-            # Determine if this is a drum track (RHY1/RHY2)
+            # Determine if this is a drum track (TR1/TR2 typically drums)
             is_drum = i < 2  # First two tracks are rhythm
 
             # Set default bank based on track type
@@ -602,8 +625,10 @@ class Q7PAnalyzer:
 
             track = TrackInfo(
                 number=i + 1,
-                name=self.TRACK_NAMES[i] if i < len(self.TRACK_NAMES) else f"TRK{i + 1}",
-                channel=channels[i] if i < len(channels) else self.DEFAULT_CHANNELS[i],
+                name=self.TRACK_NAMES[i] if i < len(self.TRACK_NAMES) else f"TR{i + 1}",
+                channel=channels[i]
+                if i < len(channels)
+                else self.DEFAULT_CHANNELS[i % len(self.DEFAULT_CHANNELS)],
                 volume=volumes[i] if i < len(volumes) else 100,
                 pan=pans[i] if i < len(pans) else 64,
                 enabled=enabled,
