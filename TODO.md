@@ -1,5 +1,30 @@
 # TODO - qyconv
 
+## Completed
+
+### v0.3.0 Features (Done)
+- [x] `qyconv dump` - Annotated hex dump with region colors
+- [x] `qyconv map` - Visual file structure map with density bars
+- [x] `qyconv tracks` - Detailed track info with bar graphics
+- [x] `qyconv sections` - Section configuration details
+- [x] `qyconv phrase` - Phrase/sequence analysis with event detection
+- [x] `qyconv info --full` - Complete extended analysis
+- [x] Bar graphics for volume, pan, reverb
+- [x] Centered pan bar visualization
+- [x] Data density heatmaps
+- [x] Removed duplicate tables from basic info output
+
+### v0.2.0 Features (Done)
+- [x] `qyconv diff` - Compare two Q7P files
+- [x] `qyconv validate` - File structure validation
+- [x] Phrase statistics (PhraseStats dataclass)
+- [x] Fixed pan offset (0x276)
+- [x] Fixed time signature lookup table
+- [x] Added reverb send extraction (0x256)
+- [x] XG voice name lookup (xg_voices.py)
+
+---
+
 ## Hardware Verification Required
 
 These items require testing on a physical QY700 to verify correct behavior.
@@ -18,7 +43,7 @@ These items require testing on a physical QY700 to verify correct behavior.
 3. Compare hex dump with template to find Program/Bank offsets
 
 **Suspected areas**:
-- `0x120-0x17F`: Section encoded data (contains variable values)
+- `0x120-0x17F`: Section encoded data
 - `0x2C0-0x35F`: Table 3 area
 
 #### 2. Verify Time Signature Encoding
@@ -37,28 +62,25 @@ These items require testing on a physical QY700 to verify correct behavior.
 0x24 (36) = 6/8  (unconfirmed)
 ```
 
-#### 3. Verify Channel Assignment Encoding
-**Status**: Implemented with default channel mapping
-
-**Observations from T01.Q7P**:
-- Offset 0x190: `00 00 00 00 03 03 03 03`
-- RHY1/RHY2 have value 0x00
-- CHD1-CHD5 have value 0x03
-
-**Current interpretation**:
-- 0x00 = Channel 10 (drums) for RHY tracks
-- Other values = channel number + 1
-
-**Needs verification**: Play pattern on QY700 with MIDI monitor to see actual channel output.
-
-#### 4. Find Chorus Send and Variation Send Offsets
+#### 3. Find Chorus Send Offset
 **Status**: Not implemented
 
 **Reverb Send found at 0x256** (values 0x28 = 40, matches XG default)
 
 **Suspected Chorus location**: 
-- Somewhere in 0x250-0x2BF area
+- Somewhere in 0x280-0x2BF area
 - Default XG value is 0
+
+#### 4. Decode Phrase Data Structure
+**Status**: Statistical analysis only, no event parsing
+
+**Phrase area (0x360-0x677)**: 792 bytes
+**Sequence area (0x678-0x86F)**: 504 bytes
+
+Need to understand:
+- Event format (note on/off, timing)
+- Delta time encoding
+- Per-track data boundaries
 
 ---
 
@@ -66,45 +88,71 @@ These items require testing on a physical QY700 to verify correct behavior.
 
 ### Medium Priority
 
-#### 5. Add Section-specific Settings Display
-Each section can have different:
-- Length in measures
-- Time signature (per section)
-- Track enable flags
+#### 5. Parse Phrase Data Events
+Currently showing statistics only. Want to:
+- Extract actual MIDI events
+- Show note list per track
+- Show velocity distribution
 
-Currently only showing global values.
+#### 6. Add MIDI Export
+```bash
+qyconv export pattern.Q7P --midi output.mid
+```
 
-#### 6. Parse Phrase Data (0x360-0x677)
-Extract:
-- Number of MIDI events
-- Note range (min/max)
-- Velocity statistics
-- Event density per beat
-
-#### 7. Parse Sequence Events (0x678-0x86F)
-This area contains:
-- Tempo changes
-- Program changes (possibly)
-- Other automation data
+#### 7. Add Audio Preview (optional)
+```bash
+qyconv play pattern.Q7P  # Play using FluidSynth or similar
+```
 
 ### Low Priority
 
-#### 8. Add `qyconv analyze` Command
-Detailed MIDI event analysis with:
-- `--events` flag for event list
-- `--piano-roll` flag for ASCII visualization
+#### 8. Add Batch Processing
+```bash
+qyconv batch convert *.syx --output-dir ./converted/
+qyconv batch validate *.Q7P
+```
 
-#### 9. Add `qyconv diff` Command
-Side-by-side comparison of two Q7P files showing:
-- Setting differences
-- Hex diff of data areas
+#### 9. Add GUI (optional)
+Web-based editor with:
+- Pattern visualization
+- Track editing
+- Drag-and-drop conversion
 
-#### 10. Add `qyconv validate` Command
-Structural validation:
-- Header check
-- Size marker verification
-- Section pointer validation
-- Checksum (if any)
+---
+
+## Confirmed Q7P File Structure
+
+```
+Offset    Size   Description                    Status
+------    ----   -----------                    ------
+0x000     16     Header "YQ7PAT     V1.00"      ✓ OK
+0x010     1      Pattern number                 ✓ OK
+0x011     1      Pattern flags                  ✓ OK
+0x030     2      Size marker (0x0990)           ✓ OK
+0x100     32     Section pointers               ✓ OK
+0x120     96     Section encoded data           Partial
+0x180     8      Padding (spaces)               ✓ OK
+0x188     2      Tempo (BE, /10 for BPM)        ✓ OK
+0x18A     1      Time signature                 Lookup table
+0x190     8      Channel assignments            ✓ Mapped
+0x1DC     8      Track numbers (0-7)            ✓ OK
+0x1E4     2      Track enable flags             ✓ OK
+0x220     6      Volume header                  ✓ OK
+0x226     8      Volume data                    ✓ OK
+0x250     6      Reverb header                  ✓ OK
+0x256     8      Reverb send data               ✓ OK
+0x270     6      Pan header                     ✓ OK
+0x276     8      Pan data                       ✓ FIXED
+0x2C0     160    Table 3 (unknown)              Needs research
+0x360     792    Phrase data                    Statistics only
+0x678     504    Sequence events                Statistics only
+0x870     16     Template padding               ✓ OK
+0x880     128    Template area                  ✓ OK
+0x876     10     Pattern name                   ✓ OK
+0x900     192    Pattern mapping                Unknown
+0x9C0     336    Fill area (0xFE)               ✓ OK
+0xB10     240    Pad area (0xF8)                ✓ OK
+```
 
 ---
 
@@ -130,31 +178,3 @@ Based on analysis of https://www.studio4all.de/htmle/main92.html
 - 1-63 = Left (L63-L1)
 - 64 = Center
 - 65-127 = Right (R1-R63)
-
----
-
-## Confirmed Q7P File Structure
-
-```
-Offset    Size   Description                    Status
-------    ----   -----------                    ------
-0x000     16     Header "YQ7PAT     V1.00"      OK
-0x010     1      Pattern number                 OK
-0x011     1      Pattern flags                  OK
-0x030     2      Size marker (0x0990)           OK
-0x100     32     Section pointers               OK
-0x120     96     Section encoded data           Partial
-0x180     8      Padding (spaces)               OK
-0x188     2      Tempo (BE, /10 for BPM)        OK
-0x18A     1      Time signature                 Lookup table
-0x190     8      Channel assignments            Mapped to defaults
-0x1DC     8      Track numbers (0-7)            OK
-0x1E4     2      Track enable flags             OK
-0x220     6+16   Volume header + data           OK (offset 0x226)
-0x256     16     Reverb Send                    NEW
-0x270     6+48   Pan header + data              FIXED (offset 0x276)
-0x2C0     160    Table 3 (unknown)              Needs research
-0x360     792    Phrase data                    Not parsed
-0x678     504    Sequence events                Not parsed
-0x876     10     Pattern name                   OK
-```

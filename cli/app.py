@@ -11,8 +11,13 @@ from cli.commands.info import info
 from cli.commands.convert import convert
 from cli.commands.diff import diff
 from cli.commands.validate import validate
+from cli.commands.dump import dump
+from cli.commands.map import map as map_cmd
+from cli.commands.tracks import tracks
+from cli.commands.sections import sections
+from cli.commands.phrase import phrase
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 console = Console()
 
@@ -29,6 +34,11 @@ app.command(name="info")(info)
 app.command(name="convert")(convert)
 app.command(name="diff")(diff)
 app.command(name="validate")(validate)
+app.command(name="dump")(dump)
+app.command(name="map")(map_cmd)
+app.command(name="tracks")(tracks)
+app.command(name="sections")(sections)
+app.command(name="phrase")(phrase)
 
 
 @app.command()
@@ -53,11 +63,22 @@ def main(
 
     [bold]Quick Start:[/bold]
 
-        qyconv info pattern.Q7P      # Show pattern information
+        qyconv info pattern.Q7P         # Basic pattern info
+        qyconv info pattern.Q7P --full  # Full detailed analysis
 
-        qyconv convert in.syx out.Q7P  # Convert QY70 to QY700
+    [bold]Analysis Commands:[/bold]
 
-        qyconv convert in.Q7P out.syx  # Convert QY700 to QY70
+        qyconv tracks pattern.Q7P     # Detailed track info
+        qyconv sections pattern.Q7P   # Section details
+        qyconv phrase pattern.Q7P     # Phrase/sequence analysis
+        qyconv map pattern.Q7P        # Visual file structure
+        qyconv dump pattern.Q7P       # Annotated hex dump
+
+    [bold]Utility Commands:[/bold]
+
+        qyconv diff A.Q7P B.Q7P       # Compare two files
+        qyconv validate pattern.Q7P   # Validate file structure
+        qyconv convert in.syx out.Q7P # Convert formats
 
     Use --help with any command for more details.
     """

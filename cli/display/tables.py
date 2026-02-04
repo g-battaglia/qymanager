@@ -216,62 +216,11 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
 
     console.print(section_table)
 
-    # Voice Settings table (NEW - detailed instrument info)
+    # Voice Settings table (detailed instrument info)
     display_voice_settings(analysis)
 
     # Phrase/Sequence Statistics
     display_phrase_stats(analysis)
-
-    # Track Configuration table (simplified)
-    track_table = Table(
-        title="Track Configuration", box=box.ROUNDED, show_header=True, header_style="bold green"
-    )
-    track_table.add_column("#", style="dim", width=3)
-    track_table.add_column("Name", style="cyan", width=8)
-    track_table.add_column("Ch", width=4)
-    track_table.add_column("Vol", width=5)
-    track_table.add_column("Pan", width=5)
-    track_table.add_column("Status", width=10)
-
-    # Use tracks from first active section
-    if analysis.sections and analysis.sections[0].tracks:
-        for track in analysis.sections[0].tracks:
-            status = "[green]On[/green]" if track.enabled else "[dim]Off[/dim]"
-            track_table.add_row(
-                str(track.number),
-                track.name,
-                str(track.channel),
-                str(track.volume),
-                pan_to_string(track.pan),
-                status,
-            )
-
-    console.print(track_table)
-
-    # Global settings table (Raw values for debugging)
-    global_table = Table(
-        title="Global Settings (Raw)", box=box.SIMPLE, show_header=True, header_style="bold yellow"
-    )
-    global_table.add_column("Track", width=8)
-    global_table.add_column("Channel Raw", width=12)
-    global_table.add_column("Volume Raw", width=12)
-    global_table.add_column("Pan Raw", width=12)
-    global_table.add_column("Reverb Raw", width=12)
-
-    for i in range(8):
-        ch = analysis.global_channels[i] if i < len(analysis.global_channels) else 0
-        vol = analysis.global_volumes[i] if i < len(analysis.global_volumes) else 0
-        pan = analysis.global_pans[i] if i < len(analysis.global_pans) else 0
-        rev = analysis.global_reverb_sends[i] if i < len(analysis.global_reverb_sends) else 0
-        global_table.add_row(
-            f"TRK{i + 1}",
-            f"0x{ch:02X} ({ch})",
-            f"0x{vol:02X} ({vol})",
-            f"0x{pan:02X} ({pan})",
-            f"0x{rev:02X} ({rev})",
-        )
-
-    console.print(global_table)
 
     if show_hex:
         # Show hex dumps of key areas
