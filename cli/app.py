@@ -9,6 +9,8 @@ from rich.console import Console
 
 from cli.commands.info import info
 from cli.commands.convert import convert
+from cli.commands.diff import diff
+from cli.commands.validate import validate
 
 __version__ = "0.2.0"
 
@@ -25,6 +27,8 @@ app = typer.Typer(
 # Add commands directly
 app.command(name="info")(info)
 app.command(name="convert")(convert)
+app.command(name="diff")(diff)
+app.command(name="validate")(validate)
 
 
 @app.command()

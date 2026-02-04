@@ -13,21 +13,150 @@ from rich.text import Text
 from rich.columns import Columns
 from rich import box
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalysis, SectionInfo, TrackInfo
+from qyconv.analysis.q7p_analyzer import Q7PAnalysis, SectionInfo, TrackInfo, PhraseStats
 from qyconv.analysis.syx_analyzer import SyxAnalysis, SectionData
+from qyconv.utils.xg_voices import get_voice_name
 
 
 console = Console()
 
 
 def pan_to_string(pan: int) -> str:
-    """Convert pan value to readable string."""
-    if pan == 64:
+    """
+    Convert XG pan value to readable string.
+
+    XG Pan encoding:
+    - 0 = Random
+    - 1-63 = Left (L63-L1)
+    - 64 = Center
+    - 65-127 = Right (R1-R63)
+    """
+    if pan == 0:
+        return "Rnd"  # Random
+    elif pan == 64:
         return "C"
     elif pan < 64:
         return f"L{64 - pan}"
     else:
         return f"R{pan - 64}"
+
+
+def display_voice_settings(analysis: Q7PAnalysis) -> None:
+    """Display voice/instrument settings table with XG parameters."""
+    table = Table(
+        title="Voice Settings", box=box.ROUNDED, show_header=True, header_style="bold cyan"
+    )
+    table.add_column("Track", style="cyan", width=6)
+    table.add_column("Ch", width=3)
+    table.add_column("Prog", width=5)
+    table.add_column("Bank", width=6)
+    table.add_column("Instrument", width=22)
+    table.add_column("Vol", width=4)
+    table.add_column("Pan", width=4)
+    table.add_column("Rev", width=4)
+    table.add_column("Cho", width=4)
+    table.add_column("", width=4)  # Status
+
+    # Use tracks from first section
+    if analysis.sections and analysis.sections[0].tracks:
+        for track in analysis.sections[0].tracks:
+            bank_str = f"{track.bank_msb}/{track.bank_lsb}"
+            voice = get_voice_name(track.program, track.bank_msb, channel=track.channel)
+            status = "[green]On[/green]" if track.enabled else "[dim]Off[/dim]"
+
+            table.add_row(
+                track.name,
+                str(track.channel),
+                str(track.program),
+                bank_str,
+                voice[:22],  # Truncate long names
+                str(track.volume),
+                pan_to_string(track.pan),
+                str(track.reverb_send),
+                str(track.chorus_send),
+                status,
+            )
+
+    console.print(table)
+
+
+def display_phrase_stats(analysis: Q7PAnalysis) -> None:
+    """Display phrase and sequence data statistics."""
+    stats = analysis.phrase_stats
+    if not stats:
+        return
+
+    # Phrase/Sequence Statistics table
+    table = Table(
+        title="Phrase & Sequence Data",
+        box=box.ROUNDED,
+        show_header=True,
+        header_style="bold yellow",
+    )
+    table.add_column("Area", style="cyan", width=18)
+    table.add_column("Size", width=8)
+    table.add_column("Non-Zero", width=12)
+    table.add_column("Meaningful", width=12)
+    table.add_column("Density", width=10)
+    table.add_column("Range", width=12)
+
+    # Phrase row
+    phrase_status = (
+        "[green]Has Data[/green]" if stats.phrase_non_filler_bytes > 0 else "[dim]Empty[/dim]"
+    )
+    phrase_range = (
+        f"0x{stats.min_phrase_byte:02X}-0x{stats.max_phrase_byte:02X}"
+        if stats.phrase_non_zero_bytes > 0
+        else "N/A"
+    )
+    table.add_row(
+        "Phrase (0x360)",
+        f"{stats.phrase_total_bytes}",
+        f"{stats.phrase_non_zero_bytes}",
+        f"{stats.phrase_non_filler_bytes}",
+        f"{stats.phrase_density:.1f}%",
+        phrase_range,
+    )
+
+    # Sequence row
+    seq_status = (
+        "[green]Has Data[/green]" if stats.sequence_non_filler_bytes > 0 else "[dim]Empty[/dim]"
+    )
+    seq_range = (
+        f"0x{stats.min_sequence_byte:02X}-0x{stats.max_sequence_byte:02X}"
+        if stats.sequence_non_zero_bytes > 0
+        else "N/A"
+    )
+    table.add_row(
+        "Sequence (0x678)",
+        f"{stats.sequence_total_bytes}",
+        f"{stats.sequence_non_zero_bytes}",
+        f"{stats.sequence_non_filler_bytes}",
+        f"{stats.sequence_density:.1f}%",
+        seq_range,
+    )
+
+    console.print(table)
+
+    # Show MIDI event detection hints (if sequence has data)
+    if stats.sequence_non_filler_bytes > 0:
+        hint_panel = f"""[bold]Potential MIDI Events Detected:[/bold]
+  Note-like values (C1-C4 range): {stats.potential_note_events}
+  Velocity-like values (64-127): {stats.potential_velocity_values}
+  Unique byte values in phrase: {stats.phrase_unique_values}"""
+        console.print(
+            Panel(hint_panel, title="Event Analysis", border_style="yellow", expand=False)
+        )
+
+    # Show top histogram values if there's data
+    if stats.phrase_non_filler_bytes > 0 and stats.phrase_value_histogram:
+        # Get top 5 non-filler values
+        filler = {0x00, 0x40, 0x7F, 0xFE, 0xF8, 0x20}
+        filtered = {k: v for k, v in stats.phrase_value_histogram.items() if k not in filler}
+        if filtered:
+            top_values = sorted(filtered.items(), key=lambda x: x[1], reverse=True)[:5]
+            hist_str = ", ".join(f"0x{v:02X}:{c}" for v, c in top_values)
+            console.print(f"[dim]Top phrase values: {hist_str}[/dim]")
 
 
 def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bool = False) -> None:
@@ -52,9 +181,14 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
         )
     )
 
-    # Timing panel
+    # Timing panel with raw time signature byte for debugging
+    ts_raw_info = (
+        f" (raw: 0x{analysis.time_signature_raw:02X})"
+        if hasattr(analysis, "time_signature_raw")
+        else ""
+    )
     timing_content = f"""[bold]Tempo:[/bold] {analysis.tempo:.1f} BPM (raw: 0x{analysis.tempo_raw[0]:02X} 0x{analysis.tempo_raw[1]:02X})
-[bold]Time Signature:[/bold] {analysis.time_signature[0]}/{analysis.time_signature[1]}
+[bold]Time Signature:[/bold] {analysis.time_signature[0]}/{analysis.time_signature[1]}{ts_raw_info}
 [bold]Flags:[/bold] 0x{analysis.pattern_flags:02X}"""
 
     console.print(
@@ -82,7 +216,13 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
 
     console.print(section_table)
 
-    # Tracks table
+    # Voice Settings table (NEW - detailed instrument info)
+    display_voice_settings(analysis)
+
+    # Phrase/Sequence Statistics
+    display_phrase_stats(analysis)
+
+    # Track Configuration table (simplified)
     track_table = Table(
         title="Track Configuration", box=box.ROUNDED, show_header=True, header_style="bold green"
     )
@@ -108,7 +248,7 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
 
     console.print(track_table)
 
-    # Global settings table
+    # Global settings table (Raw values for debugging)
     global_table = Table(
         title="Global Settings (Raw)", box=box.SIMPLE, show_header=True, header_style="bold yellow"
     )
@@ -116,13 +256,19 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
     global_table.add_column("Channel Raw", width=12)
     global_table.add_column("Volume Raw", width=12)
     global_table.add_column("Pan Raw", width=12)
+    global_table.add_column("Reverb Raw", width=12)
 
     for i in range(8):
         ch = analysis.global_channels[i] if i < len(analysis.global_channels) else 0
         vol = analysis.global_volumes[i] if i < len(analysis.global_volumes) else 0
         pan = analysis.global_pans[i] if i < len(analysis.global_pans) else 0
+        rev = analysis.global_reverb_sends[i] if i < len(analysis.global_reverb_sends) else 0
         global_table.add_row(
-            f"TRK{i + 1}", f"0x{ch:02X} ({ch})", f"0x{vol:02X} ({vol})", f"0x{pan:02X} ({pan})"
+            f"TRK{i + 1}",
+            f"0x{ch:02X} ({ch})",
+            f"0x{vol:02X} ({vol})",
+            f"0x{pan:02X} ({pan})",
+            f"0x{rev:02X} ({rev})",
         )
 
     console.print(global_table)
@@ -138,6 +284,7 @@ def display_q7p_info(analysis: Q7PAnalysis, show_hex: bool = False, show_raw: bo
             ("Tempo Area (0x180-0x18F)", analysis.tempo_area_raw),
             ("Channel Area (0x190-0x19F)", analysis.channel_area_raw),
             ("Track Config (0x1DC-0x1FF)", analysis.track_config_raw),
+            ("Reverb Table (0x250-0x26F)", analysis.reverb_table_raw),
         ]
 
         for name, data in areas:

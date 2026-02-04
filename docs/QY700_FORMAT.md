@@ -6,6 +6,8 @@ This document describes the binary file format used by the Yamaha QY700 for patt
 
 Q7P files are fixed-size binary files containing a single pattern with all its sections and track data. Unlike the QY70's SysEx format, Q7P files use raw 8-bit data without compression.
 
+The QY700 follows the **Yamaha XG specification** for MIDI parameters.
+
 ## File Specifications
 
 | Property | Value |
@@ -15,43 +17,58 @@ Q7P files are fixed-size binary files containing a single pattern with all its s
 | Encoding | Raw binary (8-bit) |
 | Byte Order | Big-endian |
 
-## File Structure
-
-### Overall Layout
+## Complete File Structure Map
 
 ```
-Offset  Size    Description
-------  ------  -----------
-0x000   16      Header "YQ7PAT     V1.00"
-0x010   32      Pattern info (number, flags)
-0x030   2       Size marker
-0x040   192     Reserved/padding
-0x100   32      Track pointers
-0x120   96      Section data (encoded)
-0x180   16      Tempo/timing
-0x190   8       Channel assignments
-0x198   8       Reserved
-0x1A0   60      Pattern name/spaces
-0x1DC   8       Track numbering (0-7)
-0x1E4   60      Reserved
-0x220   320     Volume/velocity tables
-0x360   792     Phrase/pattern data
-0x678   504     Sequence events
-0x870   16      Template name
-0x880   128     Reserved
-0x900   192     Pattern mappings
-0x9C0   336     Fill area (0xFE bytes)
-0xB10   240     Padding (0xF8 bytes)
+Offset    Size    Description                          Status
+──────────────────────────────────────────────────────────────
+0x000     16      Header "YQ7PAT     V1.00"            ✓ Verified
+0x010     1       Pattern number (slot)                ✓ Verified
+0x011     1       Pattern flags                        ✓ Verified
+0x012     30      Reserved (zeros)                     
+0x030     2       Size marker (0x0990 = 2448)          ✓ Verified
+0x032     206     Reserved/padding                     
+0x100     32      Section pointers                     ✓ Verified
+0x120     96      Section encoded data                 Partial
+0x180     8       Padding (0x20 spaces)                ✓ Verified
+0x188     2       Tempo (big-endian, ÷10 for BPM)      ✓ Verified
+0x18A     1       Time signature                       ✓ Lookup table
+0x18B     1       Time signature (denominator?)        Needs verify
+0x18C     4       Additional timing flags              
+0x190     8       Channel assignments                  ✓ Mapped
+0x198     8       Reserved                             
+0x1A0     60      Reserved/spaces                      
+0x1DC     8       Track numbers (00-07)                ✓ Verified
+0x1E4     2       Track enable flags (bitmask)         ✓ Verified
+0x1E6     26      Reserved                             
+0x200     32      Reserved                             
+0x220     6       Volume table header                  
+0x226     16      Volume data (8 tracks × 2?)          ✓ Verified
+0x236     26      Volume continued                     
+0x250     6       Reverb send table header             
+0x256     16      Reverb send data (8 tracks)          ✓ NEW - Verified
+0x266     10      Reserved                             
+0x270     6       Pan table header                     
+0x276     48      Pan data (8 tracks × sections)       ✓ FIXED offset
+0x2C0     160     Table 3 (unknown - effects?)         Needs research
+0x360     792     Phrase data                          Needs parsing
+0x678     504     Sequence events                      Needs parsing
+0x870     6       Template padding                     
+0x876     10      Pattern name (ASCII)                 ✓ Verified
+0x880     128     Reserved                             
+0x900     192     Pattern mappings                     
+0x9C0     336     Fill area (0xFE bytes)               ✓ Verified
+0xB10     240     Padding (0xF8 bytes)                 ✓ Verified
 ```
 
-## Header Structure (0x000 - 0x0FF)
+## Header Structure (0x000 - 0x02F)
 
 ### Magic Header (0x000)
 
 ```
 Offset  Size  Value              Description
 ------  ----  -----------------  -----------
-0x000   16    "YQ7PAT     V1.00" File type and version
+0x000   16    "YQ7PAT     V1.00" File type and version identifier
 ```
 
 ### Pattern Info (0x010)
@@ -59,9 +76,9 @@ Offset  Size  Value              Description
 ```
 Offset  Size  Description
 ------  ----  -----------
-0x010   1     Pattern number (slot)
-0x011   1     Flags (0x01 or 0x02 typical)
-0x012   14    Reserved (zeros)
+0x010   1     Pattern number (1-based slot number)
+0x011   1     Flags (typical values: 0x00, 0x01, 0x02)
+0x012   30    Reserved (zeros)
 ```
 
 ### Size Marker (0x030)
@@ -69,168 +86,220 @@ Offset  Size  Description
 ```
 Offset  Size  Format      Description
 ------  ----  ----------  -----------
-0x030   2     Big-endian  Size marker (typically 0x0990 = 2448)
+0x030   2     Big-endian  Size marker: 0x0990 = 2448 decimal
 ```
 
-## Section Data (0x100 - 0x1FF)
+## Section Pointers (0x100 - 0x11F)
 
-### Track Pointers (0x100)
-
-The track pointer area contains offsets or flags for each track:
+The section pointer area contains 16 two-byte entries for section references:
 
 ```
 Offset  Size  Description
 ------  ----  -----------
-0x100   1     First offset byte
-0x101   1     Unused marker (0x20 = space)
-0x102-0x11F  30  Section reference flags (0xFE = empty)
+0x100   2     Section 0 (Intro) pointer
+0x102   2     Section 1 (Main A) pointer
+0x104   2     Section 2 (Main B) pointer
+0x106   2     Section 3 (Fill AB) pointer
+0x108   2     Section 4 (Fill BA) pointer
+0x10A   2     Section 5 (Ending) pointer
+0x10C   20    Reserved section pointers
 ```
 
-### Section Encoded Data (0x120)
+**Special values:**
+- `0xFEFE` = Section is empty/unused
 
-Pattern section information is encoded here:
+## Timing Configuration (0x180 - 0x18F)
 
-```
-Offset  Size  Description
-------  ----  -----------
-0x120   2     Section header (0xF0 0x00)
-0x122   1     Section type flags (0xFB)
-0x123   ...   Section-specific data
-```
-
-### Tempo/Timing (0x180)
+### Tempo (0x188)
 
 ```
-Offset  Size  Description
-------  ----  -----------
-0x180   8     Reserved/spaces (0x20)
-0x188   2     Tempo value (needs decoding)
-0x18A   2     Time signature data
-0x18C   4     Additional timing flags
+Offset  Size  Format      Description
+------  ----  ----------  -----------
+0x188   2     Big-endian  Tempo × 10 (e.g., 0x04B0 = 1200 = 120.0 BPM)
 ```
 
-### Channel Assignments (0x190)
-
-```
-Offset  Size  Description
-------  ----  -----------
-0x190   8     Channel assignment for tracks 1-8
-              (typical value: 0x03 for each)
+**Conversion:**
+```python
+bpm = struct.unpack(">H", data[0x188:0x18A])[0] / 10.0
 ```
 
-### Track Numbering (0x1DC)
+### Time Signature (0x18A)
+
+The time signature encoding uses a lookup table. Known values:
+
+| Raw Byte | Time Signature | Notes |
+|----------|----------------|-------|
+| 0x1C (28) | 4/4 | **Confirmed** |
+| 0x14 (20) | 3/4 | Hypothesis |
+| 0x22 (34) | 6/8 | Hypothesis |
+| 0x0C (12) | 2/4 | Hypothesis |
+
+**Note:** Other time signatures need hardware verification.
+
+## Channel Assignments (0x190 - 0x197)
+
+8 bytes for MIDI channel assignments per track:
+
+```
+Offset  Track   Description
+------  ------  -----------
+0x190   RHY1    Rhythm 1 channel
+0x191   RHY2    Rhythm 2 channel
+0x192   BASS    Bass channel
+0x193   CHD1    Chord 1 channel
+0x194   CHD2    Chord 2 channel
+0x195   CHD3    Chord 3 channel
+0x196   CHD4    Chord 4 channel
+0x197   CHD5    Chord 5 channel
+```
+
+**Encoding (observed):**
+- `0x00` = Channel 10 (drums) - used for RHY1/RHY2
+- `0x01-0x0F` = Channel 2-16 (value + 1)
+
+**Example from T01.Q7P:**
+```
+00 00 00 00 03 03 03 03
+→ Ch10, Ch10, Ch10, Ch10, Ch4, Ch4, Ch4, Ch4
+```
+
+## Track Configuration (0x1DC - 0x1E5)
+
+### Track Numbers (0x1DC)
 
 ```
 Offset  Size  Value           Description
 ------  ----  --------------  -----------
-0x1DC   8     00 01 02...07   Sequential track numbers
-0x1E4   2     Track enable flags
+0x1DC   8     00 01 02...07   Sequential track indices (0-based)
 ```
 
-## Volume Tables (0x220 - 0x35F)
-
-### Per-Section Volume Data
-
-Each section has volume/velocity values for its 8 tracks:
+### Track Enable Flags (0x1E4)
 
 ```
-Offset      Description
-------      -----------
-0x220-0x22F Intro volumes (16 tracks × value)
-0x230-0x23F Main A volumes
-0x240-0x24F Main B volumes
-...and so on...
+Offset  Size  Format  Description
+------  ----  ------  -----------
+0x1E4   2     Word    Bitmask: bit N = track N enabled
 ```
 
-Default volume value is 0x64 (100).
+**Example:**
+- `0x0001` = Only track 1 enabled
+- `0x001F` = Tracks 1-5 enabled
+- `0x00FF` = All 8 tracks enabled
 
-## Pattern Data (0x360 - 0x677)
+## Volume Table (0x220 - 0x26F)
 
-### Phrase Mappings
-
-This area contains the phrase references and pattern sequence data:
-
-```
-Offset  Description
-------  -----------
-0x360   Phrase data start
-0x3B0   Pattern velocity data
-0x400   Additional phrase settings
-```
-
-## Sequence Events (0x678 - 0x86F)
-
-### Event Data Structure
+### Structure
 
 ```
 Offset  Size  Description
 ------  ----  -----------
-0x678   2     Event count/flags
-0x67A   ...   Event data (timing, program changes)
+0x220   6     Header/reserved (zeros)
+0x226   16    Volume values per track/section
+0x236   26    Additional volume data
+...
 ```
 
-### Tempo Location
+**XG Default Volume:** 100 (0x64)
 
-The main tempo value appears to be stored at:
+## Reverb Send Table (0x250 - 0x26F)
 
-```
-Offset  Description
-------  -----------
-0x688   Tempo-related value
-0x68C   Time signature encoding
-```
-
-## Template Name (0x870 - 0x87F)
-
-### Name String
+**NEW - Discovered from XG analysis**
 
 ```
 Offset  Size  Description
 ------  ----  -----------
-0x870   10    Template/pattern name (ASCII, space-padded)
-0x87A   6     Reserved
+0x250   6     Header/reserved
+0x256   16    Reverb send values per track
 ```
 
-Example: "USER TMPL " (10 characters, space-padded)
+**XG Default Reverb Send:** 40 (0x28)
 
-## Pattern Mappings (0x900 - 0x9BF)
+## Pan Table (0x270 - 0x2BF)
 
-### Section Enable Flags
+**FIXED - Correct offset is 0x276, not 0x270**
 
 ```
-Offset  Size  Value    Description
-------  ----  -------  -----------
-0x900   64    00 01... Pattern enable/repeat mapping
-0x940   64    00 01... Additional mapping data
+Offset  Size  Description
+------  ----  -----------
+0x270   6     Header/reserved
+0x276   48    Pan values per track/section
 ```
 
-Typical pattern: alternating 0x00 0x01 bytes.
+### XG Pan Encoding
+
+| Value | Meaning |
+|-------|---------|
+| 0 | Random |
+| 1-63 | Left (L63-L1) |
+| 64 | Center |
+| 65-127 | Right (R1-R63) |
+
+**XG Default Pan:** 64 (Center)
+
+## Template/Pattern Name (0x876)
+
+```
+Offset  Size  Description
+------  ----  -----------
+0x876   10    ASCII pattern name, space-padded
+```
+
+**Example:** `"USER TMPL "` (10 characters)
+
+## Phrase Data Area (0x360 - 0x677)
+
+792 bytes containing MIDI event data for all sections.
+
+**Structure (hypothesis):**
+- Events encoded as delta-time + status + data
+- Organized by section and track
+- Uses compression for repeated patterns
+
+**Needs further reverse engineering.**
+
+## Sequence Events Area (0x678 - 0x86F)
+
+504 bytes containing:
+- Tempo changes
+- Program changes (possibly)
+- Other automation events
+
+**Needs further reverse engineering.**
 
 ## Fill Areas
 
-### FE Fill (0x9C0 - 0xA8F)
+### FE Fill (0x9C0 - 0xB0F)
 
-Unused space filled with 0xFE bytes.
-
-```
-for offset in range(0x9C0, 0xA90):
-    data[offset] = 0xFE
-```
+336 bytes filled with `0xFE` (unused space marker)
 
 ### F8 Padding (0xB10 - 0xBFF)
 
-End-of-file padding with 0xF8 bytes.
+240 bytes filled with `0xF8` (end padding)
 
-```
-for offset in range(0xB10, 0xC00):
-    data[offset] = 0xF8
-```
+## XG Standard Values Reference
+
+Based on [studio4all.de XG documentation](https://www.studio4all.de/htmle/main92.html):
+
+| Parameter | Default | Hex | Range |
+|-----------|---------|-----|-------|
+| Volume | 100 | 0x64 | 0-127 |
+| Pan | 64 (Center) | 0x40 | 0-127 |
+| Reverb Send | 40 | 0x28 | 0-127 |
+| Chorus Send | 0 | 0x00 | 0-127 |
+| Variation Send | 0 | 0x00 | 0-127 |
+| Bank MSB (Normal) | 0 | 0x00 | 0-127 |
+| Bank MSB (Drums) | 127 | 0x7F | 0-127 |
+| Bank LSB | 0 | 0x00 | 0-127 |
+| Program | 0 | 0x00 | 0-127 |
 
 ## Reading a Q7P File
 
 ### Python Example
 
 ```python
+import struct
+from pathlib import Path
+
 def read_q7p(filepath: str) -> dict:
     with open(filepath, 'rb') as f:
         data = f.read()
@@ -241,11 +310,29 @@ def read_q7p(filepath: str) -> dict:
     if data[:16] != b"YQ7PAT     V1.00":
         raise ValueError("Invalid header")
     
+    # Extract tempo (big-endian, divide by 10)
+    tempo_raw = struct.unpack(">H", data[0x188:0x18A])[0]
+    tempo = tempo_raw / 10.0
+    
+    # Extract pattern name
+    name = data[0x876:0x880].decode('ascii').rstrip('\x00 ')
+    
+    # Extract volumes (offset 0x226)
+    volumes = list(data[0x226:0x22E])
+    
+    # Extract pans (offset 0x276 - CORRECTED)
+    pans = list(data[0x276:0x27E])
+    
+    # Extract reverb sends (offset 0x256)
+    reverb_sends = list(data[0x256:0x25E])
+    
     return {
         'pattern_number': data[0x10],
-        'flags': data[0x11],
-        'template_name': data[0x870:0x87A].decode('ascii').strip(),
-        'channels': list(data[0x190:0x198]),
+        'pattern_name': name,
+        'tempo': tempo,
+        'volumes': volumes,
+        'pans': pans,
+        'reverb_sends': reverb_sends,
     }
 ```
 
@@ -260,9 +347,9 @@ def write_q7p_from_template(template_path, output_path, pattern_name):
     with open(template_path, 'rb') as f:
         data = bytearray(f.read())
     
-    # Update pattern name
+    # Update pattern name (offset 0x876, 10 chars)
     name = pattern_name[:10].upper().ljust(10)
-    data[0x870:0x87A] = name.encode('ascii')
+    data[0x876:0x880] = name.encode('ascii')
     
     with open(output_path, 'wb') as f:
         f.write(data)
@@ -272,14 +359,45 @@ def write_q7p_from_template(template_path, output_path, pattern_name):
 
 | Aspect | QY70 | QY700 |
 |--------|------|-------|
-| Format | SysEx | Binary |
+| Format | SysEx (.syx) | Binary (.Q7P) |
 | Size | Variable | Fixed 3072 bytes |
 | Encoding | 7-bit packed | Raw 8-bit |
 | Checksum | Per-message | None |
-| Sections | 6 | 6+ (more patterns) |
+| Sections | 6 | 6 (same structure) |
+| Tracks | 8 | 8 (same names) |
+
+## Unknown/Reserved Areas
+
+These areas need further research:
+
+| Offset | Size | Observed Content | Hypothesis |
+|--------|------|------------------|------------|
+| 0x2C0-0x35F | 160 | 0x40, 0x7F patterns | Effects settings? |
+| 0x360-0x677 | 792 | Variable | Phrase MIDI data |
+| 0x678-0x86F | 504 | Variable | Sequence events |
+| 0x900-0x9BF | 192 | 0x00, 0x01 pattern | Section mapping |
+
+## Tools
+
+Use the `qyconv` CLI tool to analyze Q7P files:
+
+```bash
+# Show pattern info
+qyconv info pattern.Q7P
+
+# Show with hex dumps
+qyconv info pattern.Q7P --hex
+
+# Show unknown areas
+qyconv info pattern.Q7P --raw
+
+# Convert from QY70 format
+qyconv convert style.syx -o pattern.Q7P -t template.Q7P
+```
 
 ## References
 
 - Yamaha QY700 Owner's Manual
-- QY Data Filer documentation
+- Yamaha XG Specification
+- [studio4all.de XG Programming](https://www.studio4all.de/htmle/main92.html)
 - Reverse engineering of sample files
