@@ -113,6 +113,54 @@ class QY700ToQY70Converter:
         self._is_extended: bool = False  # True for 5120-byte files
         self._phrases: List[PhraseBlock] = []  # Parsed phrase blocks
 
+    def _create_init_message(self) -> bytes:
+        """
+        Create the initialization message.
+
+        This message prepares the QY70 to receive bulk data.
+        Format: F0 43 10 5F 00 00 00 01 F7
+
+        Returns:
+            Complete SysEx init message
+        """
+        return bytes(
+            [
+                self.SYSEX_START,
+                self.YAMAHA_ID,
+                0x10 | self.device_number,  # Parameter change type
+                self.QY70_MODEL_ID,
+                0x00,
+                0x00,
+                0x00,  # Address
+                0x01,  # Data (init command)
+                self.SYSEX_END,
+            ]
+        )
+
+    def _create_close_message(self) -> bytes:
+        """
+        Create the closing message.
+
+        This message signals end of bulk data transfer.
+        Format: F0 43 10 5F 00 00 00 00 F7
+
+        Returns:
+            Complete SysEx close message
+        """
+        return bytes(
+            [
+                self.SYSEX_START,
+                self.YAMAHA_ID,
+                0x10 | self.device_number,  # Parameter change type
+                self.QY70_MODEL_ID,
+                0x00,
+                0x00,
+                0x00,  # Address
+                0x00,  # Data (close command)
+                self.SYSEX_END,
+            ]
+        )
+
     def convert(self, source_path: Union[str, Path]) -> bytes:
         """
         Convert Q7P file to SysEx format.
@@ -139,6 +187,15 @@ class QY700ToQY70Converter:
 
         Returns:
             Complete SysEx file data
+
+        The QY70 expects messages in this order:
+        1. Init message (F0 43 10 5F 00 00 00 01 F7)
+        2. Track data blocks (AL = 0x08-0x2F) - only non-empty tracks
+        3. Header/config block (AL = 0x7F)
+        4. Close message (F0 43 10 5F 00 00 00 00 F7)
+
+        NOTE: Section blocks 0x00-0x05 are NOT sent separately - the track
+        data already contains all necessary section information.
         """
         if len(q7p_data) not in (3072, 5120):
             raise ValueError(f"Invalid Q7P size: {len(q7p_data)} (expected 3072 or 5120)")
@@ -161,27 +218,22 @@ class QY700ToQY70Converter:
         # Build SysEx messages
         messages: List[bytes] = []
 
-        # 1. Generate header section (0x7F)
-        header_messages = self._generate_header_section()
-        messages.extend(header_messages)
+        # 1. Init message (required by QY70 to prepare for bulk data)
+        messages.append(self._create_init_message())
 
-        # 2. Generate each section's data (0x00-0x05)
-        for section_type in [
-            SectionType.INTRO,
-            SectionType.MAIN_A,
-            SectionType.MAIN_B,
-            SectionType.FILL_AB,
-            SectionType.FILL_BA,
-            SectionType.ENDING,
-        ]:
-            section_messages = self._generate_section_messages(section_type)
-            messages.extend(section_messages)
-
-        # 3. Generate track data for each section (0x08-0x2F)
+        # 2. Generate track data for each section (0x08-0x2F)
         # Track data is at AL = 0x08 + (section_index * 8) + track_index
+        # Only include tracks that have actual data (non-empty)
         for section_idx in range(6):
             track_messages = self._generate_track_messages(section_idx)
             messages.extend(track_messages)
+
+        # 3. Generate header section (0x7F) - must come AFTER tracks
+        header_messages = self._generate_header_section()
+        messages.extend(header_messages)
+
+        # 4. Close message (signals end of bulk transfer)
+        messages.append(self._create_close_message())
 
         return b"".join(messages)
 
@@ -288,7 +340,12 @@ class QY700ToQY70Converter:
         return bytes(data)
 
     def _generate_track_messages(self, section_idx: int) -> List[bytes]:
-        """Generate SysEx messages for track data of a section."""
+        """
+        Generate SysEx messages for track data of a section.
+
+        Only generates messages for tracks that have actual MIDI data.
+        Empty tracks are skipped to match the QY70's expected format.
+        """
         messages = []
 
         # Track data starts at AL = 0x08 for section 0
@@ -298,6 +355,11 @@ class QY700ToQY70Converter:
         # Extract track data from Q7P
         for track_num in range(8):
             al = base_al + track_num
+
+            # Check if this track has actual MIDI data
+            if not self._track_has_data(section_idx, track_num):
+                continue  # Skip empty tracks
+
             track_data = self._extract_track_data(section_idx, track_num)
 
             if track_data:
@@ -308,6 +370,54 @@ class QY700ToQY70Converter:
                     messages.append(msg)
 
         return messages
+
+    def _track_has_data(self, section_idx: int, track_num: int) -> bool:
+        """
+        Check if a track has actual MIDI data.
+
+        For 5120-byte files, we check if the section has a valid phrase reference.
+        For 3072-byte files, we check the phrase pointer table.
+
+        Args:
+            section_idx: Section index (0-5)
+            track_num: Track number (0-7)
+
+        Returns:
+            True if the track has MIDI data, False if empty
+        """
+        if not self.q7p_data:
+            return False
+
+        # For 5120-byte files, check the section config at 0x120
+        if self._is_extended:
+            config_offset = 0x120 + (section_idx * 9)
+            if config_offset + 9 <= len(self.q7p_data):
+                # Check if section has valid phrase reference (F0 00 FB xx ...)
+                if self.q7p_data[config_offset] == 0xF0:
+                    # Get phrase index
+                    phrase_idx = self.q7p_data[config_offset + 3]
+                    if phrase_idx < len(self._phrases):
+                        # Section has a phrase - check if it has actual MIDI data
+                        phrase = self._phrases[phrase_idx]
+                        if phrase.raw_data and len(phrase.raw_data) > 4:
+                            # Phrase has data - all 8 tracks of this section are considered to have data
+                            return True
+            return False
+
+        # For 3072-byte files, check the section pointer at 0x120
+        config_offset = 0x120 + (section_idx * 2)
+        if config_offset + 2 <= len(self.q7p_data):
+            ptr_hi = self.q7p_data[config_offset]
+            ptr_lo = self.q7p_data[config_offset + 1]
+
+            # 0xFEFE = empty/null section
+            if ptr_hi == 0xFE and ptr_lo == 0xFE:
+                return False
+
+            # Valid pointer means section has data
+            return True
+
+        return False
 
     def _extract_track_data(self, section_idx: int, track_num: int) -> bytes:
         """
