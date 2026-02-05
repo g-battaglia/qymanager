@@ -71,12 +71,15 @@ class Q7PValidator:
         # Core validation
         self._validate_file_size()
         self._validate_header()
+        self._validate_pattern_flag()
+        self._validate_section_pointers()
+        self._validate_section_config()
+        self._validate_tempo_padding()
         self._validate_tempo()
         self._validate_time_signature()
         self._validate_channels()
         self._validate_volumes()
         self._validate_pans()
-        self._validate_section_pointers()
         self._validate_filler_areas()
         self._validate_checksum_areas()
 
@@ -263,7 +266,7 @@ class Q7PValidator:
                 )
 
     def _validate_section_pointers(self) -> None:
-        """Check section pointer consistency."""
+        """Check section pointer consistency - CRITICAL for hardware safety."""
         if len(self.data) < 0x120:
             return
 
@@ -273,12 +276,140 @@ class Q7PValidator:
             if ptr != self.EMPTY_SECTION:
                 active_count += 1
 
-        self._add_issue(
-            "info",
-            "Sections",
-            0x100,
-            f"{active_count} of 6 sections are active",
-        )
+        if active_count == 0:
+            # CRITICAL: All sections empty can cause hardware issues
+            self._add_issue(
+                "error",
+                "Section Pointers",
+                0x100,
+                "CRITICAL: All 6 sections are empty (FE FE) - file may be corrupted",
+                "At least 1 active section",
+                "0 active sections",
+            )
+        else:
+            self._add_issue(
+                "info",
+                "Sections",
+                0x100,
+                f"{active_count} of 6 sections are active",
+            )
+
+    def _validate_section_config(self) -> None:
+        """Check section configuration area (0x120-0x180) is not all zeros - CRITICAL."""
+        if len(self.data) < 0x180:
+            return
+
+        section_config = self.data[0x120:0x180]
+
+        # Check if area is all zeros (corrupted/invalid)
+        if all(b == 0 for b in section_config):
+            self._add_issue(
+                "error",
+                "Section Config",
+                0x120,
+                "CRITICAL: Section configuration area is all zeros - file is corrupted",
+                "Valid section config (F0 00 FB...)",
+                "All zeros (corrupted)",
+            )
+        # Check for valid section config pattern (should start with F0 00 FB or similar)
+        elif section_config[0] == 0xF0 or section_config[0] == 0x08:
+            # 0xF0 = valid Q7P config, 0x08 = QY70 track header (wrong!)
+            if section_config[0] == 0x08 and section_config[1] == 0x04:
+                self._add_issue(
+                    "error",
+                    "Section Config",
+                    0x120,
+                    "CRITICAL: Contains QY70 track header (08 04...) instead of Q7P config - file corrupted",
+                    "Q7P section config",
+                    "QY70 track header",
+                )
+            else:
+                self._add_issue(
+                    "info",
+                    "Section Config",
+                    0x120,
+                    "Section configuration area appears valid",
+                )
+        else:
+            # Unknown pattern - warn but don't error
+            self._add_issue(
+                "warning",
+                "Section Config",
+                0x120,
+                f"Unusual section config start byte: 0x{section_config[0]:02X}",
+                "Expected 0xF0 or valid config",
+                f"0x{section_config[0]:02X}",
+            )
+
+    def _validate_tempo_padding(self) -> None:
+        """Check tempo padding area (0x180-0x188) contains spaces - CRITICAL."""
+        if len(self.data) < 0x188:
+            return
+
+        tempo_padding = self.data[0x180:0x188]
+
+        # Should be 8 bytes of 0x20 (space)
+        expected = bytes([0x20] * 8)
+
+        if tempo_padding == expected:
+            self._add_issue(
+                "info",
+                "Tempo Padding",
+                0x180,
+                "Tempo padding area is valid (spaces)",
+            )
+        elif all(b == 0 for b in tempo_padding):
+            self._add_issue(
+                "error",
+                "Tempo Padding",
+                0x180,
+                "CRITICAL: Tempo padding is all zeros instead of spaces - may cause hardware issues",
+                "8 x 0x20 (spaces)",
+                "All zeros",
+            )
+        else:
+            # Some other pattern - warn
+            non_space = sum(1 for b in tempo_padding if b != 0x20)
+            self._add_issue(
+                "warning",
+                "Tempo Padding",
+                0x180,
+                f"Tempo padding has {non_space} non-space bytes",
+                "8 x 0x20 (spaces)",
+                f"{non_space} different bytes",
+            )
+
+    def _validate_pattern_flag(self) -> None:
+        """Check pattern flag at 0x020-0x021."""
+        if len(self.data) < 0x022:
+            return
+
+        flag_word = (self.data[0x020] << 8) | self.data[0x021]
+
+        # Known valid values: 0x0001 (normal pattern)
+        if flag_word == 0x0001:
+            self._add_issue(
+                "info",
+                "Pattern Flag",
+                0x020,
+                "Pattern flag is valid (0x0001)",
+            )
+        elif flag_word == 0x0000:
+            self._add_issue(
+                "warning",
+                "Pattern Flag",
+                0x020,
+                "Pattern flag is zero - may indicate incomplete file",
+                "0x0001",
+                "0x0000",
+            )
+        else:
+            self._add_issue(
+                "info",
+                "Pattern Flag",
+                0x020,
+                f"Pattern flag value: 0x{flag_word:04X}",
+            )
 
     def _validate_filler_areas(self) -> None:
         """Check filler areas contain expected values."""
@@ -387,12 +518,20 @@ def validate(
 
     Checks for:
 
-    - Correct file size (3072 bytes)
+    - Correct file size (3072 or 5120 bytes)
     - Valid header magic
+    - Pattern flag validity (0x020)
+    - Section pointers (at least one active section required)
+    - Section configuration area (0x120-0x180) not corrupted
+    - Tempo padding area (0x180-0x188) contains spaces
     - Valid tempo and time signature values
     - MIDI parameter ranges (channels, volumes, pans)
-    - Section pointer consistency
     - Filler/padding area integrity
+
+    CRITICAL checks that prevent hardware damage:
+    - All sections empty (FE FE) = ERROR
+    - Section config all zeros = ERROR
+    - Tempo padding not spaces = ERROR
 
     Examples:
 
