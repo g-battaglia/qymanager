@@ -74,7 +74,7 @@ class QY70TrackInfo:
     """Track information for QY70 (8 tracks)."""
 
     number: int  # 1-8
-    name: str  # RHY1, RHY2, BASS, CHD1, CHD2, PAD, PHR1, PHR2
+    name: str  # D1, D2, PC, BA, C1, C2, C3, C4
     channel: int  # MIDI channel 1-16 (10 = drums)
     has_data: bool  # Whether track has any data in any section
     data_bytes: int  # Total bytes across all sections
@@ -185,6 +185,12 @@ class SyxAnalysis:
     variation_type_msb: int = 0x00
     variation_type_lsb: int = 0x00
 
+    # File format detection
+    # "pattern" = Single pattern (AL 0x00-0x07 for track data)
+    # "style" = Full style with sections (AL 0x08-0x37 for track data)
+    # "unknown" = Could not detect format
+    format_type: str = "unknown"
+
 
 class SyxAnalyzer:
     """
@@ -192,18 +198,38 @@ class SyxAnalyzer:
 
     Extracts and decodes all message content.
     The QY70 has 8 tracks per pattern (vs 16 in QY700):
-    - RHY1, RHY2: Rhythm tracks (drums, channel 10)
-    - BASS: Bass track (channel 2)
-    - CHD1-CHD2: Chord tracks (channels 3-4)
-    - PAD: Pad track (channel 5)
-    - PHR1, PHR2: Phrase tracks (channels 6-7)
+    - D1, D2: Drum tracks (drums, channel 10)
+    - PC: Percussion/Chord track (channel 3)
+    - BA: Bass track (channel 2)
+    - C1-C4: Chord tracks (channels 4-7)
+
+    Note: The track order on the QY70 display is:
+    D1, D2, PC, BA, C1, C2, C3, C4 (positions 1-8)
+
+    In the SysEx format, tracks are stored at AL addresses:
+    - Style format: AL = 0x08 + (section * 8) + track_index
+    - Pattern format: AL = track_index (0-7)
     """
 
-    # QY70 track names (8 tracks vs QY700's 16)
-    TRACK_NAMES = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "PAD", "PHR1", "PHR2"]
+    # QY70 track names as shown on device display
+    # Order: D1, D2, PC, BA, C1, C2, C3, C4
+    TRACK_NAMES = ["D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"]
+
+    # Long track names for display
+    TRACK_LONG_NAMES = [
+        "Drum 1",
+        "Drum 2",
+        "Perc/Chord",
+        "Bass",
+        "Chord 1",
+        "Chord 2",
+        "Chord 3",
+        "Chord 4",
+    ]
 
     # Default MIDI channels for QY70 tracks
-    DEFAULT_CHANNELS = [10, 10, 2, 3, 4, 5, 6, 7]
+    # D1=10, D2=10, PC=3, BA=2, C1=4, C2=5, C3=6, C4=7
+    DEFAULT_CHANNELS = [10, 10, 3, 2, 4, 5, 6, 7]
 
     # Section names (6 sections: Intro, MainA, MainB, FillAB, FillBA, Ending)
     STYLE_SECTION_NAMES = ["Intro", "Main A", "Main B", "Fill AB", "Fill BA", "Ending"]
@@ -375,13 +401,51 @@ class SyxAnalyzer:
 
         return analysis
 
+    def _detect_format(self, analysis: SyxAnalysis) -> str:
+        """
+        Detect if file is Pattern or Style format.
+
+        QY70 has two main SysEx formats:
+        - Pattern: Single pattern with track data in AL 0x00-0x07
+        - Style: Full style with sections, track data in AL 0x08-0x37
+
+        Detection is based on:
+        1. Header byte[0] value (Pattern < 0x08, Style >= 0x08)
+        2. AL address distribution in the file
+
+        Returns:
+            "pattern", "style", or "unknown"
+        """
+        al_addresses = set(analysis.al_histogram.keys())
+
+        # Check header byte[0] as format indicator
+        # Pattern files have header[0] < 0x08 (e.g., 0x03)
+        # Style files have header[0] >= 0x08 (e.g., 0x4C, 0x5E)
+        if analysis.header_decoded and len(analysis.header_decoded) > 0:
+            header_byte = analysis.header_decoded[0]
+            if header_byte < 0x08:
+                return "pattern"
+
+        # Fallback: check AL address distribution
+        has_phrase_data = any(al < 8 and al != 0x7F for al in al_addresses)
+        has_track_data = any(8 <= al <= 0x37 for al in al_addresses)
+
+        if has_track_data:
+            return "style"
+        elif has_phrase_data:
+            return "pattern"
+        return "unknown"
+
     def _analyze_qy70_structure(self, analysis: SyxAnalysis) -> None:
         """Analyze QY70-specific track and section structure."""
+        # Detect format first
+        analysis.format_type = self._detect_format(analysis)
+
         # Build track info for 8 tracks
         for track_idx in range(8):
             track_name = self.TRACK_NAMES[track_idx]
             default_channel = self.DEFAULT_CHANNELS[track_idx]
-            is_drum = track_idx < 2  # RHY1 and RHY2 are drum tracks
+            is_drum = track_idx < 2  # D1 and D2 are drum tracks
 
             # Find which sections have data for this track
             has_data = False
@@ -389,17 +453,33 @@ class SyxAnalyzer:
             active_sections: List[str] = []
             first_track_data: Optional[bytes] = None
 
-            for sec_idx in range(6):
-                al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+            if analysis.format_type == "pattern":
+                # Pattern format: track data is in AL 0x00-0x07
+                # AL = track_idx directly (no section offset)
+                # Pattern files typically have only one "section" worth of data
+                al = track_idx  # AL 0x00 = track 0, AL 0x01 = track 1, etc.
                 if al in analysis.sections:
                     section_data = analysis.sections[al]
                     if section_data.total_decoded_bytes > 0:
                         has_data = True
                         total_bytes += section_data.total_decoded_bytes
-                        active_sections.append(self.STYLE_SECTION_NAMES[sec_idx])
-                        # Keep first track data for parameter extraction
-                        if first_track_data is None:
-                            first_track_data = section_data.decoded_data
+                        # Pattern has single section, mark as "Pattern"
+                        active_sections.append("Pattern")
+                        first_track_data = section_data.decoded_data
+            else:
+                # Style format: track data is in AL 0x08-0x37
+                # AL = 0x08 + (section * 8) + track
+                for sec_idx in range(6):
+                    al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+                    if al in analysis.sections:
+                        section_data = analysis.sections[al]
+                        if section_data.total_decoded_bytes > 0:
+                            has_data = True
+                            total_bytes += section_data.total_decoded_bytes
+                            active_sections.append(self.STYLE_SECTION_NAMES[sec_idx])
+                            # Keep first track data for parameter extraction
+                            if first_track_data is None:
+                                first_track_data = section_data.decoded_data
 
             # Extract parameters from first track section data
             bank_msb, bank_lsb, program = 0, 0, 0
@@ -433,27 +513,22 @@ class SyxAnalyzer:
                 if is_default_encoding:
                     # Use QY70 track-type defaults based on track name
                     if is_drum:
-                        # RHY1, RHY2 = Drums
+                        # D1, D2 = Drums
                         bank_msb = 127
                         program = 0
                         voice_name = get_drum_kit_name(program)
-                    elif track_name == "BASS":
-                        # BASS = Acoustic Bass
+                    elif track_name == "BA":
+                        # BA = Acoustic Bass
                         bank_msb = 0
                         program = 32  # Acoustic Bass
                         voice_name = get_voice_name(program, bank_msb, bank_lsb)
-                    elif track_name in ("CHD1", "CHD2"):
-                        # Chord tracks = Piano
+                    elif track_name == "PC":
+                        # PC = Percussion/Chord - use Piano as default
                         bank_msb = 0
                         program = 0
                         voice_name = get_voice_name(program, bank_msb, bank_lsb)
-                    elif track_name == "PAD":
-                        # Pad = New Age Pad
-                        bank_msb = 0
-                        program = 88
-                        voice_name = get_voice_name(program, bank_msb, bank_lsb)
                     else:
-                        # PHR1, PHR2 = Piano
+                        # C1-C4 = Chord tracks = Piano
                         bank_msb = 0
                         program = 0
                         voice_name = get_voice_name(program, bank_msb, bank_lsb)
@@ -531,52 +606,85 @@ class SyxAnalyzer:
             )
             analysis.qy70_tracks.append(track_info)
 
-        # Build section info for 6 sections
-        for sec_idx in range(6):
-            sec_name = self.STYLE_SECTION_NAMES[sec_idx]
-
-            # Check phrase data (AL 0x00-0x05)
-            phrase_bytes = 0
-            phrase_data: Optional[bytes] = None
-            if sec_idx in analysis.sections:
-                phrase_bytes = analysis.sections[sec_idx].total_decoded_bytes
-                phrase_data = analysis.sections[sec_idx].decoded_data
-
-            # Check track data for this section
+        # Build section info for 6 sections (or 1 section for Pattern format)
+        if analysis.format_type == "pattern":
+            # Pattern format: single section containing all track data
+            # Track data is in AL 0x00-0x07 (one per track)
             track_bytes = 0
             active_tracks: List[int] = []
 
             for track_idx in range(8):
-                al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+                al = track_idx  # AL 0x00-0x07
                 if al in analysis.sections:
                     section_data = analysis.sections[al]
                     if section_data.total_decoded_bytes > 0:
                         track_bytes += section_data.total_decoded_bytes
                         active_tracks.append(track_idx + 1)
 
-            has_data = phrase_bytes > 0 or track_bytes > 0
+            has_data = track_bytes > 0
 
-            # Try to estimate bar count from phrase data size
-            # Rough heuristic: QY70 uses ~32-64 bytes per bar for phrase data
-            bar_count = 0
-            beat_count = 0
-            if phrase_bytes > 0:
-                # Estimate based on data size - more data = more bars
-                # This is a rough approximation
-                bar_count = max(1, phrase_bytes // 32)
-                beat_count = bar_count * 4  # Assume 4/4 time
+            # Estimate bar count from total track data
+            bar_count = max(1, track_bytes // 128) if track_bytes > 0 else 0
+            beat_count = bar_count * 4
 
             section_info = QY70SectionInfo(
-                index=sec_idx,
-                name=sec_name,
+                index=0,
+                name="Pattern",
                 has_data=has_data,
-                phrase_bytes=phrase_bytes,
+                phrase_bytes=0,
                 track_bytes=track_bytes,
                 active_tracks=active_tracks,
                 bar_count=bar_count,
                 beat_count=beat_count,
             )
             analysis.qy70_sections.append(section_info)
+        else:
+            # Style format: 6 sections with separate phrase and track data
+            for sec_idx in range(6):
+                sec_name = self.STYLE_SECTION_NAMES[sec_idx]
+
+                # Check phrase data (AL 0x00-0x05)
+                phrase_bytes = 0
+                phrase_data: Optional[bytes] = None
+                if sec_idx in analysis.sections:
+                    phrase_bytes = analysis.sections[sec_idx].total_decoded_bytes
+                    phrase_data = analysis.sections[sec_idx].decoded_data
+
+                # Check track data for this section
+                track_bytes = 0
+                active_tracks: List[int] = []
+
+                for track_idx in range(8):
+                    al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+                    if al in analysis.sections:
+                        section_data = analysis.sections[al]
+                        if section_data.total_decoded_bytes > 0:
+                            track_bytes += section_data.total_decoded_bytes
+                            active_tracks.append(track_idx + 1)
+
+                has_data = phrase_bytes > 0 or track_bytes > 0
+
+                # Try to estimate bar count from phrase data size
+                # Rough heuristic: QY70 uses ~32-64 bytes per bar for phrase data
+                bar_count = 0
+                beat_count = 0
+                if phrase_bytes > 0:
+                    # Estimate based on data size - more data = more bars
+                    # This is a rough approximation
+                    bar_count = max(1, phrase_bytes // 32)
+                    beat_count = bar_count * 4  # Assume 4/4 time
+
+                section_info = QY70SectionInfo(
+                    index=sec_idx,
+                    name=sec_name,
+                    has_data=has_data,
+                    phrase_bytes=phrase_bytes,
+                    track_bytes=track_bytes,
+                    active_tracks=active_tracks,
+                    bar_count=bar_count,
+                    beat_count=beat_count,
+                )
+                analysis.qy70_sections.append(section_info)
 
         # Calculate summary stats
         analysis.active_section_count = sum(1 for s in analysis.qy70_sections if s.has_data)

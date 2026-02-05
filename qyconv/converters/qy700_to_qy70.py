@@ -404,11 +404,12 @@ class QY700ToQY70Converter:
                             return True
             return False
 
-        # For 3072-byte files, check the section pointer at 0x120
-        config_offset = 0x120 + (section_idx * 2)
-        if config_offset + 2 <= len(self.q7p_data):
-            ptr_hi = self.q7p_data[config_offset]
-            ptr_lo = self.q7p_data[config_offset + 1]
+        # For 3072-byte files, check the section pointer table at 0x100
+        # (NOT 0x120 which is section config data)
+        ptr_offset = 0x100 + (section_idx * 2)
+        if ptr_offset + 2 <= len(self.q7p_data):
+            ptr_hi = self.q7p_data[ptr_offset]
+            ptr_lo = self.q7p_data[ptr_offset + 1]
 
             # 0xFEFE = empty/null section
             if ptr_hi == 0xFE and ptr_lo == 0xFE:
@@ -501,32 +502,39 @@ class QY700ToQY70Converter:
             track_header[19] = 0x0F
             track_header[20] = 0x10
 
-        # Pan flag and value (bytes 21-22)
-        if pan != 64:  # Non-default pan
-            track_header[21] = 0x41  # Pan valid flag
-            track_header[22] = pan & 0x7F
-        else:
-            track_header[21] = 0x41  # Pan valid flag
-            track_header[22] = 0x40  # Center
-
-        # Byte 23: Unknown, typically 0x00
+        # Pan area (bytes 21-23)
+        # Working QY70 files have 00 00 00 here, NOT 41 xx 00
+        # The pan flag (0x41) causes issues - set to zeros like working files
+        track_header[21] = 0x00
+        track_header[22] = 0x00
         track_header[23] = 0x00
 
         # Get MIDI data from parsed phrases (5120-byte files)
         midi_data = self._get_phrase_midi_for_track(section_idx, track_num)
 
+        # Build track data - MUST be exactly 128 bytes per block
+        # The QY70 expects fixed-size blocks
         if midi_data:
             # Combine header + MIDI data
-            track_data = bytes(track_header) + midi_data
+            full_data = bytes(track_header) + midi_data
         else:
-            # No MIDI data - create minimal 128-byte block with placeholder
-            track_data = bytearray(128)
-            track_data[:24] = track_header
+            # No MIDI data - create block with just header + placeholder
+            full_data = bytearray(128)
+            full_data[:24] = track_header
             # Add minimal MIDI placeholder
-            track_data[24:28] = bytes([0x1F, 0xA3, 0x60, 0x00])  # Observed in empty tracks
-            track_data[28:32] = bytes([0xDF, 0x77, 0xC0, 0x8F])
+            full_data[24:28] = bytes([0x1F, 0xA3, 0x60, 0x00])  # Observed in empty tracks
+            full_data[28:32] = bytes([0xDF, 0x77, 0xC0, 0x8F])
+            return bytes(full_data)
 
-        return bytes(track_data)
+        # Ensure each block is exactly 128 bytes
+        # If data is longer, it spans multiple blocks (handled by chunking)
+        # If data is shorter than 128 bytes, pad with zeros
+        if len(full_data) < 128:
+            padded = bytearray(128)
+            padded[: len(full_data)] = full_data
+            return bytes(padded)
+
+        return bytes(full_data)
 
     def _get_phrase_midi_for_track(self, section_idx: int, track_num: int) -> bytes:
         """

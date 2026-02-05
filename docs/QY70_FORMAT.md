@@ -333,6 +333,106 @@ The type indicator at header byte 0 also distinguishes:
 - `0x5E` = Style
 - `0x4C` = Pattern
 
+---
+
+## Pattern vs Style SysEx Format (Important Discovery)
+
+This section documents a critical difference between Pattern and Style SysEx formats discovered through reverse engineering.
+
+### Two Distinct AL Address Schemes
+
+QY70 SysEx files use **two different AL address schemes** depending on the file type:
+
+| Format | Header[0] | Track Data AL Range | Detection |
+|--------|-----------|---------------------|-----------|
+| **Pattern** | < 0x08 (e.g., 0x03) | AL 0x00-0x07 | `header[0] < 0x08` or only AL < 0x08 |
+| **Style** | >= 0x08 (e.g., 0x4C, 0x5E) | AL 0x08-0x37 | `header[0] >= 0x08` or AL >= 0x08 |
+
+### Pattern Format (AL 0x00-0x07)
+
+In **Pattern** format:
+- Track data is stored directly in AL addresses 0x00-0x07
+- Each AL corresponds directly to a track: `AL = track_index`
+- The file contains a single "section" (Pattern) rather than 6 style sections
+- This is a more compact format for single patterns
+
+Example AL distribution for Pattern format:
+```
+AL 0x00 = Track 0 (RHY1) data
+AL 0x03 = Track 3 (CHD1) data
+AL 0x04 = Track 4 (CHD2) data
+AL 0x05 = Track 5 (PAD) data
+AL 0x06 = Track 6 (PHR1) data
+AL 0x7F = Header/config
+```
+
+### Style Format (AL 0x08-0x37)
+
+In **Style** format:
+- Track data is stored in AL addresses 0x08-0x37
+- Each AL encodes both section and track: `AL = 0x08 + (section * 8) + track`
+- The file contains 6 style sections (Intro, Main A, Main B, Fill AB, Fill BA, Ending)
+- This allows each section to have different track arrangements
+
+Example AL distribution for Style format:
+```
+AL 0x08 = Section 0 (Intro), Track 0 (RHY1)
+AL 0x0B = Section 0 (Intro), Track 3 (CHD1)
+AL 0x0C = Section 0 (Intro), Track 4 (CHD2)
+AL 0x10 = Section 1 (Main A), Track 0 (RHY1)
+...
+AL 0x7F = Header/config
+```
+
+### Relationship Between Formats
+
+The two formats are related by an **offset of 8**:
+- Pattern AL 0x00 = Style AL 0x08 (Section 0, Track 0)
+- Pattern AL 0x03 = Style AL 0x0B (Section 0, Track 3)
+- etc.
+
+Both formats store track data in the **same internal structure** (header `08 04 82 01...`), just at different AL addresses.
+
+### Header Byte[0] as Format Indicator
+
+The first byte of the header section (AL=0x7F) indicates the format:
+
+| Header[0] Value | Format | Example File |
+|-----------------|--------|--------------|
+| 0x03 | Pattern | "P - Summer - 20231101.syx" |
+| 0x4C | Style (pattern-like) | "P - MR. Vain - 20231101.syx" |
+| 0x5E | Style (full) | "QY70_SGT.syx" |
+
+### Detection Algorithm
+
+```python
+def detect_format(header_decoded: bytes, al_addresses: set) -> str:
+    # Check header byte[0]
+    if header_decoded and len(header_decoded) > 0:
+        if header_decoded[0] < 0x08:
+            return "pattern"
+    
+    # Fallback: check AL address distribution
+    has_phrase_data = any(al < 8 and al != 0x7F for al in al_addresses)
+    has_track_data = any(8 <= al <= 0x37 for al in al_addresses)
+    
+    if has_track_data:
+        return "style"
+    elif has_phrase_data:
+        return "pattern"
+    return "unknown"
+```
+
+### Implications for Parsing
+
+When parsing QY70 SysEx:
+1. First detect the format using header[0] or AL distribution
+2. For **Pattern** format: look for track data in AL 0x00-0x07
+3. For **Style** format: look for track data in AL 0x08-0x37
+4. Both formats use the same track header structure after decoding
+
+---
+
 ### MIDI Event Estimation
 
 Track sequence data (bytes 24+) contains MIDI events. A rough event count can be estimated:

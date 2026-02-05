@@ -327,12 +327,17 @@ def display_full_syx_info(filepath: str) -> None:
 
     status = "[green]Valid[/green]" if analysis.valid else "[red]Invalid[/red]"
 
-    # Determine file type (Pattern or Style)
-    file_type = "Style" if analysis.active_section_count > 1 else "Pattern"
+    # Determine file type from format_type field
+    if analysis.format_type == "pattern":
+        file_type = "[cyan]Pattern[/cyan] (single pattern, AL 0x00-0x07)"
+    elif analysis.format_type == "style":
+        file_type = "[green]Style[/green] (full style, AL 0x08-0x37)"
+    else:
+        file_type = "[yellow]Unknown[/yellow]"
 
     overview = f"""[bold]File:[/bold] {filepath}
 [bold]Pattern/Style Name:[/bold] {analysis.pattern_name or "N/A"}
-[bold]Type:[/bold] {file_type} (QY70 SysEx)
+[bold]Format:[/bold] {file_type}
 [bold]Status:[/bold] {status}
 [bold]File Size:[/bold] {analysis.filesize} bytes
 [bold]Data Density:[/bold] {analysis.data_density:.1f}%
@@ -479,9 +484,7 @@ def display_full_syx_info(filepath: str) -> None:
 
     # QY70 track descriptions
     console.print()
-    console.print(
-        "[dim]Track Types: RHY1/RHY2=Rhythm (drums), BASS=Bass, CHD1/CHD2=Chords, PAD=Pad, PHR1/PHR2=Phrase[/dim]"
-    )
+    console.print("[dim]Track Types: D1/D2=Drums, PC=Percussion, BA=Bass, C1-C4=Chord[/dim]")
 
     # ═══════════════════════════════════════════════════════════════════════════
     # SECTION 5b: TRACK NOTE RANGES AND EVENTS
@@ -679,20 +682,34 @@ def display_full_syx_info(filepath: str) -> None:
     console.print("[bold yellow]▶ TRACK DATA SAMPLES (first 32 bytes each)[/bold yellow]")
     console.print("─" * 40)
 
+    track_names = ["D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"]
+
     for track_idx in range(8):
-        # Find first section with data for this track
-        for sec_idx in range(6):
-            al = 0x08 + (sec_idx * 8) + track_idx
+        # Check both Pattern format (AL 0x00-0x07) and Style format (AL 0x08-0x37)
+        found = False
+
+        if analysis.format_type == "pattern":
+            # Pattern format: track data in AL 0x00-0x07
+            al = track_idx
             if al in analysis.sections:
                 section = analysis.sections[al]
                 if section.total_decoded_bytes > 0:
-                    track_name = ["RHY1", "RHY2", "BASS", "CHD1", "CHD2", "PAD", "PHR1", "PHR2"][
-                        track_idx
-                    ]
                     preview_data = section.decoded_data[:32]
                     hex_str = " ".join(f"{b:02X}" for b in preview_data)
-                    console.print(f"[cyan]{track_name}:[/cyan] {hex_str}")
-                    break
+                    console.print(f"[cyan]{track_names[track_idx]}:[/cyan] {hex_str}")
+                    found = True
+
+        if not found:
+            # Style format: track data in AL 0x08-0x37
+            for sec_idx in range(6):
+                al = 0x08 + (sec_idx * 8) + track_idx
+                if al in analysis.sections:
+                    section = analysis.sections[al]
+                    if section.total_decoded_bytes > 0:
+                        preview_data = section.decoded_data[:32]
+                        hex_str = " ".join(f"{b:02X}" for b in preview_data)
+                        console.print(f"[cyan]{track_names[track_idx]}:[/cyan] {hex_str}")
+                        break
 
     # ═══════════════════════════════════════════════════════════════════════════
     # SECTION 11: MESSAGE LIST (first 20)
