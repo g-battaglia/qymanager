@@ -64,6 +64,29 @@ class QY700ToQY70Converter:
     # QY70 appears to use 128-byte blocks
     MAX_PAYLOAD = 128
 
+    # Offset maps for different file sizes
+    # Format: (3072-byte offset, 5120-byte offset)
+    OFFSETS = {
+        "NAME": (0x876, 0xA00),
+        "TEMPO": (0x188, 0xA08),
+        "TIME_SIG": (0x18A, 0xA0A),
+        "CHANNELS": (0x190, 0xA18),
+        "SECTION_DATA": (0x120, 0x120),  # Same for both
+        "PHRASE_DATA": (0x360, 0x360),  # Same start, different size
+        "SEQUENCE_DATA": (0x678, 0x678),  # Same start, different size
+        "VOLUME": (0x226, 0x226),  # Same for both (in header area)
+        "REVERB": (0x256, 0x256),
+        "PAN": (0x276, 0x276),
+        "CHORUS": (0x296, 0x296),
+    }
+
+    def _get_offset(self, name: str) -> int:
+        """Get the correct offset based on file size."""
+        offsets = self.OFFSETS.get(name)
+        if offsets is None:
+            raise ValueError(f"Unknown offset name: {name}")
+        return offsets[1] if self._is_extended else offsets[0]
+
     def __init__(self, device_number: int = 0):
         """
         Initialize converter.
@@ -74,6 +97,8 @@ class QY700ToQY70Converter:
         self.device_number = device_number & 0x0F
         self.q7p_data: bytes = b""
         self._pattern: Optional[Pattern] = None
+        self._file_size: int = 0
+        self._is_extended: bool = False  # True for 5120-byte files
 
     def convert(self, source_path: Union[str, Path]) -> bytes:
         """
@@ -97,13 +122,17 @@ class QY700ToQY70Converter:
         Convert Q7P bytes to SysEx format.
 
         Args:
-            q7p_data: Raw Q7P file data (3072 bytes)
+            q7p_data: Raw Q7P file data (3072 or 5120 bytes)
 
         Returns:
             Complete SysEx file data
         """
-        if len(q7p_data) != 3072:
-            raise ValueError(f"Invalid Q7P size: {len(q7p_data)} (expected 3072)")
+        if len(q7p_data) not in (3072, 5120):
+            raise ValueError(f"Invalid Q7P size: {len(q7p_data)} (expected 3072 or 5120)")
+
+        self.q7p_data = q7p_data
+        self._file_size = len(q7p_data)
+        self._is_extended = len(q7p_data) == 5120
 
         self.q7p_data = q7p_data
 
@@ -145,17 +174,37 @@ class QY700ToQY70Converter:
         # Build header data (based on QY70 format)
         header = bytearray(640)  # Approximate header size
 
-        # Pattern name at start (10 bytes)
-        name = self._pattern.name[:10].upper().ljust(10) if self._pattern else "NEW STYLE "
-        for i, char in enumerate(name):
-            header[i] = ord(char) if ord(char) < 128 else 0x20
+        # Extract pattern name from Q7P (8 or 10 bytes)
+        name_offset = self._get_offset("NAME")
+        if name_offset + 10 <= len(self.q7p_data):
+            name_data = self.q7p_data[name_offset : name_offset + 10]
+            for i, byte in enumerate(name_data[:10]):
+                if 0x20 <= byte <= 0x7E:  # Printable ASCII
+                    header[i] = byte
+                else:
+                    header[i] = 0x20  # Space for non-printable
+        else:
+            # Fallback to pattern name from decoder
+            name = self._pattern.name[:10].upper().ljust(10) if self._pattern else "NEW STYLE "
+            for i, char in enumerate(name):
+                header[i] = ord(char) if ord(char) < 128 else 0x20
 
-        # Tempo (location varies by firmware, try offset 0x0A)
-        tempo = self._pattern.settings.tempo if self._pattern else 120
-        header[0x0A] = tempo & 0x7F
+        # Extract tempo from Q7P
+        tempo_offset = self._get_offset("TEMPO")
+        if tempo_offset + 2 <= len(self.q7p_data):
+            raw_tempo = (self.q7p_data[tempo_offset] << 8) | self.q7p_data[tempo_offset + 1]
+            tempo = raw_tempo // 10 if raw_tempo > 0 else 120
+        else:
+            tempo = self._pattern.settings.tempo if self._pattern else 120
 
-        # Additional header fields would go here
-        # Based on reverse engineering of actual QY70 dumps
+        # Tempo in QY70 format (single byte at offset 0x0A)
+        header[0x0A] = min(255, max(40, tempo)) & 0x7F
+
+        # Extract time signature from Q7P
+        ts_offset = self._get_offset("TIME_SIG")
+        if ts_offset + 2 <= len(self.q7p_data):
+            header[0x0C] = self.q7p_data[ts_offset]
+            header[0x0D] = self.q7p_data[ts_offset + 1]
 
         # Split header into chunks and create messages
         for chunk_start in range(0, len(header), self.MAX_PAYLOAD):

@@ -109,6 +109,15 @@ def convert(
                 f"[dim]Output size: {len(syx_data)} bytes ({msg_count} SysEx messages)[/dim]"
             )
 
+            # Warnings about conversion limitations
+            console.print()
+            console.print("[yellow]IMPORTANT - Conversion Limitations:[/yellow]")
+            console.print("[yellow]  - QY700 has 16 tracks, QY70 only 8 tracks[/yellow]")
+            console.print("[yellow]  - Only first 8 tracks (TR1-TR8) are converted[/yellow]")
+            console.print("[yellow]  - Tracks 9-16 data will be lost[/yellow]")
+            console.print("[yellow]  - MIDI sequence data may not be fully preserved[/yellow]")
+            console.print()
+
         else:
             console.print(f"[red]Error: Unknown file type: {suffix}[/red]")
             console.print("Supported formats: .Q7P (QY700), .syx (QY70)")

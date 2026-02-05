@@ -128,13 +128,14 @@ class Q7PPatternDecoder:
         Initialize decoder with Q7P data.
 
         Args:
-            data: Complete Q7P file data (3072 bytes)
+            data: Complete Q7P file data (3072 or 5120 bytes)
         """
-        if len(data) != 3072:
-            raise ValueError(f"Invalid Q7P size: {len(data)} (expected 3072)")
+        if len(data) not in (3072, 5120):
+            raise ValueError(f"Invalid Q7P size: {len(data)} (expected 3072 or 5120)")
 
         self.data = data
         self.offsets = Q7POffsets()
+        self._is_extended = len(data) == 5120
 
     def decode(self) -> Pattern:
         """
@@ -161,7 +162,13 @@ class Q7PPatternDecoder:
 
     def _decode_name(self) -> str:
         """Extract pattern name."""
-        name = self.data[Q7POffsets.TEMPLATE_NAME : Q7POffsets.TEMPLATE_NAME + 10]
+        # Name offset differs between 3072 and 5120 byte files
+        if self._is_extended:
+            name_offset = 0xA00  # 5120-byte file
+        else:
+            name_offset = Q7POffsets.TEMPLATE_NAME  # 0x876 for 3072-byte file
+
+        name = self.data[name_offset : name_offset + 10]
         try:
             return name.decode("ascii").rstrip("\x00 ")
         except UnicodeDecodeError:
@@ -171,24 +178,22 @@ class Q7PPatternDecoder:
         """Decode pattern settings including tempo."""
         settings = PatternSettings()
 
-        # Tempo decoding
-        # The tempo appears to be stored in a complex format
-        # Based on analysis, we'll try multiple approaches
-
-        # Method 1: Direct byte at 0x188
-        tempo_byte = self.data[Q7POffsets.TEMPO_VALUE]
-        if 40 <= tempo_byte <= 240:
-            settings.tempo = tempo_byte
+        # Tempo offset differs between 3072 and 5120 byte files
+        if self._is_extended:
+            tempo_offset = 0xA08  # 5120-byte file
         else:
-            # Method 2: Scaled value
-            # Try 04 B0 at 0x188-0x189 = 1200 in big-endian / 10 = 120 BPM
-            tempo_word = struct.unpack(">H", self.data[0x188:0x18A])[0]
-            if tempo_word > 0:
-                calculated_tempo = tempo_word // 10
-                if 40 <= calculated_tempo <= 240:
-                    settings.tempo = calculated_tempo
-                else:
-                    settings.tempo = 120  # Default
+            tempo_offset = 0x188  # 3072-byte file
+
+        # Try big-endian word first (04 B0 = 1200 / 10 = 120 BPM)
+        tempo_word = struct.unpack(">H", self.data[tempo_offset : tempo_offset + 2])[0]
+        if tempo_word > 0:
+            calculated_tempo = tempo_word // 10
+            if 40 <= calculated_tempo <= 240:
+                settings.tempo = calculated_tempo
+            else:
+                settings.tempo = 120  # Default
+        else:
+            settings.tempo = 120  # Default
 
         return settings
 
