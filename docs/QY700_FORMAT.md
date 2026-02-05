@@ -259,16 +259,78 @@ Offset  Size  Description
 
 **Example:** `"USER TMPL "` (10 characters)
 
-## Phrase Data Area (0x360 - 0x677)
+## Phrase Data Format (5120-byte files)
 
-792 bytes containing MIDI event data for all sections.
+**DISCOVERED:** In 5120-byte Q7P files, phrase data is stored inline starting at offset 0x200.
 
-**Structure (hypothesis):**
-- Events encoded as delta-time + status + data
-- Organized by section and track
-- Uses compression for repeated patterns
+### Phrase Block Structure
 
-**Needs further reverse engineering.**
+Each phrase block has this structure:
+
+```
+Offset  Size  Description
+------  ----  -----------
+0-11    12    Phrase name (ASCII, space-padded)
+12-13   2     Marker: 0x03 0x1C
+14-17   4     Note range: 0x00 0x00 0x00 0x7F
+18-19   2     Track flags: 0x00 0x07
+20-23   4     MIDI setup: 0x90 0x00 0x00 0x00
+24-25   2     Tempo × 10 (big-endian, e.g., 0x04B0 = 120 BPM)
+26-27   2     MIDI start marker: 0xF0 0x00
+28+     var   MIDI events
+...     1     End marker: 0xF2
+...     var   Padding: 0x40 bytes
+```
+
+### MIDI Event Format (Yamaha QY Series)
+
+**KEY DISCOVERY:** QY70 and QY700 use the **same proprietary MIDI event format**!
+
+```
+D0 nn vv xx   = Drum note on (note, velocity, next-byte)
+E0 nn vv xx   = Melody note on (note, velocity, next-byte)
+C1 nn pp      = Alternate note encoding (note, param)
+A0-A7 dd      = Delta time (step type 0-7, duration)
+BE xx         = Note off / reset
+BC xx         = Control change
+F0 00         = Start of MIDI data
+F2            = End of phrase
+0x40          = Padding byte
+```
+
+### Delta Time Encoding
+
+The delta bytes (A0-A7) encode timing:
+- A0 = smallest step (high resolution)
+- A5 = larger step (lower resolution)
+- The second byte is the duration value
+
+### Example: Parsing a Drum Pattern
+
+```python
+# Hi-hat pattern from DECAY.Q7P
+# D0 1E 2A 58 A0 78 D0 1E 2A 58 A0 78 D0 1E 2E 58 A1 70
+#
+# Decoded:
+#   DrumNote 30 vel=42, Delta step=0 val=120
+#   DrumNote 30 vel=42, Delta step=0 val=120
+#   DrumNote 30 vel=46, Delta step=1 val=112
+```
+
+## Section Config Area (0x120)
+
+In 5120-byte files, this area contains phrase references:
+
+```
+Format: F0 00 FB phrase_idx 00 track_ref C0 04 F2
+```
+
+Each entry is 9 bytes, mapping sections to phrase indices.
+
+## Phrase Data Area (0x360 - 0x677) - 3072-byte files
+
+792 bytes containing phrase reference data for 3072-byte files.
+This format uses a different encoding than 5120-byte files.
 
 ## Sequence Events Area (0x678 - 0x86F)
 
@@ -276,8 +338,6 @@ Offset  Size  Description
 - Tempo changes
 - Program changes (possibly)
 - Other automation events
-
-**Needs further reverse engineering.**
 
 ## Fill Areas
 

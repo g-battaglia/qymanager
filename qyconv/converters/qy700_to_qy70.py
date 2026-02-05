@@ -7,10 +7,21 @@ Generates a complete bulk dump that can be loaded into QY70.
 The conversion process:
 1. Parse Q7P binary file
 2. Extract pattern settings (tempo, name, etc.)
-3. Extract section data for each of the 6 sections
-4. Encode data as 7-bit Yamaha format
-5. Generate SysEx messages with proper checksums
-6. Write complete .syx file
+3. Extract phrase/MIDI data (for 5120-byte files)
+4. Extract section data for each of the 6 sections
+5. Encode data as 7-bit Yamaha format
+6. Generate SysEx messages with proper checksums
+7. Write complete .syx file
+
+Key Discovery: QY70 and QY700 use the SAME proprietary MIDI event format:
+- D0 nn vv = Drum note on
+- E0 nn vv = Melody note on
+- C1 nn pp = Alternate note
+- A0-A7 dd = Delta time
+- BE xx    = Note off
+- F2       = End of phrase
+
+This means MIDI data can be transferred directly between formats!
 """
 
 from pathlib import Path
@@ -21,6 +32,7 @@ from qyconv.models.pattern import Pattern
 from qyconv.models.section import Section, SectionType
 from qyconv.formats.qy700.reader import QY700Reader
 from qyconv.formats.qy700.decoder import Q7PPatternDecoder, Q7POffsets
+from qyconv.formats.qy700.phrase_parser import QY700PhraseParser, PhraseBlock
 from qyconv.utils.yamaha_7bit import encode_7bit
 from qyconv.utils.checksum import calculate_yamaha_checksum
 
@@ -99,6 +111,7 @@ class QY700ToQY70Converter:
         self._pattern: Optional[Pattern] = None
         self._file_size: int = 0
         self._is_extended: bool = False  # True for 5120-byte files
+        self._phrases: List[PhraseBlock] = []  # Parsed phrase blocks
 
     def convert(self, source_path: Union[str, Path]) -> bytes:
         """
@@ -134,7 +147,12 @@ class QY700ToQY70Converter:
         self._file_size = len(q7p_data)
         self._is_extended = len(q7p_data) == 5120
 
-        self.q7p_data = q7p_data
+        # Parse phrases from 5120-byte files
+        if self._is_extended:
+            phrase_parser = QY700PhraseParser(q7p_data)
+            self._phrases = phrase_parser.parse_phrases()
+        else:
+            self._phrases = []
 
         # Parse Q7P to get pattern info
         decoder = Q7PPatternDecoder(q7p_data)
@@ -295,7 +313,7 @@ class QY700ToQY70Converter:
         """
         Extract track data from Q7P and build proper QY70 track structure.
 
-        QY70 Track Block Structure (128 bytes):
+        QY70 Track Block Structure (128 bytes per block, can span multiple blocks):
         - Offset 0-11: Common header: 08 04 82 01 00 40 20 08 04 82 01 00
         - Offset 12-13: Constant: 06 1C
         - Offset 14-15: Voice encoding (0x40 0x80 = default, or Bank MSB / Program)
@@ -304,14 +322,14 @@ class QY700ToQY70Converter:
         - Offset 21: Flag (0x41 = pan valid, 0x00 = use default)
         - Offset 22: Pan value (0-127, 64=center)
         - Offset 23: Unknown
-        - Offset 24+: MIDI sequence data placeholder
+        - Offset 24+: MIDI sequence data (uses same format as Q7P!)
 
         Args:
             section_idx: Section index (0-5)
             track_num: Track number (0-7)
 
         Returns:
-            128-byte QY70 track data block
+            Track data bytes (may be longer than 128 bytes for tracks with MIDI data)
         """
         if not self.q7p_data:
             return b""
@@ -339,62 +357,105 @@ class QY700ToQY70Converter:
         ch_offset = 0x190 + track_num
         channel = self.q7p_data[ch_offset] if ch_offset < len(self.q7p_data) else track_num
 
-        # Build 128-byte QY70 track block
-        track_data = bytearray(128)
+        # Build QY70 track header (24 bytes)
+        track_header = bytearray(24)
 
         # Common header (bytes 0-11) - observed in all QY70 track dumps
-        track_data[0:12] = bytes(
+        track_header[0:12] = bytes(
             [0x08, 0x04, 0x82, 0x01, 0x00, 0x40, 0x20, 0x08, 0x04, 0x82, 0x01, 0x00]
         )
 
         # Constant bytes (12-13)
-        track_data[12:14] = bytes([0x06, 0x1C])
+        track_header[12:14] = bytes([0x06, 0x1C])
 
         # Voice encoding (bytes 14-15)
         # 0x40 0x80 = use track-type default voice
-        # Otherwise: Bank MSB, Program
-        # For now, use default encoding since Q7P doesn't store QY70-style voice info
-        track_data[14] = 0x40
-        track_data[15] = 0x80
+        track_header[14] = 0x40
+        track_header[15] = 0x80
 
         # Note range (bytes 16-17)
         if is_drum_track:
             # Drum tracks use special note range encoding
-            track_data[16] = 0x87
-            track_data[17] = 0xF8
+            track_header[16] = 0x87
+            track_header[17] = 0xF8
             # Bytes 18-20 for drums
-            track_data[18] = 0x6E
-            track_data[19] = 0x01
-            track_data[20] = 0x7E
+            track_header[18] = 0x80
+            track_header[19] = 0x8E
+            track_header[20] = 0x83
         else:
-            # Melody tracks: full range (C-2 to G8 = 0 to 127)
-            track_data[16] = 0x00  # Note low
-            track_data[17] = 0x7F  # Note high
+            # Melody tracks: full range
+            track_header[16] = 0x07
+            track_header[17] = 0x78
             # Bytes 18-20 for melody
-            track_data[18] = 0x4E
-            track_data[19] = 0x00
-            track_data[20] = 0x08
+            track_header[18] = 0x00
+            track_header[19] = 0x0F
+            track_header[20] = 0x10
 
         # Pan flag and value (bytes 21-22)
         if pan != 64:  # Non-default pan
-            track_data[21] = 0x41  # Pan valid flag
-            track_data[22] = pan & 0x7F
+            track_header[21] = 0x41  # Pan valid flag
+            track_header[22] = pan & 0x7F
         else:
-            track_data[21] = 0x00  # Use default
-            track_data[22] = 0x40  # Center
+            track_header[21] = 0x41  # Pan valid flag
+            track_header[22] = 0x40  # Center
 
         # Byte 23: Unknown, typically 0x00
-        track_data[23] = 0x00
+        track_header[23] = 0x00
 
-        # Volume can be encoded in the sequence data, but for now
-        # we'll add it as a controller message placeholder
-        # Bytes 24+: Minimal sequence data placeholder
-        track_data[24] = volume & 0x7F
-        track_data[25] = reverb & 0x7F
-        track_data[26] = chorus & 0x7F
-        track_data[27] = channel & 0x0F
+        # Get MIDI data from parsed phrases (5120-byte files)
+        midi_data = self._get_phrase_midi_for_track(section_idx, track_num)
+
+        if midi_data:
+            # Combine header + MIDI data
+            track_data = bytes(track_header) + midi_data
+        else:
+            # No MIDI data - create minimal 128-byte block with placeholder
+            track_data = bytearray(128)
+            track_data[:24] = track_header
+            # Add minimal MIDI placeholder
+            track_data[24:28] = bytes([0x1F, 0xA3, 0x60, 0x00])  # Observed in empty tracks
+            track_data[28:32] = bytes([0xDF, 0x77, 0xC0, 0x8F])
 
         return bytes(track_data)
+
+    def _get_phrase_midi_for_track(self, section_idx: int, track_num: int) -> bytes:
+        """
+        Get MIDI data for a specific track from parsed phrases.
+
+        The mapping between sections/tracks and phrases is determined by
+        the section config at 0x120 in 5120-byte files.
+
+        Args:
+            section_idx: Section index (0-5 for QY70 sections)
+            track_num: Track number (0-7)
+
+        Returns:
+            Raw MIDI event bytes, or empty if no phrase found
+        """
+        if not self._phrases:
+            return b""
+
+        # For 5120-byte files, phrases are referenced by the section config
+        # The config at 0x120 has format: F0 00 FB phrase_idx 00 track_ref C0 04 F2
+        # Each entry is 9 bytes
+
+        config_offset = 0x120 + (section_idx * 9)
+        if config_offset + 9 > len(self.q7p_data):
+            return b""
+
+        # Check for valid config entry
+        if self.q7p_data[config_offset] not in (0xF0, 0xF1):
+            return b""
+
+        phrase_idx = self.q7p_data[config_offset + 3]
+
+        # Get the phrase if it exists
+        if phrase_idx < len(self._phrases):
+            phrase = self._phrases[phrase_idx]
+            # Return the raw MIDI data - QY70 uses the same event format!
+            return phrase.raw_data
+
+        return b""
 
     def _create_bulk_dump_message(self, al: int, data: bytes) -> bytes:
         """
