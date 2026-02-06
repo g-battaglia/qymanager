@@ -1,10 +1,10 @@
-# QYConv
+# QY Manager
 
-Bidirectional converter and analyzer for Yamaha QY70 and QY700 pattern files.
+Bidirectional converter and manager for Yamaha QY70 and QY700 pattern files.
 
 ## Overview
 
-QYConv is a Python library and CLI tool for converting, analyzing, and editing pattern/style data between Yamaha QY70 SysEx files (.syx) and QY700 binary pattern files (.Q7P).
+QY Manager (formerly QYConv) is a Python library and CLI tool for converting, analyzing, and editing pattern/style data between Yamaha QY70 SysEx files (.syx) and QY700 binary pattern files (.Q7P).
 
 ## Features
 
@@ -20,8 +20,8 @@ QYConv is a Python library and CLI tool for converting, analyzing, and editing p
 
 ```bash
 # From source
-git clone https://github.com/qyconv/qyconv.git
-cd qyconv
+git clone https://github.com/qymanager/qymanager.git
+cd qymanager
 pip install -e .
 
 # With development dependencies
@@ -30,50 +30,50 @@ pip install -e ".[dev]"
 
 ## CLI Usage
 
-QYConv provides a modern command-line interface powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/).
+QY Manager provides a modern command-line interface powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/).
 
 ### Commands Overview
 
 ```bash
-qyconv --help              # Show all commands
-qyconv --version           # Show version (v0.4.0)
+qymanager --help              # Show all commands
+qymanager --version           # Show version (v0.4.0)
 ```
 
 **Analysis Commands:**
 ```bash
-qyconv info      # Pattern information (basic or --full)
-qyconv tracks    # Detailed track/channel info with bar graphics
-qyconv sections  # Section configuration details
-qyconv phrase    # Phrase/sequence data analysis
-qyconv map       # Visual file structure map
-qyconv dump      # Annotated hex dump
+qymanager info      # Pattern information (basic or --full)
+qymanager tracks    # Detailed track/channel info with bar graphics
+qymanager sections  # Section configuration details
+qymanager phrase    # Phrase/sequence data analysis
+qymanager map       # Visual file structure map
+qymanager dump      # Annotated hex dump
 ```
 
 **Utility Commands:**
 ```bash
-qyconv diff      # Compare two Q7P files
-qyconv validate  # Validate file structure
-qyconv convert   # Convert between formats
+qymanager diff      # Compare two Q7P files
+qymanager validate  # Validate file structure
+qymanager convert   # Convert between formats
 ```
 
 ---
 
-### `qyconv info` - Pattern Analysis
+### `qymanager info` - Pattern Analysis
 
 Display pattern information from Q7P or SysEx files.
 
 ```bash
 # Basic info
-qyconv info pattern.Q7P
+qymanager info pattern.Q7P
 
 # Full extended analysis (all details)
-qyconv info pattern.Q7P --full
+qymanager info pattern.Q7P --full
 
 # With hex dumps
-qyconv info pattern.Q7P --hex
+qymanager info pattern.Q7P --hex
 
 # Output as JSON
-qyconv info pattern.Q7P --json
+qymanager info pattern.Q7P --json
 ```
 
 #### Options
@@ -117,19 +117,19 @@ qyconv info pattern.Q7P --json
 
 ---
 
-### `qyconv tracks` - Track Information
+### `qymanager tracks` - Track Information
 
 Display detailed track/channel information with bar graphics.
 
 ```bash
 # All tracks
-qyconv tracks pattern.Q7P
+qymanager tracks pattern.Q7P
 
 # Specific track (1-8)
-qyconv tracks pattern.Q7P --track 1
+qymanager tracks pattern.Q7P --track 1
 
 # Summary table only
-qyconv tracks pattern.Q7P --summary
+qymanager tracks pattern.Q7P --summary
 ```
 
 #### Example Output
@@ -151,42 +151,42 @@ qyconv tracks pattern.Q7P --summary
 
 ---
 
-### `qyconv sections` - Section Details
+### `qymanager sections` - Section Details
 
 Display detailed section information.
 
 ```bash
 # All sections
-qyconv sections pattern.Q7P
+qymanager sections pattern.Q7P
 
 # Specific section (0-5)
-qyconv sections pattern.Q7P --section 0
+qymanager sections pattern.Q7P --section 0
 
 # Active sections only
-qyconv sections pattern.Q7P --active
+qymanager sections pattern.Q7P --active
 
 # Summary table
-qyconv sections pattern.Q7P --summary
+qymanager sections pattern.Q7P --summary
 ```
 
 ---
 
-### `qyconv phrase` - Phrase/Sequence Analysis
+### `qymanager phrase` - Phrase/Sequence Analysis
 
 Analyze phrase and sequence data areas with event detection.
 
 ```bash
 # Full analysis
-qyconv phrase pattern.Q7P
+qymanager phrase pattern.Q7P
 
 # Sequence area only
-qyconv phrase pattern.Q7P --area sequence
+qymanager phrase pattern.Q7P --area sequence
 
 # With data density heatmap
-qyconv phrase pattern.Q7P --heatmap
+qymanager phrase pattern.Q7P --heatmap
 
 # Without hex dump
-qyconv phrase pattern.Q7P --no-hex
+qymanager phrase pattern.Q7P --no-hex
 ```
 
 #### Features
@@ -198,16 +198,16 @@ qyconv phrase pattern.Q7P --no-hex
 
 ---
 
-### `qyconv map` - File Structure Map
+### `qymanager map` - File Structure Map
 
 Visual map of Q7P file structure and data density.
 
 ```bash
 # Basic map
-qyconv map pattern.Q7P
+qymanager map pattern.Q7P
 
 # With hex preview of each region
-qyconv map pattern.Q7P --detailed
+qymanager map pattern.Q7P --detailed
 ```
 
 #### Example Output
@@ -231,27 +231,27 @@ Overall Data Density: 19.8% (607/3072 bytes)
 
 ---
 
-### `qyconv dump` - Annotated Hex Dump
+### `qymanager dump` - Annotated Hex Dump
 
 Color-coded hex dump with region annotations.
 
 ```bash
 # Full file dump
-qyconv dump pattern.Q7P
+qymanager dump pattern.Q7P
 
 # Specific region
-qyconv dump pattern.Q7P --region PHRASE
-qyconv dump pattern.Q7P --region TEMPO
-qyconv dump pattern.Q7P --region VOLUMES
+qymanager dump pattern.Q7P --region PHRASE
+qymanager dump pattern.Q7P --region TEMPO
+qymanager dump pattern.Q7P --region VOLUMES
 
 # Byte range
-qyconv dump pattern.Q7P --start 0x360 --length 128
+qymanager dump pattern.Q7P --start 0x360 --length 128
 
 # Only lines with non-filler data
-qyconv dump pattern.Q7P --non-zero
+qymanager dump pattern.Q7P --non-zero
 
 # Without legend
-qyconv dump pattern.Q7P --no-legend
+qymanager dump pattern.Q7P --no-legend
 ```
 
 #### Available Regions
@@ -262,13 +262,13 @@ qyconv dump pattern.Q7P --no-legend
 
 ---
 
-### `qyconv diff` - Compare Files
+### `qymanager diff` - Compare Files
 
 Compare two Q7P pattern files and show differences.
 
 ```bash
-qyconv diff pattern1.Q7P pattern2.Q7P
-qyconv diff pattern1.Q7P pattern2.Q7P --verbose
+qymanager diff pattern1.Q7P pattern2.Q7P
+qymanager diff pattern1.Q7P pattern2.Q7P --verbose
 ```
 
 #### Example Output
@@ -294,14 +294,14 @@ qyconv diff pattern1.Q7P pattern2.Q7P --verbose
 
 ---
 
-### `qyconv validate` - File Validation
+### `qymanager validate` - File Validation
 
 Validate Q7P file structure and content.
 
 ```bash
-qyconv validate pattern.Q7P
-qyconv validate pattern.Q7P --strict  # Warnings as errors
-qyconv validate pattern.Q7P --verbose
+qymanager validate pattern.Q7P
+qymanager validate pattern.Q7P --strict  # Warnings as errors
+qymanager validate pattern.Q7P --verbose
 ```
 
 #### Checks Performed
@@ -316,19 +316,19 @@ qyconv validate pattern.Q7P --verbose
 
 ---
 
-### `qyconv convert` - Format Conversion
+### `qymanager convert` - Format Conversion
 
 Convert between QY70 SysEx and QY700 Q7P formats.
 
 ```bash
 # QY70 → QY700
-qyconv convert style.syx -o pattern.Q7P
+qymanager convert style.syx -o pattern.Q7P
 
 # QY700 → QY70
-qyconv convert pattern.Q7P -o style.syx
+qymanager convert pattern.Q7P -o style.syx
 
 # With template
-qyconv convert style.syx -o pattern.Q7P -t template.Q7P
+qymanager convert style.syx -o pattern.Q7P -t template.Q7P
 ```
 
 ---
@@ -338,7 +338,7 @@ qyconv convert style.syx -o pattern.Q7P -t template.Q7P
 ### Pattern Analysis
 
 ```python
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
 analyzer = Q7PAnalyzer()
 analysis = analyzer.analyze_file("pattern.Q7P")
@@ -358,8 +358,8 @@ if analysis.phrase_stats:
 ### Reading Files
 
 ```python
-from qyconv.formats.qy70.reader import QY70Reader
-from qyconv.formats.qy700.reader import QY700Reader
+from qymanager.formats.qy70.reader import QY70Reader
+from qymanager.formats.qy700.reader import QY700Reader
 
 # Read QY70 SysEx file
 pattern = QY70Reader.read("style.syx")
@@ -371,7 +371,7 @@ pattern = QY700Reader.read("pattern.Q7P")
 ### Converting Between Formats
 
 ```python
-from qyconv.converters import convert_qy70_to_qy700, convert_qy700_to_qy70
+from qymanager.converters import convert_qy70_to_qy700, convert_qy700_to_qy70
 
 # QY70 → QY700
 convert_qy70_to_qy700(
@@ -451,31 +451,6 @@ See the [docs](docs/) folder for detailed documentation:
 
 - [QY70 Format](docs/QY70_FORMAT.md) - SysEx structure and encoding
 - [QY700 Format](docs/QY700_FORMAT.md) - Binary file structure
-
----
-
-## Changelog
-
-### v0.3.0 (Current)
-- Added 5 new analysis commands: `dump`, `map`, `tracks`, `sections`, `phrase`
-- Added `--full` flag to `info` for complete extended analysis
-- Added bar graphics for volume, pan, reverb (e.g., `91 [████████░░░░] 71%`)
-- Added centered pan bar visualization
-- Added file structure visual mapping
-- Added phrase/sequence data analysis with MIDI event detection
-- Added data density heatmaps
-- Removed duplicate tables from basic `info` output
-- Updated to v0.3.0
-
-### v0.2.0
-- Added `diff` and `validate` commands
-- Added phrase statistics analysis
-- Fixed pan offset (0x276 instead of 0x270)
-- Fixed time signature lookup table
-- Added XG voice name lookup
-
-### v0.1.0
-- Initial release with `info` and `convert` commands
 
 ---
 

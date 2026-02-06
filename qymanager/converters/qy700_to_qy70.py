@@ -28,13 +28,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import struct
 
-from qyconv.models.pattern import Pattern
-from qyconv.models.section import Section, SectionType
-from qyconv.formats.qy700.reader import QY700Reader
-from qyconv.formats.qy700.decoder import Q7PPatternDecoder, Q7POffsets
-from qyconv.formats.qy700.phrase_parser import QY700PhraseParser, PhraseBlock
-from qyconv.utils.yamaha_7bit import encode_7bit
-from qyconv.utils.checksum import calculate_yamaha_checksum
+from qymanager.models.pattern import Pattern
+from qymanager.models.section import Section, SectionType
+from qymanager.formats.qy700.reader import QY700Reader
+from qymanager.formats.qy700.decoder import Q7PPatternDecoder, Q7POffsets
+from qymanager.formats.qy700.phrase_parser import QY700PhraseParser, PhraseBlock
+from qymanager.utils.yamaha_7bit import encode_7bit
+from qymanager.utils.checksum import calculate_yamaha_checksum
 
 
 class QY700ToQY70Converter:

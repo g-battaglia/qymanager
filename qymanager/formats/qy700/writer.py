@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Optional, Union
 import struct
 
-from qyconv.models.pattern import Pattern
-from qyconv.models.section import Section, SectionType
+from qymanager.models.pattern import Pattern
+from qymanager.models.section import Section, SectionType
 
 
 class QY700Writer:

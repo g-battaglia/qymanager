@@ -7,7 +7,7 @@ from pathlib import Path
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from qyconv.utils.yamaha_7bit import encode_7bit, decode_7bit
+from qymanager.utils.yamaha_7bit import encode_7bit, decode_7bit
 
 
 class TestYamaha7BitCodec:

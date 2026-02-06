@@ -476,43 +476,43 @@ These areas need further research:
 
 ## Tools
 
-Use the `qyconv` CLI tool to analyze Q7P files:
+Use the `qymanager` CLI tool to analyze Q7P files:
 
 ```bash
 # Basic pattern info
-qyconv info pattern.Q7P
+qymanager info pattern.Q7P
 
 # Complete extended analysis with bar graphics
-qyconv info pattern.Q7P --full
+qymanager info pattern.Q7P --full
 
 # Visual file structure map
-qyconv map pattern.Q7P
+qymanager map pattern.Q7P
 
 # Annotated hex dump
-qyconv dump pattern.Q7P
-qyconv dump pattern.Q7P --region PHRASE
-qyconv dump pattern.Q7P --region TEMPO
+qymanager dump pattern.Q7P
+qymanager dump pattern.Q7P --region PHRASE
+qymanager dump pattern.Q7P --region TEMPO
 
 # Detailed track info with bar graphics
-qyconv tracks pattern.Q7P
-qyconv tracks pattern.Q7P --track 1
+qymanager tracks pattern.Q7P
+qymanager tracks pattern.Q7P --track 1
 
 # Section details
-qyconv sections pattern.Q7P
-qyconv sections pattern.Q7P --active
+qymanager sections pattern.Q7P
+qymanager sections pattern.Q7P --active
 
 # Phrase/sequence analysis with MIDI event detection
-qyconv phrase pattern.Q7P
-qyconv phrase pattern.Q7P --heatmap
+qymanager phrase pattern.Q7P
+qymanager phrase pattern.Q7P --heatmap
 
 # Compare two files
-qyconv diff pattern1.Q7P pattern2.Q7P
+qymanager diff pattern1.Q7P pattern2.Q7P
 
 # Validate structure
-qyconv validate pattern.Q7P
+qymanager validate pattern.Q7P
 
 # Convert from QY70 format
-qyconv convert style.syx -o pattern.Q7P -t template.Q7P
+qymanager convert style.syx -o pattern.Q7P -t template.Q7P
 ```
 
 ### Available Dump Regions

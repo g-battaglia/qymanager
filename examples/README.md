@@ -1,6 +1,6 @@
-# QYConv Examples
+# QY Manager Examples
 
-This directory contains example scripts demonstrating how to use the qyconv library.
+This directory contains example scripts demonstrating how to use the `qymanager` library.
 
 ## Examples
 
@@ -49,11 +49,11 @@ python modify_pattern.py
 
 ## Requirements
 
-Make sure you're in the project root directory or have qyconv installed:
+Make sure you're in the project root directory or have `qymanager` installed:
 
 ```bash
 # From project root
-cd /path/to/qyconv
+cd /path/to/qymanager
 pip install -e .
 
 # Or run with PYTHONPATH

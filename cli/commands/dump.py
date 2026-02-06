@@ -143,13 +143,13 @@ def dump(
 
     Examples:
 
-        qyconv dump pattern.Q7P
+        qymanager dump pattern.Q7P
 
-        qyconv dump pattern.Q7P --region PHRASE
+        qymanager dump pattern.Q7P --region PHRASE
 
-        qyconv dump pattern.Q7P --start 0x360 --length 128
+        qymanager dump pattern.Q7P --start 0x360 --length 128
 
-        qyconv dump pattern.Q7P --non-zero
+        qymanager dump pattern.Q7P --non-zero
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

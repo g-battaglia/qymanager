@@ -9,7 +9,7 @@ import sys
 
 sys.path.insert(0, "..")
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
 
 def main():

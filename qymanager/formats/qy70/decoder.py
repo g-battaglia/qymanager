@@ -13,10 +13,10 @@ Based on reverse engineering of QY70 SysEx data structure:
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-from qyconv.models.pattern import Pattern, PatternSettings
-from qyconv.models.section import Section, SectionType
-from qyconv.models.track import Track, TrackSettings
-from qyconv.models.phrase import Phrase, MidiEvent, EventType
+from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.section import Section, SectionType
+from qymanager.models.track import Track, TrackSettings
+from qymanager.models.phrase import Phrase, MidiEvent, EventType
 
 
 @dataclass

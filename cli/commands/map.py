@@ -146,9 +146,9 @@ def map(
 
     Examples:
 
-        qyconv map pattern.Q7P
+        qymanager map pattern.Q7P
 
-        qyconv map pattern.Q7P --detailed
+        qymanager map pattern.Q7P --detailed
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

@@ -9,7 +9,7 @@ import sys
 
 sys.path.insert(0, "..")
 
-from qyconv.analysis.syx_analyzer import SyxAnalyzer
+from qymanager.analysis.syx_analyzer import SyxAnalyzer
 
 
 def main():

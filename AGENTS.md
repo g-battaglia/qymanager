@@ -1,8 +1,8 @@
-# AGENTS.md - Coding Agent Instructions for qyconv
+# AGENTS.md - Coding Agent Instructions for qymanager
 
 ## Project Overview
 
-QYConv is a Python library and CLI for converting pattern/style data between
+QY Manager is a Python library and CLI for converting pattern/style data between
 Yamaha QY70 SysEx (.syx) and QY700 binary (.Q7P) formats. Both use Yamaha XG.
 
 **Key domains**: MIDI, SysEx, binary file parsing, Yamaha XG synthesizers.
@@ -46,17 +46,17 @@ pytest                                              # All tests
 pytest tests/test_7bit_codec.py                     # Single file
 pytest tests/test_7bit_codec.py::TestYamaha7BitCodec::test_roundtrip  # Single test
 pytest -v                                           # Verbose
-pytest --cov=qyconv                                 # With coverage
+pytest --cov=qymanager                              # With coverage
 pytest -k "codec"                                   # Pattern match
 ```
 
 ## Linting and Formatting
 
 ```bash
-black qyconv cli tests          # Format (line-length 100)
-ruff check qyconv cli           # Lint
-ruff check --fix qyconv cli     # Lint + autofix
-mypy qyconv cli                 # Type check
+black qymanager cli tests          # Format (line-length 100)
+ruff check qymanager cli           # Lint
+ruff check --fix qymanager cli     # Lint + autofix
+mypy qymanager cli                 # Type check
 ```
 
 ---
@@ -77,7 +77,7 @@ from typing import Dict, List, Optional, Tuple
 from rich.console import Console
 
 # 3. Local
-from qyconv.models.pattern import Pattern
+from qymanager.models.pattern import Pattern
 ```
 
 ### Naming Conventions
@@ -127,7 +127,7 @@ class TrackInfo:
 ## Project Structure
 
 ```
-qyconv/
+qymanager/
 ├── cli/                    # CLI (Typer + Rich)
 │   ├── app.py             # Entry point, command registration
 │   ├── commands/          # Command implementations
@@ -143,7 +143,7 @@ qyconv/
 │   └── display/           # Rich formatting
 │       ├── tables.py      # Table displays
 │       └── formatters.py  # Bar graphics, formatting utils
-├── qyconv/                # Core library
+├── qymanager/             # Core library
 │   ├── analysis/          # q7p_analyzer, syx_analyzer
 │   ├── converters/        # qy70_to_qy700, qy700_to_qy70
 │   ├── formats/qy70/      # SysEx parser

@@ -23,10 +23,10 @@ import zlib
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from qyconv.models.pattern import Pattern, PatternSettings
-from qyconv.models.section import Section, SectionType
-from qyconv.formats.qy70.reader import QY70Reader
-from qyconv.formats.qy70.sysex_parser import SysExParser
+from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.section import Section, SectionType
+from qymanager.formats.qy70.reader import QY70Reader
+from qymanager.formats.qy70.sysex_parser import SysExParser
 
 
 # Embedded TXX.Q7P template (compressed with zlib, base64 encoded)

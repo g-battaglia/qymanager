@@ -7,10 +7,10 @@ Reads .Q7P binary files and converts them to the common Pattern model.
 from pathlib import Path
 from typing import Optional, Union
 
-from qyconv.models.pattern import Pattern, PatternSettings
-from qyconv.models.section import Section, SectionType
-from qyconv.models.track import Track, TrackSettings, create_default_tracks
-from qyconv.formats.qy700.binary_parser import Q7PParser, Q7PHeader
+from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.section import Section, SectionType
+from qymanager.models.track import Track, TrackSettings, create_default_tracks
+from qymanager.formats.qy700.binary_parser import Q7PParser, Q7PHeader
 
 
 class QY700Reader:

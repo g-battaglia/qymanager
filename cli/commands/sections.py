@@ -11,7 +11,7 @@ from rich.table import Table
 from rich.text import Text
 from rich import box
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 from cli.display.formatters import hex_with_ascii, density_bar
 
 console = Console()
@@ -207,11 +207,11 @@ def sections(
 
     Examples:
 
-        qyconv sections pattern.Q7P
+        qymanager sections pattern.Q7P
 
-        qyconv sections pattern.Q7P --section 0
+        qymanager sections pattern.Q7P --section 0
 
-        qyconv sections pattern.Q7P --active --summary
+        qymanager sections pattern.Q7P --active --summary
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

@@ -129,7 +129,7 @@ def main():
 
     # Verify changes
     print("=== Verifying Changes ===")
-    from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+    from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
     analyzer = Q7PAnalyzer()
     analysis = analyzer.analyze_file(output_file)

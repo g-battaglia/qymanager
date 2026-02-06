@@ -13,9 +13,9 @@ from rich.text import Text
 from rich.columns import Columns
 from rich import box
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalysis, SectionInfo, TrackInfo, PhraseStats
-from qyconv.analysis.syx_analyzer import SyxAnalysis, SectionData, QY70TrackInfo, QY70SectionInfo
-from qyconv.utils.xg_voices import get_voice_name
+from qymanager.analysis.q7p_analyzer import Q7PAnalysis, SectionInfo, TrackInfo, PhraseStats
+from qymanager.analysis.syx_analyzer import SyxAnalysis, SectionData, QY70TrackInfo, QY70SectionInfo
+from qymanager.utils.xg_voices import get_voice_name
 
 
 console = Console()
@@ -518,14 +518,14 @@ def display_file_info(
     suffix = path.suffix.lower()
 
     if suffix == ".q7p":
-        from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+        from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
         analyzer = Q7PAnalyzer()
         analysis = analyzer.analyze_file(filepath)
         display_q7p_info(analysis, show_hex=show_hex, show_raw=show_raw)
 
     elif suffix == ".syx":
-        from qyconv.analysis.syx_analyzer import SyxAnalyzer
+        from qymanager.analysis.syx_analyzer import SyxAnalyzer
 
         analyzer = SyxAnalyzer()
         analysis = analyzer.analyze_file(filepath)

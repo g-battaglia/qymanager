@@ -2,9 +2,9 @@
 QYConv Command Line Interface.
 
 Usage:
-    qyconv input.syx --output output.Q7P
-    qyconv input.Q7P --output output.syx
-    qyconv --info file.Q7P
+    qymanager input.syx --output output.Q7P
+    qymanager input.Q7P --output output.syx
+    qymanager --info file.Q7P
 """
 
 import argparse
@@ -15,7 +15,7 @@ from pathlib import Path
 def main():
     """Main entry point for CLI."""
     parser = argparse.ArgumentParser(
-        prog="qyconv", description="Convert between QY70 SysEx and QY700 Q7P pattern formats"
+        prog="qymanager", description="Convert between QY70 SysEx and QY700 Q7P pattern formats"
     )
 
     parser.add_argument("input", nargs="?", help="Input file (.syx or .Q7P)")
@@ -45,10 +45,10 @@ def main():
         return 1
 
     # Import here to avoid slow startup
-    from qyconv.formats.qy70.reader import QY70Reader
-    from qyconv.formats.qy700.reader import QY700Reader
-    from qyconv.formats.qy70.writer import QY70Writer
-    from qyconv.formats.qy700.writer import QY700Writer
+    from qymanager.formats.qy70.reader import QY70Reader
+    from qymanager.formats.qy700.reader import QY700Reader
+    from qymanager.formats.qy70.writer import QY70Writer
+    from qymanager.formats.qy700.writer import QY700Writer
 
     # Detect input format
     suffix = input_path.suffix.lower()
@@ -69,8 +69,8 @@ def main():
 
 def show_info(input_path: Path, suffix: str, verbose: bool) -> int:
     """Show file information."""
-    from qyconv.formats.qy70.sysex_parser import SysExParser
-    from qyconv.formats.qy700.binary_parser import Q7PParser
+    from qymanager.formats.qy70.sysex_parser import SysExParser
+    from qymanager.formats.qy700.binary_parser import Q7PParser
 
     print(f"File: {input_path}")
     print(f"Size: {input_path.stat().st_size} bytes")
@@ -127,7 +127,7 @@ def show_info(input_path: Path, suffix: str, verbose: bool) -> int:
 
 def convert_qy70_to_qy700(input_path: Path, output: str, template: str, verbose: bool) -> int:
     """Convert QY70 SysEx to QY700 Q7P."""
-    from qyconv.converters.qy70_to_qy700 import QY70ToQY700Converter
+    from qymanager.converters.qy70_to_qy700 import QY70ToQY700Converter
 
     output_path = Path(output) if output else input_path.with_suffix(".Q7P")
 
@@ -165,7 +165,7 @@ def convert_qy70_to_qy700(input_path: Path, output: str, template: str, verbose:
 
 def convert_qy700_to_qy70(input_path: Path, output: str, verbose: bool) -> int:
     """Convert QY700 Q7P to QY70 SysEx."""
-    from qyconv.converters.qy700_to_qy70 import QY700ToQY70Converter
+    from qymanager.converters.qy700_to_qy70 import QY700ToQY70Converter
 
     output_path = Path(output) if output else input_path.with_suffix(".syx")
 

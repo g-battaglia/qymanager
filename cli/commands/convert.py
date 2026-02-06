@@ -32,11 +32,11 @@ def convert(
 
     Examples:
 
-        qyconv convert style.syx -o pattern.Q7P
+        qymanager convert style.syx -o pattern.Q7P
 
-        qyconv convert pattern.Q7P -o style.syx
+        qymanager convert pattern.Q7P -o style.syx
 
-        qyconv convert style.syx -t template.Q7P
+        qymanager convert style.syx -t template.Q7P
     """
     if not source.exists():
         console.print(f"[red]Error: Source file not found: {source}[/red]")
@@ -56,7 +56,7 @@ def convert(
 
             task = progress.add_task("Converting QY70 to QY700...", total=None)
 
-            from qyconv.converters.qy70_to_qy700 import QY70ToQY700Converter
+            from qymanager.converters.qy70_to_qy700 import QY70ToQY700Converter
 
             try:
                 converter = QY70ToQY700Converter(str(template) if template else None)
@@ -83,7 +83,7 @@ def convert(
 
             task = progress.add_task("Converting QY700 to QY70...", total=None)
 
-            from qyconv.converters.qy700_to_qy70 import QY700ToQY70Converter
+            from qymanager.converters.qy700_to_qy70 import QY700ToQY70Converter
 
             try:
                 converter = QY700ToQY70Converter()

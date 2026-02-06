@@ -7,8 +7,8 @@ This library provides tools to:
 - Convert patterns between QY70 and QY700 formats
 
 Example usage:
-    from qyconv import QY70Reader, QY700Writer
-    from qyconv.converters import qy70_to_qy700
+    from qymanager import QY70Reader, QY700Writer
+    from qymanager.converters import qy70_to_qy700
 
     # Read QY70 pattern
     pattern = QY70Reader.read("style.syx")
@@ -21,13 +21,13 @@ Example usage:
 __version__ = "0.4.0"
 __author__ = "QYConv Contributors"
 
-from qyconv.formats.qy70.reader import QY70Reader
-from qyconv.formats.qy70.writer import QY70Writer
-from qyconv.formats.qy700.reader import QY700Reader
-from qyconv.formats.qy700.writer import QY700Writer
-from qyconv.models.pattern import Pattern
-from qyconv.models.section import Section, SectionType
-from qyconv.models.track import Track
+from qymanager.formats.qy70.reader import QY70Reader
+from qymanager.formats.qy70.writer import QY70Writer
+from qymanager.formats.qy700.reader import QY700Reader
+from qymanager.formats.qy700.writer import QY700Writer
+from qymanager.models.pattern import Pattern
+from qymanager.models.section import Section, SectionType
+from qymanager.models.track import Track
 
 __all__ = [
     "QY70Reader",

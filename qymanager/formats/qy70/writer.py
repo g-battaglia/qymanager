@@ -7,10 +7,10 @@ Writes Pattern objects to .syx files in QY70 bulk dump format.
 from pathlib import Path
 from typing import List, Union
 
-from qyconv.models.pattern import Pattern
-from qyconv.models.section import Section, SectionType
-from qyconv.utils.yamaha_7bit import encode_7bit
-from qyconv.utils.checksum import calculate_yamaha_checksum
+from qymanager.models.pattern import Pattern
+from qymanager.models.section import Section, SectionType
+from qymanager.utils.yamaha_7bit import encode_7bit
+from qymanager.utils.checksum import calculate_yamaha_checksum
 
 
 class QY70Writer:

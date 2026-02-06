@@ -5,7 +5,7 @@ Section data model for QY patterns.
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional
-from qyconv.models.track import Track, create_default_tracks
+from qymanager.models.track import Track, create_default_tracks
 
 
 class SectionType(Enum):

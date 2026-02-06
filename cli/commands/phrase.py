@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.text import Text
 from rich import box
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 from cli.display.formatters import density_bar, create_heatmap
 
 console = Console()
@@ -278,11 +278,11 @@ def phrase(
 
     Examples:
 
-        qyconv phrase pattern.Q7P
+        qymanager phrase pattern.Q7P
 
-        qyconv phrase pattern.Q7P --area sequence
+        qymanager phrase pattern.Q7P --area sequence
 
-        qyconv phrase pattern.Q7P --heatmap --limit 0
+        qymanager phrase pattern.Q7P --heatmap --limit 0
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

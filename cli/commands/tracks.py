@@ -11,8 +11,8 @@ from rich.table import Table
 from rich.text import Text
 from rich import box
 
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
-from qyconv.utils.xg_voices import get_voice_name
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.utils.xg_voices import get_voice_name
 from cli.display.formatters import value_bar, pan_bar
 
 console = Console()
@@ -230,11 +230,11 @@ def tracks(
 
     Examples:
 
-        qyconv tracks pattern.Q7P
+        qymanager tracks pattern.Q7P
 
-        qyconv tracks pattern.Q7P --track 1
+        qymanager tracks pattern.Q7P --track 1
 
-        qyconv tracks pattern.Q7P --summary
+        qymanager tracks pattern.Q7P --summary
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

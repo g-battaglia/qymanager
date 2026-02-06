@@ -4,8 +4,8 @@ Pattern data model - the top-level container for QY pattern data.
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
-from qyconv.models.section import Section, SectionType, create_default_sections
-from qyconv.models.phrase import Phrase
+from qymanager.models.section import Section, SectionType, create_default_sections
+from qymanager.models.phrase import Phrase
 
 
 @dataclass

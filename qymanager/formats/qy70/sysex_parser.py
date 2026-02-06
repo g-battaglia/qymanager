@@ -22,8 +22,8 @@ Where:
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import List, Optional, Tuple, Union
-from qyconv.utils.yamaha_7bit import decode_7bit
-from qyconv.utils.checksum import verify_checksum
+from qymanager.utils.yamaha_7bit import decode_7bit
+from qymanager.utils.checksum import verify_checksum
 
 
 class MessageType(IntEnum):

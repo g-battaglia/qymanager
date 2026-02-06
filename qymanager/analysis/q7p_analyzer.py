@@ -652,7 +652,7 @@ class Q7PAnalyzer:
 
     def _analyze_section_tracks(self, section_idx: int) -> List[TrackInfo]:
         """Analyze 16 tracks for a section."""
-        from qyconv.utils.xg_voices import get_voice_name
+        from qymanager.utils.xg_voices import get_voice_name
 
         tracks = []
 

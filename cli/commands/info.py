@@ -17,7 +17,7 @@ app = typer.Typer()
 
 def display_full_q7p_info(filepath: str) -> None:
     """Display complete Q7P analysis using all available commands."""
-    from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+    from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
     from cli.commands.tracks import display_tracks_summary, display_track_detail, TRACK_DESCRIPTIONS
     from cli.commands.sections import display_section_detail
     from cli.commands.phrase import (
@@ -32,7 +32,7 @@ def display_full_q7p_info(filepath: str) -> None:
         REGIONS,
     )
     from cli.display.formatters import value_bar, pan_bar
-    from qyconv.utils.xg_voices import get_voice_name
+    from qymanager.utils.xg_voices import get_voice_name
     from rich.table import Table
     from rich import box
 
@@ -307,8 +307,8 @@ def display_full_q7p_info(filepath: str) -> None:
 
 def display_full_syx_info(filepath: str) -> None:
     """Display complete SysEx analysis using all available information."""
-    from qyconv.analysis.syx_analyzer import SyxAnalyzer
-    from qyconv.utils.xg_effects import XG_DEFAULTS
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+    from qymanager.utils.xg_effects import XG_DEFAULTS
     from cli.display.formatters import value_bar, pan_bar
     from rich.table import Table
     from rich import box
@@ -783,10 +783,10 @@ def info(
 
     Examples:
 
-        qyconv info pattern.Q7P           # Basic info
-        qyconv info pattern.Q7P --full    # Complete analysis
-        qyconv info style.syx --hex       # With hex dumps
-        qyconv info pattern.Q7P --json    # JSON output
+        qymanager info pattern.Q7P           # Basic info
+        qymanager info pattern.Q7P --full    # Complete analysis
+        qymanager info style.syx --hex       # With hex dumps
+        qymanager info pattern.Q7P --json    # JSON output
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")
@@ -798,7 +798,7 @@ def info(
         if full:
             display_full_q7p_info(str(file))
         else:
-            from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+            from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
             analyzer = Q7PAnalyzer()
             analysis = analyzer.analyze_file(str(file))
@@ -812,7 +812,7 @@ def info(
         if full:
             display_full_syx_info(str(file))
         else:
-            from qyconv.analysis.syx_analyzer import SyxAnalyzer
+            from qymanager.analysis.syx_analyzer import SyxAnalyzer
 
             analyzer = SyxAnalyzer()
             analysis = analyzer.analyze_file(str(file))

@@ -29,10 +29,10 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 import struct
 
-from qyconv.models.pattern import Pattern, PatternSettings
-from qyconv.models.section import Section, SectionType
-from qyconv.models.track import Track, TrackSettings
-from qyconv.models.phrase import Phrase
+from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.section import Section, SectionType
+from qymanager.models.track import Track, TrackSettings
+from qymanager.models.phrase import Phrase
 
 
 @dataclass

@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "qyconv"
-version = "0.1.0"
-description = "Bidirectional converter for Yamaha QY70 and QY700 pattern files"
+name = "qymanager"
+version = "0.4.0"
+description = "Bidirectional converter and manager for Yamaha QY70 and QY700 pattern files"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
-    {name = "QYConv Contributors"}
+    {name = "QY Manager Contributors"}
 ]
-keywords = ["yamaha", "qy70", "qy700", "midi", "sysex", "pattern", "converter"]
+keywords = ["yamaha", "qy70", "qy700", "midi", "sysex", "pattern", "converter", "manager"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -41,15 +41,15 @@ dev = [
 ]
 
 [project.scripts]
-qyconv = "cli.app:run"
+qymanager = "cli.app:run"
 
 [project.urls]
-Homepage = "https://github.com/qyconv/qyconv"
-Documentation = "https://github.com/qyconv/qyconv#readme"
-Issues = "https://github.com/qyconv/qyconv/issues"
+Homepage = "https://github.com/qymanager/qymanager"
+Documentation = "https://github.com/qymanager/qymanager#readme"
+Issues = "https://github.com/qymanager/qymanager/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["qyconv", "cli"]
+packages = ["qymanager", "cli"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

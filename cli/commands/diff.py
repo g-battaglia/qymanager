@@ -310,9 +310,9 @@ def diff(
 
     Examples:
 
-        qyconv diff T01.Q7P TXX.Q7P
+        qymanager diff T01.Q7P TXX.Q7P
 
-        qyconv diff pattern1.Q7P pattern2.Q7P --verbose
+        qymanager diff pattern1.Q7P pattern2.Q7P --verbose
     """
     # Validate files exist
     for f in [file_a, file_b]:

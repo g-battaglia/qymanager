@@ -1,22 +1,22 @@
-# TODO - qyconv
+# TODO - qymanager
 
 ## Completed
 
 ### v0.3.0 Features (Done)
-- [x] `qyconv dump` - Annotated hex dump with region colors
-- [x] `qyconv map` - Visual file structure map with density bars
-- [x] `qyconv tracks` - Detailed track info with bar graphics
-- [x] `qyconv sections` - Section configuration details
-- [x] `qyconv phrase` - Phrase/sequence analysis with event detection
-- [x] `qyconv info --full` - Complete extended analysis
+- [x] `qymanager dump` - Annotated hex dump with region colors
+- [x] `qymanager map` - Visual file structure map with density bars
+- [x] `qymanager tracks` - Detailed track info with bar graphics
+- [x] `qymanager sections` - Section configuration details
+- [x] `qymanager phrase` - Phrase/sequence analysis with event detection
+- [x] `qymanager info --full` - Complete extended analysis
 - [x] Bar graphics for volume, pan, reverb
 - [x] Centered pan bar visualization
 - [x] Data density heatmaps
 - [x] Removed duplicate tables from basic info output
 
 ### v0.2.0 Features (Done)
-- [x] `qyconv diff` - Compare two Q7P files
-- [x] `qyconv validate` - File structure validation
+- [x] `qymanager diff` - Compare two Q7P files
+- [x] `qymanager validate` - File structure validation
 - [x] Phrase statistics (PhraseStats dataclass)
 - [x] Fixed pan offset (0x276)
 - [x] Fixed time signature lookup table
@@ -96,20 +96,20 @@ Currently showing statistics only. Want to:
 
 #### 6. Add MIDI Export
 ```bash
-qyconv export pattern.Q7P --midi output.mid
+qymanager export pattern.Q7P --midi output.mid
 ```
 
 #### 7. Add Audio Preview (optional)
 ```bash
-qyconv play pattern.Q7P  # Play using FluidSynth or similar
+qymanager play pattern.Q7P  # Play using FluidSynth or similar
 ```
 
 ### Low Priority
 
 #### 8. Add Batch Processing
 ```bash
-qyconv batch convert *.syx --output-dir ./converted/
-qyconv batch validate *.Q7P
+qymanager batch convert *.syx --output-dir ./converted/
+qymanager batch validate *.Q7P
 ```
 
 #### 9. Add GUI (optional)

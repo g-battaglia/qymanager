@@ -15,11 +15,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from collections import Counter
 
-from qyconv.formats.qy70.sysex_parser import SysExParser, SysExMessage, MessageType
-from qyconv.utils.yamaha_7bit import decode_7bit
-from qyconv.utils.checksum import verify_sysex_checksum
-from qyconv.utils.xg_voices import get_voice_name
-from qyconv.utils.xg_effects import (
+from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage, MessageType
+from qymanager.utils.yamaha_7bit import decode_7bit
+from qymanager.utils.checksum import verify_sysex_checksum
+from qymanager.utils.xg_voices import get_voice_name
+from qymanager.utils.xg_effects import (
     get_reverb_type_name,
     get_chorus_type_name,
     get_variation_type_name,

@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, "..")
 
 from pathlib import Path
-from qyconv.analysis.q7p_analyzer import Q7PAnalyzer
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
 
 def hex_dump(data: bytes, start_offset: int = 0, bytes_per_line: int = 16) -> str:

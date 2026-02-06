@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from qyconv.formats.qy70.sysex_parser import SysExParser, MessageType
+from qymanager.formats.qy70.sysex_parser import SysExParser, MessageType
 
 
 class TestSysExParser:
@@ -90,7 +90,7 @@ class TestSysExParser:
         parser = SysExParser()
 
         # Mock some messages
-        from qyconv.formats.qy70.sysex_parser import SysExMessage
+        from qymanager.formats.qy70.sysex_parser import SysExMessage
 
         parser.messages = [
             SysExMessage(MessageType.BULK_DUMP, 0, (0x02, 0x7E, 0x00), b"", b""),

@@ -6,8 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from qyconv.formats.qy700.binary_parser import Q7PParser
-from qyconv.formats.qy700.reader import QY700Reader
+from qymanager.formats.qy700.binary_parser import Q7PParser
+from qymanager.formats.qy700.reader import QY700Reader
 
 
 class TestQ7PParser:

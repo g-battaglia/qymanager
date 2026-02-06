@@ -4,7 +4,7 @@ Track data model for QY patterns.
 
 from dataclasses import dataclass, field
 from typing import List, Optional
-from qyconv.models.phrase import Phrase
+from qymanager.models.phrase import Phrase
 
 
 @dataclass

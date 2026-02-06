@@ -8,10 +8,10 @@ converts them to the common Pattern model.
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from qyconv.models.pattern import Pattern, PatternSettings
-from qyconv.models.section import Section, SectionType
-from qyconv.models.track import Track, TrackSettings
-from qyconv.formats.qy70.sysex_parser import SysExParser, SysExMessage
+from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.section import Section, SectionType
+from qymanager.models.track import Track, TrackSettings
+from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage
 
 
 class QY70Reader:

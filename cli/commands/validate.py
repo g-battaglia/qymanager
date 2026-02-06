@@ -535,9 +535,9 @@ def validate(
 
     Examples:
 
-        qyconv validate pattern.Q7P
+        qymanager validate pattern.Q7P
 
-        qyconv validate pattern.Q7P --strict
+        qymanager validate pattern.Q7P --strict
     """
     if not file.exists():
         console.print(f"[red]Error: File not found: {file}[/red]")

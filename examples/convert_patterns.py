@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, "..")
 
 from pathlib import Path
-from qyconv.converters import convert_qy70_to_qy700, convert_qy700_to_qy70
+from qymanager.converters import convert_qy70_to_qy700, convert_qy700_to_qy70
 
 
 def main():
