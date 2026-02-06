@@ -280,15 +280,63 @@ The pan value follows XG conventions:
 
 ### Header Section (AL=0x7F)
 
-The header section contains global pattern/style configuration.
+The header section contains global pattern/style configuration. The header is split across multiple SysEx messages with sub-address `7E 7F`.
 
-| Offset | Description |
-|--------|-------------|
-| 0 | Type indicator: 0x5E=Style, 0x4C=Pattern |
-| 0x0C | Tempo (if valid range 40-240) |
-| 0x40-0x4F | Possible track configuration area |
+#### Header Message Structure
 
-The header is typically 640 bytes encoded (128 bytes decoded after 7-bit expansion).
+Each `7E 7F` message payload has the structure:
+```
+7E 7F [sub2] [tempo_range] [tempo_offset] ... [name bytes] ...
+```
+
+The **first** `7E 7F` message contains tempo and name:
+
+| Payload Offset | Size | Description |
+|----------------|------|-------------|
+| 0-1 | 2 | Sub-address: `7E 7F` |
+| 2 | 1 | Tempo range (see formula below) |
+| 3 | 1 | Tempo offset (0-127) |
+| 4-7 | 4 | Flags: typically `40 00 00 00` or `40 00 00 01` |
+| 8-17 | 10 | Style name (encoded, see below) |
+| 18+ | var | Other parameters |
+
+#### Tempo Encoding
+
+**Formula:** `tempo_bpm = (range * 95 - 133) + offset`
+
+Where:
+- `range` = payload byte 2 (after `7E 7F`)
+- `offset` = payload byte 3
+
+| Range | Base BPM | BPM Range |
+|-------|----------|-----------|
+| 1 | -38 | N/A (invalid) |
+| 2 | 57 | 57-184 BPM |
+| 3 | 152 | 152-279 BPM |
+| 4 | 247 | 247-374 BPM |
+
+**Examples:**
+- SUMMER 155 BPM: range=0x03, offset=0x03 → (3×95-133)+3 = 155
+- MR.VAIN 133 BPM: range=0x02, offset=0x4C → (2×95-133)+76 = 133
+
+**Inverse function (BPM to bytes):**
+```python
+def bpm_to_tempo_bytes(bpm: int) -> tuple[int, int]:
+    for range_val in range(1, 10):
+        base = range_val * 95 - 133
+        offset = bpm - base
+        if 0 <= offset <= 127:
+            return (range_val, offset)
+    raise ValueError(f"BPM {bpm} out of range")
+```
+
+#### Style Name Encoding
+
+The style name (8 characters) is stored at payload bytes 8-17 (10 bytes) using a special encoding. The name bytes appear to be interleaved with flag bytes in the raw payload.
+
+**Note:** The exact name encoding is complex and may involve bit manipulation. The decoded name appears after 7-bit decoding at offsets 7-14 of the decoded header, but with some bytes requiring additional transformation.
+
+The header is typically 640 bytes encoded (560 bytes decoded after 7-bit expansion).
 
 ### Section Phrase Data (AL=0x00-0x05)
 

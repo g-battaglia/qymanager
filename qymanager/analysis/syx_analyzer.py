@@ -291,6 +291,7 @@ class SyxAnalyzer:
         # Analyze messages
         al_counter: Counter = Counter()
         section_data: Dict[int, bytearray] = {}
+        first_7e7f_raw_payload: Optional[bytes] = None  # For tempo extraction
 
         for idx, msg in enumerate(self.messages):
             # Count message types
@@ -313,6 +314,11 @@ class SyxAnalyzer:
             # Track AL addresses
             al = msg.address_low
             al_counter[al] += 1
+
+            # Capture first 7E 7F message raw payload for tempo extraction
+            # The raw data (before 7-bit decode) contains tempo at bytes [2] and [3]
+            if al == 0x7F and first_7e7f_raw_payload is None and msg.data:
+                first_7e7f_raw_payload = bytes(msg.data)
 
             # Accumulate decoded data by AL
             if msg.decoded_data:
@@ -388,7 +394,11 @@ class SyxAnalyzer:
             if al == 0x7F:
                 analysis.header_decoded = data
                 analysis.pattern_name = self._extract_name(data)
-                analysis.tempo = self._extract_tempo(data)
+                # Use new tempo extraction from raw payload if available
+                if first_7e7f_raw_payload:
+                    analysis.tempo = self._extract_tempo_from_raw(first_7e7f_raw_payload)
+                else:
+                    analysis.tempo = self._extract_tempo(data)
                 analysis.time_signature = self._extract_time_signature(data)
                 analysis.time_signature_raw = self._extract_time_signature_raw(data)
 
@@ -711,13 +721,65 @@ class SyxAnalyzer:
         return "".join(name_bytes).strip()
 
     def _extract_tempo(self, data: bytes) -> int:
-        """Try to extract tempo from header data."""
-        # Common tempo locations
+        """
+        Try to extract tempo from header data.
+
+        Note: This method receives DECODED header data, but the tempo is encoded
+        in the RAW payload bytes [2] and [3] of the first 7E 7F message.
+        See _extract_tempo_from_raw() for the correct extraction.
+
+        This method is kept for fallback/compatibility but may return incorrect values.
+        """
+        # Common tempo locations in decoded data (legacy approach)
         for offset in [0x0A, 0x0C, 0x10, 0x14]:
             if offset < len(data):
                 val = data[offset]
                 if 40 <= val <= 240:
                     return val
+        return 120
+
+    def _extract_tempo_from_raw(self, raw_payload: bytes) -> int:
+        """
+        Extract tempo from RAW payload of first 7E 7F message.
+
+        QY70 tempo encoding:
+          tempo_bpm = (range * 95 - 133) + offset
+
+        Where:
+          - range = raw_payload[0] (first byte of data after address)
+          - offset = raw_payload[1]
+
+        Note: The SysEx parser strips the 7E 7F sub-address bytes,
+        so raw_payload starts directly with the tempo bytes.
+
+        Examples:
+          - SUMMER 155 BPM: range=0x03, offset=0x03 -> (3*95-133)+3 = 155
+          - MR.VAIN 133 BPM: range=0x02, offset=0x4C -> (2*95-133)+76 = 133
+
+        Args:
+            raw_payload: Raw payload bytes from the 7E 7F message (before 7-bit decode)
+                         This is msg.data, NOT including the 7E 7F sub-address bytes.
+
+        Returns:
+            Tempo in BPM, or 120 if extraction fails
+        """
+        if len(raw_payload) < 2:
+            return 120
+
+        tempo_range = raw_payload[0]
+        tempo_offset = raw_payload[1]
+
+        # Validate range (should be 1-4 for typical tempos 30-300 BPM)
+        if tempo_range < 1 or tempo_range > 10:
+            return 120
+
+        # Calculate tempo using the formula
+        tempo = (tempo_range * 95 - 133) + tempo_offset
+
+        # Validate result is in reasonable BPM range
+        if 30 <= tempo <= 300:
+            return tempo
+
         return 120
 
     def _extract_time_signature(self, data: bytes) -> Tuple[int, int]:
