@@ -124,6 +124,7 @@ class Q7PAnalysis:
     global_volumes: List[int] = field(default_factory=list)
     global_pans: List[int] = field(default_factory=list)
     global_reverb_sends: List[int] = field(default_factory=list)
+    global_chorus_sends: List[int] = field(default_factory=list)
 
     # Raw data areas
     header_raw: bytes = b""
@@ -202,6 +203,7 @@ class Q7PAnalyzer:
             "BANK_LSB_START": 0x206,  # Bank LSB for 16 tracks
             "VOLUME_TABLE_START": 0x220,
             "VOLUME_DATA_START": 0x226,
+            "CHORUS_DATA_START": 0x246,  # Chorus send (16 tracks, default 0)
             "REVERB_TABLE_START": 0x250,
             "REVERB_DATA_START": 0x256,
             "PAN_TABLE_START": 0x270,
@@ -231,6 +233,7 @@ class Q7PAnalyzer:
             "BANK_LSB_START": 0xA96,  # Bank LSB for 16 tracks
             "VOLUME_TABLE_START": 0xAA0,
             "VOLUME_DATA_START": 0xAA6,
+            "CHORUS_DATA_START": 0xAC6,  # Chorus send (16 tracks, default 0)
             "REVERB_TABLE_START": 0xAD0,
             "REVERB_DATA_START": 0xAD6,
             "PAN_TABLE_START": 0xAF0,
@@ -420,6 +423,7 @@ class Q7PAnalyzer:
         analysis.global_volumes = self._get_volumes()
         analysis.global_pans = self._get_pans()
         analysis.global_reverb_sends = self._get_reverb_sends()
+        analysis.global_chorus_sends = self._get_chorus_sends()
 
         # Analyze sections (dynamic count based on format)
         analysis.sections = self._analyze_sections()
@@ -499,25 +503,37 @@ class Q7PAnalyzer:
         # This is kept for unknown values, returns 4/4 as safe default
         return ((4, 4), ts_byte)
 
+    # Known group/default marker values in channel area (0x190-0x19F).
+    # These are NOT literal MIDI channel numbers — they indicate track-type groups
+    # and signal "use default channel for this track position".
+    # Observed in both T01.Q7P and TXX.Q7P (factory defaults):
+    #   0x00 = drum/bass group (TR1-TR4)
+    #   0x03 = chord/melody group (TR5-TR12)
+    #   0x20 = unused/padding (TR13-TR16)
+    CHANNEL_GROUP_MARKERS = {0x00, 0x03, 0x20}
+
     def _get_channels(self) -> List[int]:
         """
         Get MIDI channel assignments for 16 tracks.
 
-        Encoding (based on observation):
-        - 0x00 appears on TR1/TR2 -> interpret as Channel 10 (drums)
-        - 0x01-0x0F -> Channel 2-16 (value + 1)
-        - Other values -> use as-is or default
+        Encoding (based on observation of T01.Q7P and TXX.Q7P):
+        - Known group markers (0x00, 0x03, 0x20) -> use DEFAULT_CHANNELS for track position
+        - Other values 0x01-0x0F -> explicit MIDI channel (value + 1), needs verification
+        - Values > 0x0F (except 0x20) -> use DEFAULT_CHANNELS
+
+        The factory default pattern is: 00 00 00 00 03 03 03 03 03 03 03 03 20 20 20 20
+        This maps to: Ch10 Ch10 Ch2 Ch3 Ch4 Ch5 Ch6 Ch7 Ch8 Ch9 Ch11 Ch12 Ch13 Ch14 Ch15 Ch16
         """
         channels = []
         channel_start = self._get_offset("CHANNEL_START")
         for i in range(self.NUM_TRACKS):
             ch_raw = self._get_byte(channel_start + i)
 
-            if ch_raw == 0x00:
-                # Value 0 = use default channel for this track type
+            if ch_raw in self.CHANNEL_GROUP_MARKERS:
+                # Group marker = use default channel for this track position
                 channels.append(self.DEFAULT_CHANNELS[i] if i < len(self.DEFAULT_CHANNELS) else 1)
-            elif ch_raw <= 0x0F:
-                # Value 1-15 = MIDI channel 2-16
+            elif 0x01 <= ch_raw <= 0x0F:
+                # Likely explicit channel assignment (needs more samples to verify)
                 channels.append(ch_raw + 1)
             else:
                 # Unknown encoding, use default
@@ -562,6 +578,22 @@ class Q7PAnalyzer:
         for i in range(self.NUM_TRACKS):
             send = self._get_byte(rev_start + i)
             sends.append(send if send <= 127 else 40)
+        return sends
+
+    def _get_chorus_sends(self) -> List[int]:
+        """
+        Get chorus send levels for 16 tracks.
+
+        Discovered in Session 5: Chorus send is at offset 0x246 (3072-byte files)
+        or 0xAC6 (5120-byte files), 16 bytes, one per track.
+
+        XG default chorus send = 0 (0x00)
+        """
+        sends = []
+        cho_start = self._get_offset("CHORUS_DATA_START")
+        for i in range(self.NUM_TRACKS):
+            send = self._get_byte(cho_start + i)
+            sends.append(send if send <= 127 else 0)
         return sends
 
     def _get_bank_msb(self) -> List[int]:
@@ -630,13 +662,24 @@ class Q7PAnalyzer:
                 else b""
             )
 
+            # Extract bar count from section config data.
+            # Session 5 discovery: section config entries have format:
+            #   F0 00 FB <phrase_idx> 00 <track_ref> C0 <bar_count> F2
+            # The bar count is the byte following 0xC0 in the config data.
+            length_measures = 4  # Default
+            if enabled and config_data:
+                for ci in range(len(config_data) - 1):
+                    if config_data[ci] == 0xC0:
+                        length_measures = config_data[ci + 1]
+                        break
+
             section = SectionInfo(
                 index=idx,
                 name=self.SECTION_NAMES[idx] if idx < len(self.SECTION_NAMES) else f"Section {idx}",
                 enabled=enabled,
                 pointer=ptr_value,
                 pointer_hex=ptr_bytes.hex(),
-                length_measures=4,  # Default, actual parsing needed
+                length_measures=length_measures,
                 time_signature=(4, 4),
                 raw_config=config_data,
                 phrase_data_offset=phrase_start + (idx * 80),
@@ -660,6 +703,7 @@ class Q7PAnalyzer:
         volumes = self._get_volumes()
         pans = self._get_pans()
         reverb_sends = self._get_reverb_sends()
+        chorus_sends = self._get_chorus_sends()
         bank_msbs = self._get_bank_msb()
         bank_lsbs = self._get_bank_lsb()
         programs = self._get_programs()
@@ -696,7 +740,7 @@ class Q7PAnalyzer:
                 bank_lsb=bank_lsb,
                 voice_name=voice_name,
                 reverb_send=reverb_sends[i] if i < len(reverb_sends) else 40,
-                chorus_send=0,  # XG default
+                chorus_send=chorus_sends[i] if i < len(chorus_sends) else 0,
                 variation_send=0,  # XG default
             )
             tracks.append(track)

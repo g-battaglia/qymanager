@@ -13,15 +13,17 @@ The conversion process:
 6. Generate SysEx messages with proper checksums
 7. Write complete .syx file
 
-Key Discovery: QY70 and QY700 use the SAME proprietary MIDI event format:
-- D0 nn vv = Drum note on
-- E0 nn vv = Melody note on
-- C1 nn pp = Alternate note
-- A0-A7 dd = Delta time
-- BE xx    = Note off
-- F2       = End of phrase
+IMPORTANT: QY70 and QY700 use DIFFERENT event data formats:
+- Q7P (QY700): Byte-oriented commands (D0/E0/A0-A7/BE/F2)
+- QY70 SysEx: Packed bitstream format (proprietary, not yet fully decoded)
+Event data CANNOT be transferred directly between formats.
+Track headers (24 bytes) and voice/pan encoding are shared.
 
-This means MIDI data can be transferred directly between formats!
+QY70 header (AL=0x7F) format:
+- decoded[0] = tempo offset
+- 7-bit group header of first encoded block = tempo range
+- Tempo formula: BPM = (range * 95 - 133) + offset
+- Header byte 0 determines format: < 0x08 = pattern, >= 0x08 = style
 """
 
 from pathlib import Path
@@ -89,7 +91,7 @@ class QY700ToQY70Converter:
         "VOLUME": (0x226, 0x226),  # Same for both (in header area)
         "REVERB": (0x256, 0x256),
         "PAN": (0x276, 0x276),
-        "CHORUS": (0x296, 0x296),
+        "CHORUS": (0x246, 0x246),
     }
 
     def _get_offset(self, name: str) -> int:
@@ -190,12 +192,18 @@ class QY700ToQY70Converter:
 
         The QY70 expects messages in this order:
         1. Init message (F0 43 10 5F 00 00 00 01 F7)
-        2. Track data blocks (AL = 0x08-0x2F) - only non-empty tracks
+        2. Track data blocks (AL = section*8+track, 0x00-0x2F) - only non-empty tracks
         3. Header/config block (AL = 0x7F)
         4. Close message (F0 43 10 5F 00 00 00 00 F7)
 
-        NOTE: Section blocks 0x00-0x05 are NOT sent separately - the track
-        data already contains all necessary section information.
+        AL addressing (confirmed from SGT reference dump):
+        - Section 0: AL 0x00-0x07 (8 tracks)
+        - Section 1: AL 0x08-0x0F
+        - Section 2: AL 0x10-0x17
+        - Section 3: AL 0x18-0x1F
+        - Section 4: AL 0x20-0x27
+        - Section 5: AL 0x28-0x2F
+        - Header:    AL 0x7F
         """
         if len(q7p_data) not in (3072, 5120):
             raise ValueError(f"Invalid Q7P size: {len(q7p_data)} (expected 3072 or 5120)")
@@ -238,26 +246,28 @@ class QY700ToQY70Converter:
         return b"".join(messages)
 
     def _generate_header_section(self) -> List[bytes]:
-        """Generate SysEx messages for pattern header (section 0x7F)."""
+        """Generate SysEx messages for pattern header (section 0x7F).
+
+        The QY70 header is 640 bytes (5 x 128-byte blocks).
+
+        CRITICAL: The tempo is NOT stored as a simple byte at a fixed offset.
+        Instead, it is encoded across TWO locations:
+        - decoded[0] of the first header block = tempo offset byte
+        - The 7-bit group header byte of the first encoded block = tempo range
+
+        Formula: BPM = (range * 95 - 133) + offset
+
+        The format marker is also encoded via the range byte:
+        - range < 0x08 → pattern format
+        - range >= 0x08 → style format
+
+        Since we're generating from scratch, we must set the MSBs of
+        decoded[4:7] to control the range byte in the encoded output.
+        """
         messages = []
 
-        # Build header data (based on QY70 format)
-        header = bytearray(640)  # Approximate header size
-
-        # Extract pattern name from Q7P (8 or 10 bytes)
-        name_offset = self._get_offset("NAME")
-        if name_offset + 10 <= len(self.q7p_data):
-            name_data = self.q7p_data[name_offset : name_offset + 10]
-            for i, byte in enumerate(name_data[:10]):
-                if 0x20 <= byte <= 0x7E:  # Printable ASCII
-                    header[i] = byte
-                else:
-                    header[i] = 0x20  # Space for non-printable
-        else:
-            # Fallback to pattern name from decoder
-            name = self._pattern.name[:10].upper().ljust(10) if self._pattern else "NEW STYLE "
-            for i, char in enumerate(name):
-                header[i] = ord(char) if ord(char) < 128 else 0x20
+        # Build header data (640 bytes = 5 x 128)
+        header = bytearray(640)
 
         # Extract tempo from Q7P
         tempo_offset = self._get_offset("TEMPO")
@@ -267,16 +277,72 @@ class QY700ToQY70Converter:
         else:
             tempo = self._pattern.settings.tempo if self._pattern else 120
 
-        # Tempo in QY70 format (single byte at offset 0x0A)
-        header[0x0A] = min(255, max(40, tempo)) & 0x7F
+        # Encode tempo using QY70's range/offset formula:
+        # BPM = (range * 95 - 133) + offset
+        # Find range and offset values
+        range_byte = 2  # Default range (covers 57-184 BPM)
+        offset_byte = 0
+        for r in [2, 3, 1, 4]:
+            base = r * 95 - 133
+            off = tempo - base
+            if 0 <= off <= 94:
+                range_byte = r
+                offset_byte = off
+                break
+            elif 0 <= off <= 127:
+                range_byte = r
+                offset_byte = off
+                # Keep looking for a cleaner fit
 
-        # Extract time signature from Q7P
-        ts_offset = self._get_offset("TIME_SIG")
-        if ts_offset + 2 <= len(self.q7p_data):
-            header[0x0C] = self.q7p_data[ts_offset]
-            header[0x0D] = self.q7p_data[ts_offset + 1]
+        # decoded[0] = tempo offset
+        header[0] = offset_byte & 0x7F
 
-        # Split header into chunks and create messages
+        # Set MSBs of decoded[4:7] to encode the range byte
+        # When 7-bit encoded, these MSBs become the group header byte
+        # bit 2 -> decoded[4] MSB, bit 1 -> decoded[5] MSB, bit 0 -> decoded[6] MSB
+        header[4] &= 0x7F
+        header[5] &= 0x7F
+        header[6] &= 0x7F
+        if range_byte & 0x04:
+            header[4] |= 0x80
+        if range_byte & 0x02:
+            header[5] |= 0x80
+        if range_byte & 0x01:
+            header[6] |= 0x80
+
+        # Fill unused regions with the Yamaha "use defaults" fill pattern.
+        # This is the repeating 7-byte pattern BF DF EF F7 FB FD FE,
+        # where each byte is 0xFF with one bit cleared (walking bit 6→0).
+        # This tells the QY70 to use XG default values for all parameters.
+        # (Discovered from comparing SGT style vs empty pattern header.)
+        YAMAHA_FILL = bytes([0xBF, 0xDF, 0xEF, 0xF7, 0xFB, 0xFD, 0xFE])
+
+        # Fill the mixer parameter region (0x1B9-0x21B, 99 bytes)
+        # and the section config region (0x00F-0x07F, 113 bytes)
+        # with the fill pattern to signal "use XG defaults".
+        for region_start, region_end in [(0x00F, 0x080), (0x1B9, 0x21C)]:
+            for i in range(region_start, min(region_end, len(header))):
+                header[i] = YAMAHA_FILL[(i - region_start) % 7]
+
+        # Structural template region (0x137-0x1B8, 130 bytes) — identical between
+        # all known files. Fill with the observed constant values.
+        # For now, use fill pattern as safe default.
+        for i in range(0x137, min(0x1B9, len(header))):
+            header[i] = YAMAHA_FILL[(i - 0x137) % 7]
+
+        # Fixed bytes at known positions (from comparison of SGT vs captured pattern)
+        # 0x080-0x084: Always 03 01 40 60 30
+        if len(header) > 0x085:
+            header[0x080:0x085] = bytes([0x03, 0x01, 0x40, 0x60, 0x30])
+
+        # TODO: Extract and encode pattern name into header
+        # The name encoding in QY70 header is complex (interleaved with flags
+        # at bytes 7-17 approximately). For now, leave as zeros/fill.
+
+        # TODO: Map time signature, section config, and other fields
+        # These require more reverse engineering of the 640-byte header structure.
+
+        # Split header into 128-byte chunks and create messages
         for chunk_start in range(0, len(header), self.MAX_PAYLOAD):
             chunk = bytes(header[chunk_start : chunk_start + self.MAX_PAYLOAD])
             msg = self._create_bulk_dump_message(self.HEADER_AL, chunk)
@@ -348,9 +414,10 @@ class QY700ToQY70Converter:
         """
         messages = []
 
-        # Track data starts at AL = 0x08 for section 0
+        # Track data starts at AL = 0x00 for section 0
         # Each section has 8 tracks at consecutive AL values
-        base_al = 0x08 + (section_idx * 8)
+        # AL = section_idx * 8 + track_idx (confirmed from SGT reference)
+        base_al = section_idx * 8
 
         # Extract track data from Q7P
         for track_num in range(8):
@@ -452,12 +519,12 @@ class QY700ToQY70Converter:
         # Volume: 0x226 + (section_idx * 8) + track_num
         # Reverb: 0x256 + (section_idx * 8) + track_num
         # Pan:    0x276 + (section_idx * 8) + track_num
-        # Chorus: 0x296 + (section_idx * 8) + track_num
+        # Chorus: 0x246 + (section_idx * 8) + track_num  (Session 5 discovery)
 
         vol_offset = 0x226 + (section_idx * 8) + track_num
         reverb_offset = 0x256 + (section_idx * 8) + track_num
         pan_offset = 0x276 + (section_idx * 8) + track_num
-        chorus_offset = 0x296 + (section_idx * 8) + track_num
+        chorus_offset = 0x246 + (section_idx * 8) + track_num
 
         volume = self.q7p_data[vol_offset] if vol_offset < len(self.q7p_data) else 100
         reverb = self.q7p_data[reverb_offset] if reverb_offset < len(self.q7p_data) else 40
@@ -480,9 +547,40 @@ class QY700ToQY70Converter:
         track_header[12:14] = bytes([0x06, 0x1C])
 
         # Voice encoding (bytes 14-15)
-        # 0x40 0x80 = use track-type default voice
-        track_header[14] = 0x40
-        track_header[15] = 0x80
+        # Read voice data from Q7P at HYPOTHESIZED offsets:
+        #   Bank MSB: 0x1E6 + track_num  (8 bytes, one per track)
+        #   Program:  0x1F6 + track_num  (8 bytes, one per track)
+        #   Bank LSB: 0x206 + track_num  (8 bytes, one per track)
+        # WARNING: These Q7P offsets are UNCONFIRMED — based on format hypothesis.
+        is_bass_track = track_num == 2  # BASS is track index 2
+
+        bank_msb_offset = 0x1E6 + track_num
+        program_offset = 0x1F6 + track_num
+        bank_lsb_offset = 0x206 + track_num
+
+        q7p_bank_msb = self.q7p_data[bank_msb_offset] if bank_msb_offset < len(self.q7p_data) else 0
+        q7p_program = self.q7p_data[program_offset] if program_offset < len(self.q7p_data) else 0
+        # Bank LSB read for potential future use (esp. bass track byte 26)
+        q7p_bank_lsb = self.q7p_data[bank_lsb_offset] if bank_lsb_offset < len(self.q7p_data) else 0
+
+        if is_drum_track:
+            # Drum tracks: always 0x40 0x80 = default drum kit marker
+            track_header[14] = 0x40
+            track_header[15] = 0x80
+        elif is_bass_track:
+            # Bass track: 0x00 0x04 = bass marker (actual voice via byte 26 / bank LSB)
+            track_header[14] = 0x00
+            track_header[15] = 0x04
+        else:
+            # Chord/melody tracks (CHD1, CHD2, PAD, PHR1, PHR2):
+            # byte 14 = Bank MSB, byte 15 = Program Change
+            if q7p_bank_msb > 0 or q7p_program > 0:
+                track_header[14] = q7p_bank_msb & 0x7F
+                track_header[15] = q7p_program & 0x7F
+            else:
+                # No voice data found — use default marker
+                track_header[14] = 0x40
+                track_header[15] = 0x80
 
         # Note range (bytes 16-17)
         if is_drum_track:
@@ -493,8 +591,15 @@ class QY700ToQY70Converter:
             track_header[18] = 0x80
             track_header[19] = 0x8E
             track_header[20] = 0x83
+        elif is_bass_track:
+            # Bass track: specific type flags
+            track_header[16] = 0x07
+            track_header[17] = 0x78
+            track_header[18] = 0x00
+            track_header[19] = 0x07
+            track_header[20] = 0x12
         else:
-            # Melody tracks: full range
+            # Melody/chord tracks: full range
             track_header[16] = 0x07
             track_header[17] = 0x78
             # Bytes 18-20 for melody
@@ -570,7 +675,9 @@ class QY700ToQY70Converter:
         # Get the phrase if it exists
         if phrase_idx < len(self._phrases):
             phrase = self._phrases[phrase_idx]
-            # Return the raw MIDI data - QY70 uses the same event format!
+            # TODO: QY70 uses a DIFFERENT packed bitstream format (not Q7P commands).
+            # Returning raw Q7P data here is INCORRECT — needs format conversion.
+            # See midi_tools/parse_events.py for analysis (16.8% coverage = failure).
             return phrase.raw_data
 
         return b""

@@ -5,7 +5,7 @@ Writes Pattern objects to .syx files in QY70 bulk dump format.
 """
 
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Union
 
 from qymanager.models.pattern import Pattern
 from qymanager.models.section import Section, SectionType
@@ -19,6 +19,16 @@ class QY70Writer:
 
     Converts Pattern objects to .syx format for loading into QY70.
 
+    AL addressing scheme (confirmed from QY70 SGT dump):
+        AL = section_index * 8 + track_index
+        Section 0 (Intro):   AL 0x00-0x07 (8 tracks)
+        Section 1 (Main A):  AL 0x08-0x0F
+        Section 2 (Main B):  AL 0x10-0x17
+        Section 3 (Fill AB): AL 0x18-0x1F
+        Section 4 (Fill BA): AL 0x20-0x27
+        Section 5 (Ending):  AL 0x28-0x2F
+        Header:              AL 0x7F
+
     Example:
         pattern = Pattern.create_empty("MY STYLE")
         QY70Writer.write(pattern, "mystyle.syx")
@@ -30,15 +40,18 @@ class QY70Writer:
     SYSEX_START = 0xF0
     SYSEX_END = 0xF7
 
-    # SectionType to index mapping
+    # SectionType to section index mapping (index 0-5, NOT AL address)
     SECTION_INDEX = {
-        SectionType.INTRO: 0x00,
-        SectionType.MAIN_A: 0x01,
-        SectionType.MAIN_B: 0x02,
-        SectionType.FILL_AB: 0x03,
-        SectionType.FILL_BA: 0x04,
-        SectionType.ENDING: 0x05,
+        SectionType.INTRO: 0,
+        SectionType.MAIN_A: 1,
+        SectionType.MAIN_B: 2,
+        SectionType.FILL_AB: 3,
+        SectionType.FILL_BA: 4,
+        SectionType.ENDING: 5,
     }
+
+    # Number of tracks per section
+    TRACKS_PER_SECTION = 8
 
     # Maximum payload size per message (before 7-bit encoding)
     MAX_PAYLOAD = 128
@@ -118,6 +131,9 @@ class QY70Writer:
         """
         Write a section as bulk dump messages.
 
+        Each section has 8 tracks, each written at its own AL address:
+            AL = section_idx * 8 + track_idx
+
         Args:
             section: Section to write
 
@@ -130,33 +146,45 @@ class QY70Writer:
         if section_idx is None:
             return messages
 
-        # Get or generate section data
-        if section._raw_data:
-            data = section._raw_data
-        else:
-            data = self._generate_section_data(section)
+        # Write each track at its correct AL address
+        for track_idx in range(self.TRACKS_PER_SECTION):
+            al = section_idx * self.TRACKS_PER_SECTION + track_idx
 
-        # Split into chunks and create bulk dump messages
-        chunks = self._split_data(data)
+            # Get track data from the section's track list
+            track_data: Optional[bytes] = None
+            if section.tracks and track_idx < len(section.tracks):
+                track = section.tracks[track_idx]
+                if hasattr(track, "_raw_data") and track._raw_data:
+                    track_data = track._raw_data
 
-        for chunk in chunks:
-            msg = self._create_bulk_dump(section_idx, chunk)
-            messages.append(msg)
+            if track_data is None:
+                # Generate default track data
+                track_data = self._generate_track_data(section, track_idx)
+
+            if not track_data or len(track_data) == 0:
+                continue
+
+            # Split into 128-byte chunks and create bulk dump messages
+            chunks = self._split_data(track_data)
+            for chunk in chunks:
+                msg = self._create_bulk_dump(al, chunk)
+                messages.append(msg)
 
         return messages
 
-    def _generate_section_data(self, section: Section) -> bytes:
+    def _generate_track_data(self, section: Section, track_idx: int) -> bytes:
         """
-        Generate binary data for a section.
+        Generate binary data for a single track.
 
         Args:
-            section: Section to encode
+            section: Parent section
+            track_idx: Track index (0-7)
 
         Returns:
-            Binary section data
+            Binary track data (128 bytes minimum)
         """
-        # For now, generate minimal data
-        # Full implementation would encode all tracks and phrases
+        # For now, generate minimal empty track data
+        # Full implementation would encode track settings and MIDI events
         data = bytearray(128)  # Placeholder
         return bytes(data)
 
@@ -208,15 +236,16 @@ class QY70Writer:
             chunks.append(data[i : i + self.MAX_PAYLOAD])
         return chunks
 
-    def _create_bulk_dump(self, section_idx: int, data: bytes) -> bytes:
+    def _create_bulk_dump(self, al_address: int, data: bytes) -> bytes:
         """
         Create a bulk dump SysEx message.
 
         Format: F0 43 0n 5F BH BL AH AM AL [encoded data] CS F7
 
         Args:
-            section_idx: Section/address low byte
-            data: Raw data to encode
+            al_address: AL byte — either a track address (section_idx * 8 + track_idx)
+                        or 0x7F for the header
+            data: Raw data to encode (128 bytes per chunk)
 
         Returns:
             Complete SysEx message
@@ -232,7 +261,7 @@ class QY70Writer:
         # Address
         ah = 0x02  # Style data
         am = 0x7E  # User style memory
-        al = section_idx
+        al = al_address
 
         # Build message without checksum
         msg = bytearray(
@@ -250,8 +279,10 @@ class QY70Writer:
         )
         msg.extend(encoded)
 
-        # Calculate checksum (over address + data)
-        checksum_data = bytes([ah, am, al]) + encoded
+        # Calculate checksum (over BH BL AH AM AL + encoded data)
+        # The QY70 checksum includes the byte count bytes, confirmed by
+        # reference dump analysis (SGT.syx) — NOT just AH AM AL + data
+        checksum_data = bytes([bh, bl, ah, am, al]) + encoded
         checksum = calculate_yamaha_checksum(checksum_data)
         msg.append(checksum)
 

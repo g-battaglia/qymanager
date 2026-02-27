@@ -331,12 +331,30 @@ def display_full_syx_info(filepath: str) -> None:
     if analysis.format_type == "pattern":
         file_type = "[cyan]Pattern[/cyan] (single pattern, AL 0x00-0x07)"
     elif analysis.format_type == "style":
-        file_type = "[green]Style[/green] (full style, AL 0x08-0x37)"
+        file_type = "[green]Style[/green] (full style, AL 0x00-0x2F)"
     else:
         file_type = "[yellow]Unknown[/yellow]"
 
+    # Extract name from filename if not in SysEx data
+    # QY70 SysEx bulk dumps don't contain the pattern/style name
+    pattern_name = analysis.pattern_name
+    if not pattern_name:
+        # Extract from filename (e.g., "P - MR. Vain - 20231101.syx" -> "MR. Vain")
+        from pathlib import Path
+
+        filename = Path(filepath).stem  # Remove extension
+        # Try to extract meaningful name from common QY70 filename patterns
+        if " - " in filename:
+            parts = filename.split(" - ")
+            if len(parts) >= 2:
+                pattern_name = parts[1].strip()  # Usually the second part is the name
+            else:
+                pattern_name = filename
+        else:
+            pattern_name = filename
+
     overview = f"""[bold]File:[/bold] {filepath}
-[bold]Pattern/Style Name:[/bold] {analysis.pattern_name or "N/A"}
+[bold]Pattern/Style Name:[/bold] {pattern_name}
 [bold]Format:[/bold] {file_type}
 [bold]Status:[/bold] {status}
 [bold]File Size:[/bold] {analysis.filesize} bytes
@@ -685,7 +703,7 @@ def display_full_syx_info(filepath: str) -> None:
     track_names = ["D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"]
 
     for track_idx in range(8):
-        # Check both Pattern format (AL 0x00-0x07) and Style format (AL 0x08-0x37)
+        # Check both Pattern format (AL 0x00-0x07) and Style format (AL 0x00-0x2F)
         found = False
 
         if analysis.format_type == "pattern":
@@ -700,9 +718,9 @@ def display_full_syx_info(filepath: str) -> None:
                     found = True
 
         if not found:
-            # Style format: track data in AL 0x08-0x37
+            # Style format: track data in AL 0x00-0x2F
             for sec_idx in range(6):
-                al = 0x08 + (sec_idx * 8) + track_idx
+                al = sec_idx * 8 + track_idx
                 if al in analysis.sections:
                     section = analysis.sections[al]
                     if section.total_decoded_bytes > 0:

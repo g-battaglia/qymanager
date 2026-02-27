@@ -102,7 +102,7 @@ class QY70ToQY700Converter:
         VOLUME_TABLE = 0x226  # Volume data starts at 0x226
         REVERB_TABLE = 0x256  # Reverb send values
         PAN_TABLE = 0x276  # Pan data starts at 0x276
-        CHORUS_TABLE = 0x296  # Chorus send values
+        CHORUS_TABLE = 0x246  # Chorus send values (Session 5: confirmed at 0x246)
 
         # Name - safe to modify
         TEMPLATE_NAME = 0x876  # 10 bytes
@@ -190,13 +190,10 @@ class QY70ToQY700Converter:
                     if al not in self._qy70_section_data:
                         self._qy70_section_data[al] = bytearray()
                     self._qy70_section_data[al].extend(msg.decoded_data)
-                elif 0x00 <= al <= 0x05:
-                    # Section phrase data
-                    if al not in self._qy70_section_data:
-                        self._qy70_section_data[al] = bytearray()
-                    self._qy70_section_data[al].extend(msg.decoded_data)
-                elif 0x08 <= al <= 0x37:
-                    # Track data: AL = 0x08 + (section * 8) + track
+                elif 0x00 <= al <= 0x2F:
+                    # Track data: AL = section_idx * 8 + track_idx
+                    # Section 0: AL 0x00-0x07, Section 1: AL 0x08-0x0F, etc.
+                    # (corrected: ALL 0x00-0x2F are track data, no separate "phrase" region)
                     if al not in self._qy70_track_data:
                         self._qy70_track_data[al] = bytearray()
                     self._qy70_track_data[al].extend(msg.decoded_data)
@@ -209,6 +206,7 @@ class QY70ToQY700Converter:
         self._extract_and_apply_tempo()
         self._extract_and_apply_volumes()
         self._extract_and_apply_pans()
+        self._extract_and_apply_voices()
 
         return bytes(self._buffer)
 
@@ -237,40 +235,63 @@ class QY70ToQY700Converter:
             self._buffer[self.Offsets.TEMPLATE_NAME : self.Offsets.TEMPLATE_NAME + 10] = name_bytes
 
     def _extract_and_apply_tempo(self) -> None:
-        """Extract tempo from QY70 header and apply to Q7P (SAFE)."""
+        """Extract tempo from QY70 header and apply to Q7P (SAFE).
+
+        QY70 tempo encoding (confirmed from SGT reference dump):
+        - decoded[0] of first header block = tempo offset byte
+        - 7-bit group header of first encoded block = tempo range byte
+        - Formula: BPM = (range * 95 - 133) + offset
+
+        To get the range byte, we must re-encode the first 7 decoded bytes
+        and read the group header (encoded[0]).
+
+        Q7P tempo format: big-endian 16-bit value at 0x188, BPM * 10.
+        """
         header_data = self._qy70_section_data.get(0x7F, b"")
 
-        if not header_data:
+        if len(header_data) < 7:
             return
 
-        # Try to extract tempo from common locations in QY70 header
-        for offset in [0x0A, 0x0C, 0x10]:
-            if offset < len(header_data):
-                potential_tempo = header_data[offset]
-                if 40 <= potential_tempo <= 240:
-                    # Store as Q7P format (tempo * 10, big-endian)
-                    tempo_value = potential_tempo * 10
-                    struct.pack_into(">H", self._buffer, self.Offsets.TEMPO, tempo_value)
-                    break
+        # Re-encode the first 7 bytes to recover the 7-bit group header
+        # which encodes the tempo range via the MSBs of decoded[4:7]
+        from qymanager.utils.yamaha_7bit import encode_7bit
+
+        first_block = bytes(header_data[:7])
+        encoded = encode_7bit(first_block)
+        if not encoded:
+            return
+
+        range_byte = encoded[0]  # 7-bit group header = tempo range
+        offset_byte = header_data[0]  # decoded[0] = tempo offset
+
+        # Calculate BPM
+        tempo_bpm = (range_byte * 95 - 133) + offset_byte
+
+        # Sanity check
+        if tempo_bpm < 30 or tempo_bpm > 300:
+            return
+
+        # Store as Q7P format (tempo * 10, big-endian 16-bit)
+        tempo_value = tempo_bpm * 10
+        struct.pack_into(">H", self._buffer, self.Offsets.TEMPO, tempo_value)
 
     def _extract_and_apply_volumes(self) -> None:
-        """Extract volumes from QY70 track data and apply to Q7P (SAFE)."""
-        # QY70 track data structure (after 7-bit decode):
-        # Offset 24: volume value
-        # Track AL = 0x08 + (section_idx * 8) + track_num
+        """Extract volumes from QY70 track data and apply to Q7P (SAFE).
 
-        for section_idx in range(6):  # 6 sections
-            for track_num in range(8):  # 8 tracks
-                al = 0x08 + (section_idx * 8) + track_num
-                track_data = self._qy70_track_data.get(al, b"")
+        NOTE: Volume is NOT stored in the QY70 track data (bytes 0-23 are the
+        track header, bytes 24+ are MIDI event data in a packed bitstream format).
+        Volume/reverb/chorus are likely in the global header (AL=0x7F), but
+        their exact offset within the 640-byte header is not yet mapped.
 
-                if len(track_data) > 24:
-                    volume = track_data[24] & 0x7F
-                    if 0 < volume <= 127:
-                        # Q7P volume offset: 0x226 + (section * 8) + track
-                        vol_offset = self.Offsets.VOLUME_TABLE + (section_idx * 8) + track_num
-                        if vol_offset < self.Offsets.REVERB_TABLE:
-                            self._buffer[vol_offset] = volume
+        For now, this method does NOT extract volumes from QY70 data since
+        reading byte 24 (start of MIDI events) as volume was incorrect.
+        The template's default volumes are preserved instead.
+        """
+        # TODO: Once the volume offset within the QY70 header (AL=0x7F) is
+        # reverse-engineered, extract per-track volumes from there.
+        # The Q7P volume table is at 0x226 + (section * 8) + track.
+        # The QY70 header is 640 bytes but the volume region is unknown.
+        pass
 
     def _extract_and_apply_pans(self) -> None:
         """Extract pan values from QY70 track data and apply to Q7P (SAFE)."""
@@ -280,7 +301,7 @@ class QY70ToQY700Converter:
 
         for section_idx in range(6):
             for track_num in range(8):
-                al = 0x08 + (section_idx * 8) + track_num
+                al = section_idx * 8 + track_num
                 track_data = self._qy70_track_data.get(al, b"")
 
                 if len(track_data) > 22:
@@ -291,6 +312,67 @@ class QY70ToQY700Converter:
                         pan_offset = self.Offsets.PAN_TABLE + (section_idx * 8) + track_num
                         if pan_offset < self.Offsets.CHORUS_TABLE:
                             self._buffer[pan_offset] = pan
+
+    def _extract_and_apply_voices(self) -> None:
+        """Extract voice (Bank MSB/LSB + Program) from QY70 track data and apply to Q7P.
+
+        QY70 track header bytes 14-15 encode voice information:
+        - 0x40 0x80 = default drum kit (drum tracks)
+        - 0x00 0x04 = bass marker (actual voice elsewhere, byte 26 = bank LSB)
+        - Otherwise: byte 14 = Bank MSB, byte 15 = Program Change
+
+        WARNING: The Q7P offsets for voice data are HYPOTHESIZED and UNCONFIRMED:
+          Bank MSB: 0x1E6 + track_num  (8 bytes, one per track)
+          Program:  0x1F6 + track_num  (8 bytes, one per track)
+          Bank LSB: 0x206 + track_num  (8 bytes, one per track)
+        These offsets are plausible but not verified on hardware.
+        """
+        # We only write voice data once per track (not per section),
+        # using section 0 (the first section with data) as the source.
+        # The Q7P voice offsets are per-track (not per-section).
+        for track_num in range(8):
+            # Find the first section that has data for this track
+            track_data = None
+            for section_idx in range(6):
+                al = section_idx * 8 + track_num
+                candidate = self._qy70_track_data.get(al, b"")
+                if len(candidate) >= 16:  # Need at least bytes 0-15
+                    track_data = candidate
+                    break
+
+            if track_data is None or len(track_data) < 16:
+                continue
+
+            voice_byte_14 = track_data[14]
+            voice_byte_15 = track_data[15]
+
+            # Compute Q7P offsets (HYPOTHESIZED — see warning above)
+            bank_msb_offset = 0x1E6 + track_num
+            program_offset = 0x1F6 + track_num
+            bank_lsb_offset = 0x206 + track_num
+
+            # Bounds check: all offsets must be within the 3072-byte buffer
+            if (
+                bank_msb_offset >= self.Q7P_SIZE
+                or program_offset >= self.Q7P_SIZE
+                or bank_lsb_offset >= self.Q7P_SIZE
+            ):
+                continue
+
+            if voice_byte_14 == 0x40 and voice_byte_15 == 0x80:
+                # Drum track: Bank MSB = 127 (0x7F), Program = 0
+                self._buffer[bank_msb_offset] = 0x7F
+                self._buffer[program_offset] = 0x00
+            elif voice_byte_14 == 0x00 and voice_byte_15 == 0x04:
+                # Bass track marker — read bank LSB from byte 26 if available
+                if len(track_data) > 26:
+                    bass_bank_lsb = track_data[26] & 0x7F
+                    self._buffer[bank_lsb_offset] = bass_bank_lsb
+                # Bank MSB and Program: keep template defaults for bass
+            else:
+                # Chord/melody track: byte 14 = Bank MSB, byte 15 = Program
+                self._buffer[bank_msb_offset] = voice_byte_14 & 0x7F
+                self._buffer[program_offset] = voice_byte_15 & 0x7F
 
     def convert_and_save(
         self, source_path: Union[str, Path], output_path: Union[str, Path]

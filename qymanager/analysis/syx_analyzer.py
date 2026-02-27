@@ -235,21 +235,18 @@ class SyxAnalyzer:
     STYLE_SECTION_NAMES = ["Intro", "Main A", "Main B", "Fill AB", "Fill BA", "Ending"]
 
     # Section names by AL index
+    # NOTE: AL 0x00-0x2F are ALL track data (section*8 + track).
+    # Only AL 0x7F is the header. There is no separate "phrase data" region.
+    # Confirmed by SGT reference: AL=section_idx*8+track_idx for all sections.
     SECTION_NAMES = {
-        0x00: "Intro Phrases",
-        0x01: "Main A Phrases",
-        0x02: "Main B Phrases",
-        0x03: "Fill AB Phrases",
-        0x04: "Fill BA Phrases",
-        0x05: "Ending Phrases",
-        0x06: "Section 6",
-        0x07: "Section 7",
         0x7F: "Style Header/Config",
     }
 
     # Track section range
-    TRACK_SECTION_START = 0x08
-    TRACK_SECTION_END = 0x37  # 0x08 + (6 sections * 8 tracks) - 1
+    # QY70 uses AL = section_index * 8 + track_index (confirmed from SGT dump)
+    # Section 0: AL 0x00-0x07, Section 1: AL 0x08-0x0F, ..., Section 5: AL 0x28-0x2F
+    TRACK_SECTION_START = 0x00
+    TRACK_SECTION_END = 0x2F  # 6 sections * 8 tracks - 1
 
     def __init__(self):
         self.parser = SysExParser()
@@ -303,15 +300,38 @@ class SyxAnalyzer:
             if msg.is_style_data:
                 analysis.style_data_messages += 1
 
-            # Validate checksum
-            if msg.raw:
+            # Validate checksum (only bulk dumps have meaningful checksums)
+            if msg.raw and msg.is_bulk_dump:
                 is_valid = verify_sysex_checksum(msg.raw)
                 if is_valid:
                     analysis.valid_checksums += 1
                 else:
                     analysis.invalid_checksums += 1
 
-            # Track AL addresses
+            # Only process style data messages (AH=0x02, AM=0x7E) for
+            # AL tracking, data accumulation, and tempo extraction.
+            # Init/close messages (PARAMETER_CHANGE at 0x00/0x00/0x00) must
+            # be excluded — they share AL=0x00 with Section 0 Track 0 and
+            # would corrupt track data with spurious bytes.
+            if not msg.is_style_data:
+                # Still create message info for display purposes
+                msg_info = MessageInfo(
+                    index=idx,
+                    message_type=msg.message_type.name,
+                    device_number=msg.device_number,
+                    address=msg.address,
+                    address_hex=f"{msg.address_high:02X} {msg.address_mid:02X} {msg.address_low:02X}",
+                    byte_count=len(msg.data) if msg.data else 0,
+                    data_size=len(msg.data) if msg.data else 0,
+                    decoded_size=len(msg.decoded_data) if msg.decoded_data else 0,
+                    checksum=msg.checksum,
+                    checksum_valid=msg.checksum_valid,
+                    raw_size=len(msg.raw) if msg.raw else 0,
+                )
+                analysis.messages.append(msg_info)
+                continue
+
+            # Track AL addresses (style data only)
             al = msg.address_low
             al_counter[al] += 1
 
@@ -320,7 +340,7 @@ class SyxAnalyzer:
             if al == 0x7F and first_7e7f_raw_payload is None and msg.data:
                 first_7e7f_raw_payload = bytes(msg.data)
 
-            # Accumulate decoded data by AL
+            # Accumulate decoded data by AL (style data only)
             if msg.decoded_data:
                 if al not in section_data:
                     section_data[al] = bytearray()
@@ -420,29 +440,51 @@ class SyxAnalyzer:
         - Style: Full style with sections, track data in AL 0x08-0x37
 
         Detection is based on:
-        1. Header byte[0] value (Pattern < 0x08, Style >= 0x08)
-        2. AL address distribution in the file
+        1. Header decoded byte[0] (format marker):
+           - 0x2C (confirmed) = Pattern format (captured from QY70)
+           - 0x5E (confirmed) = Style format (from QY70_SGT.syx)
+           - Values < 0x08 are pattern, >= 0x08 are style
+        2. AL address distribution in the file (fallback)
+
+        Header structure summary (decoded, 640 bytes):
+        - 0x000: Format marker (0x2C=pattern, 0x5E=style)
+        - 0x001-0x005: Always 00 00 00 00 80
+        - 0x006-0x009: Style-specific data (varies)
+        - 0x00A-0x00B: Always 01 00
+        - 0x010-0x044: Repeating 7-byte structure (section config?)
+        - 0x044-0x07F: Voice/mixer data for active tracks (zeros in empty pattern)
+        - 0x080-0x08D: Common prefix + timing info
+        - 0x096-0x0B7: Per-track config (bank/voice/channel)
+        - 0x0B8-0x0C5: Identical structure (track defaults)
+        - 0x137-0x1B8: Identical 130 bytes (structural template)
+        - 0x1B9-0x21B: Style-specific voice/effect data (all 0xFF in pattern)
+        - 0x220-0x27F: Fill pattern data (7-bit encoded defaults)
 
         Returns:
             "pattern", "style", or "unknown"
         """
         al_addresses = set(analysis.al_histogram.keys())
 
-        # Check header byte[0] as format indicator
-        # Pattern files have header[0] < 0x08 (e.g., 0x03)
-        # Style files have header[0] >= 0x08 (e.g., 0x4C, 0x5E)
+        # Primary: check header byte[0] as format indicator (most reliable)
+        # Pattern: header[0] = 0x2C (confirmed from QY70 capture)
+        # Style:   header[0] = 0x5E (confirmed from SGT reference)
+        # General rule: header[0] < 0x08 = pattern, >= 0x08 = style
         if analysis.header_decoded and len(analysis.header_decoded) > 0:
             header_byte = analysis.header_decoded[0]
             if header_byte < 0x08:
                 return "pattern"
+            else:
+                return "style"
 
         # Fallback: check AL address distribution
-        has_phrase_data = any(al < 8 and al != 0x7F for al in al_addresses)
-        has_track_data = any(8 <= al <= 0x37 for al in al_addresses)
+        # Both patterns and styles use AL 0x00+ for track data.
+        # Styles have many AL addresses (6 sections * 8 tracks = up to 48),
+        # while patterns have at most 8 (single section) or just the header.
+        track_als = [al for al in al_addresses if al != 0x7F and al <= 0x2F]
 
-        if has_track_data:
+        if len(track_als) > 8:
             return "style"
-        elif has_phrase_data:
+        elif len(track_als) > 0:
             return "pattern"
         return "unknown"
 
@@ -477,10 +519,10 @@ class SyxAnalyzer:
                         active_sections.append("Pattern")
                         first_track_data = section_data.decoded_data
             else:
-                # Style format: track data is in AL 0x08-0x37
-                # AL = 0x08 + (section * 8) + track
+                # Style format: track data is in AL 0x00-0x2F
+                # AL = section_idx * 8 + track_idx (confirmed from SGT)
                 for sec_idx in range(6):
-                    al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+                    al = sec_idx * 8 + track_idx
                     if al in analysis.sections:
                         section_data = analysis.sections[al]
                         if section_data.total_decoded_bytes > 0:
@@ -501,51 +543,58 @@ class SyxAnalyzer:
 
             if first_track_data and len(first_track_data) > 24:
                 # Extract from track header (bytes after common 12-byte prefix)
-                # Based on analysis: offset 14-15 = bank/program for melody tracks
+                # Based on reverse engineering analysis:
                 #
-                # Pattern at offset 14-15:
-                # - 0x40 0x80 = "QY70 default" encoding (use track-type default voice)
-                # - Otherwise = Bank MSB, Program number
+                # Bytes 14-15 encoding patterns:
+                # - 0x40 0x80 = Drum track "use default kit" marker (D1, D2, PC)
+                # - 0x00 0x04 = Bass track marker (BA) - voice stored elsewhere
+                # - Other values = Bank MSB + Program for melody/chord tracks (C1-C4)
                 #
-                # QY70 track-type default voices:
-                # - RHY1/RHY2 (drum, channel 10): Standard Kit
-                # - BASS (channel 2): Acoustic Bass (program 32)
-                # - CHD1/CHD2 (chord): Piano (program 0)
-                # - PAD: Pad (program 88)
-                # - PHR1/PHR2: Piano (program 0)
+                # For BA track:
+                # - bytes 14-15 = 0x00 0x04 is a fixed marker, NOT the voice
+                # - The actual voice (e.g., SynBass1 + variation) may be in header
+                # - Byte 26 may contain Bank LSB (e.g., 0x60 = 96 for "Hammer" variation)
+                # - Currently we use SynBass1 (Program 38) as default for BA tracks
 
-                is_default_encoding = (
-                    len(first_track_data) > 15
-                    and first_track_data[14] == 0x40
-                    and first_track_data[15] == 0x80
-                )
+                raw_b14 = first_track_data[14] if len(first_track_data) > 14 else 0
+                raw_b15 = first_track_data[15] if len(first_track_data) > 15 else 0
 
-                if is_default_encoding:
-                    # Use QY70 track-type defaults based on track name
+                is_drum_default = raw_b14 == 0x40 and raw_b15 == 0x80
+                is_bass_marker = raw_b14 == 0x00 and raw_b15 == 0x04
+
+                if is_drum_default:
+                    # D1, D2, PC = Drums with default kit
                     if is_drum:
-                        # D1, D2 = Drums
                         bank_msb = 127
                         program = 0
                         voice_name = get_drum_kit_name(program)
-                    elif track_name == "BA":
-                        # BA = Acoustic Bass
-                        bank_msb = 0
-                        program = 32  # Acoustic Bass
-                        voice_name = get_voice_name(program, bank_msb, bank_lsb)
-                    elif track_name == "PC":
-                        # PC = Percussion/Chord - use Piano as default
-                        bank_msb = 0
-                        program = 0
-                        voice_name = get_voice_name(program, bank_msb, bank_lsb)
                     else:
-                        # C1-C4 = Chord tracks = Piano
-                        bank_msb = 0
+                        # PC track with drum default - use Standard Kit
+                        bank_msb = 127
                         program = 0
-                        voice_name = get_voice_name(program, bank_msb, bank_lsb)
+                        voice_name = get_drum_kit_name(program)
+                elif is_bass_marker and track_name == "BA":
+                    # BA track: bytes 14-15 = 00 04 is a marker, not the voice
+                    # The actual bass voice is likely SynBass1 (Program 38)
+                    # with a variation from Bank LSB (possibly at byte 26)
+                    bank_msb = 0
+                    program = 38  # Synth Bass 1 (SynBass1)
+                    # Try to extract Bank LSB from byte 26 if available
+                    if len(first_track_data) > 26:
+                        potential_bank_lsb = first_track_data[26]
+                        # Bank LSB should be in valid MIDI range
+                        if 0 <= potential_bank_lsb <= 127:
+                            bank_lsb = potential_bank_lsb
+                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
+                elif track_name == "BA":
+                    # BA track with non-standard encoding - use defaults
+                    bank_msb = 0
+                    program = 38  # Synth Bass 1
+                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
                 else:
-                    # Explicit bank/program encoding
-                    raw_bank = first_track_data[14]
-                    raw_program = first_track_data[15]
+                    # Chord/melody tracks (C1-C4): bytes 14-15 = Bank MSB + Program
+                    raw_bank = raw_b14
+                    raw_program = raw_b15
                     # Valid MIDI values are 0-127
                     if raw_bank < 128 and raw_program < 128:
                         bank_msb = raw_bank
@@ -649,46 +698,43 @@ class SyxAnalyzer:
             )
             analysis.qy70_sections.append(section_info)
         else:
-            # Style format: 6 sections with separate phrase and track data
+            # Style format: 6 sections, each with 8 tracks
+            # AL = section_idx * 8 + track_idx (confirmed from SGT reference)
+            # There is NO separate "phrase data" region — all AL 0x00-0x2F is track data
             for sec_idx in range(6):
                 sec_name = self.STYLE_SECTION_NAMES[sec_idx]
-
-                # Check phrase data (AL 0x00-0x05)
-                phrase_bytes = 0
-                phrase_data: Optional[bytes] = None
-                if sec_idx in analysis.sections:
-                    phrase_bytes = analysis.sections[sec_idx].total_decoded_bytes
-                    phrase_data = analysis.sections[sec_idx].decoded_data
 
                 # Check track data for this section
                 track_bytes = 0
                 active_tracks: List[int] = []
+                first_track_bytes = 0  # Size of first track (for bar estimation)
 
                 for track_idx in range(8):
-                    al = self.TRACK_SECTION_START + (sec_idx * 8) + track_idx
+                    al = sec_idx * 8 + track_idx
                     if al in analysis.sections:
                         section_data = analysis.sections[al]
                         if section_data.total_decoded_bytes > 0:
                             track_bytes += section_data.total_decoded_bytes
                             active_tracks.append(track_idx + 1)
+                            if first_track_bytes == 0:
+                                first_track_bytes = section_data.total_decoded_bytes
 
-                has_data = phrase_bytes > 0 or track_bytes > 0
+                has_data = track_bytes > 0
 
-                # Try to estimate bar count from phrase data size
-                # Rough heuristic: QY70 uses ~32-64 bytes per bar for phrase data
+                # Estimate bar count from first track data size
+                # Track data includes 24-byte header + MIDI events
+                # Rough heuristic: ~128-256 bytes per bar of track data
                 bar_count = 0
                 beat_count = 0
-                if phrase_bytes > 0:
-                    # Estimate based on data size - more data = more bars
-                    # This is a rough approximation
-                    bar_count = max(1, phrase_bytes // 32)
+                if first_track_bytes > 24:
+                    bar_count = max(1, (first_track_bytes - 24) // 96)
                     beat_count = bar_count * 4  # Assume 4/4 time
 
                 section_info = QY70SectionInfo(
                     index=sec_idx,
                     name=sec_name,
                     has_data=has_data,
-                    phrase_bytes=phrase_bytes,
+                    phrase_bytes=first_track_bytes,  # Repurpose as first track size
                     track_bytes=track_bytes,
                     active_tracks=active_tracks,
                     bar_count=bar_count,
@@ -706,19 +752,26 @@ class SyxAnalyzer:
         )
 
     def _extract_name(self, data: bytes) -> str:
-        """Try to extract pattern name from header data."""
-        if len(data) < 10:
-            return ""
+        """
+        Try to extract pattern/style name from header data.
 
-        # Try first 10 bytes as name
-        name_bytes = []
-        for b in data[:10]:
-            if 32 <= b <= 126:
-                name_bytes.append(chr(b))
-            else:
-                break
+        Note: QY70 SysEx bulk dumps do NOT contain the pattern/style name
+        in a simple readable format. The first bytes of the header are
+        format markers (e.g., 0x4C, 0x5E) not name characters.
 
-        return "".join(name_bytes).strip()
+        The name extraction is currently not implemented for QY70.
+        Returns empty string - the caller should use the filename instead.
+        """
+        # Header byte 0 meanings (format markers, not name):
+        # 0x03 = Pattern format
+        # 0x4C = Style (pattern-like)
+        # 0x5E = Style (full)
+        #
+        # The style name, if stored, is likely encoded within the header
+        # using a complex 7-bit interleaved format that is not yet decoded.
+        #
+        # For now, return empty string and let the CLI use the filename.
+        return ""
 
     def _extract_tempo(self, data: bytes) -> int:
         """

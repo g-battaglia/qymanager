@@ -42,27 +42,26 @@ Offset    Size    Description                          Status
 0x030     2       Size marker (0x0990 = 2448)          ✓ Verified
 0x032     206     Reserved/padding                     
 0x100     32      Section pointers                     ✓ Verified
-0x120     96      Section encoded data                 Partial
+0x120     96      Section config entries                ✓ Session 5
 0x180     8       Padding (0x20 spaces)                ✓ Verified
 0x188     2       Tempo (big-endian, ÷10 for BPM)      ✓ Verified
 0x18A     1       Time signature                       ✓ Lookup table
 0x18B     1       Time signature (denominator?)        Needs verify
 0x18C     4       Additional timing flags              
-0x190     8       Channel assignments                  ✓ Mapped
-0x198     8       Reserved                             
+0x190     16      Channel assignments (16 tracks)      ✓ Mapped
 0x1A0     60      Reserved/spaces                      
 0x1DC     8       Track numbers (00-07)                ✓ Verified
 0x1E4     2       Track enable flags (bitmask)         ✓ Verified
-0x1E6     26      Reserved                             
-0x200     32      Reserved                             
-0x220     6       Volume table header                  
-0x226     16      Volume data (8 tracks × 2?)          ✓ Verified
-0x236     26      Volume continued                     
-0x250     6       Reverb send table header             
-0x256     16      Reverb send data (8 tracks)          ✓ NEW - Verified
-0x266     10      Reserved                             
-0x270     6       Pan table header                     
-0x276     48      Pan data (8 tracks × sections)       ✓ FIXED offset
+0x1E6     16      Bank MSB (16 tracks, hypothesized)   ⚠ Unconfirmed
+0x1F6     16      Program number (16 tracks, hyp.)     ⚠ Unconfirmed
+0x206     16      Bank LSB (16 tracks, hypothesized)   ⚠ Unconfirmed
+0x220     6       Volume table header (zeros)          ✓ Verified
+0x226     16      Volume data (16 tracks)              ✓ Verified
+0x236     16      Unknown CC#74? (default 0x40)        Needs verify
+0x246     16      Chorus Send (16 tracks)              ✓ Session 5
+0x256     16      Reverb Send (16 tracks)              ✓ Verified
+0x266     16      Padding/separator (zeros)            ✓ Verified
+0x276     74      Pan data (multi-section × 16 trks)   ✓ FIXED offset
 0x2C0     160     Table 3 (unknown - effects?)         Needs research
 0x360     792     Phrase data                          Needs parsing
 0x678     504     Sequence events                      Needs parsing
@@ -104,7 +103,7 @@ Offset  Size  Format      Description
 
 ## Section Pointers (0x100 - 0x11F)
 
-The section pointer area contains 16 two-byte entries for section references:
+The section pointer area contains 16 two-byte big-endian entries for section references:
 
 ```
 Offset  Size  Description
@@ -115,11 +114,63 @@ Offset  Size  Description
 0x106   2     Section 3 (Fill AB) pointer
 0x108   2     Section 4 (Fill BA) pointer
 0x10A   2     Section 5 (Ending) pointer
-0x10C   20    Reserved section pointers
+0x10C   20    Reserved section pointers (for 12-section format)
 ```
 
-**Special values:**
+**Pointer mechanism (Session 5 discovery):**
+- Pointers are 2-byte big-endian offsets **relative to 0x100**
+- Effective offset in file = pointer_value + 0x100
 - `0xFEFE` = Section is empty/unused
+
+**Example from T01.Q7P:**
+```
+0x100: 00 20  → Section 0 at offset 0x120 (0x0020 + 0x100)
+0x102: FE FE  → Section 1 empty
+...
+```
+
+## Section Config Area (0x120 - 0x17F)
+
+**Session 5 Discovery:** This area contains structured section configuration entries,
+NOT raw encoded data as previously documented.
+
+### Section Config Entry Format (9 bytes)
+
+```
+F0 00 FB pp 00 tt C0 bb F2
+│        │     │  │  │  └── End marker
+│        │     │  │  └───── Bar count (e.g., 0x04 = 4 bars)
+│        │     │  └──────── C0 = bar count prefix
+│        │     └─────────── Track reference
+│        └───────────────── Phrase index
+└────────────────────────── Start marker
+```
+
+Each active section has a 9-byte config entry starting at the offset indicated by its pointer.
+
+**Example from T01.Q7P (Section 0 at 0x120):**
+```
+F0 00 FB 00 00 00 C0 04 F2   → Phrase 0, Track 0, 4 bars
+```
+
+Both test files have `C0 04` = 4 bars per section.
+
+### F1 Record (Session 5 Discovery)
+
+In T01.Q7P, an **F1 record** was found at 0x129-0x17F (87 bytes). This record
+contains inline per-section track parameter overrides (volume, reverb, pan) that
+are applied on top of the global parameter tables.
+
+```
+Offset  Content     Description
+------  ----------  -----------
+0x129   F1 ...      F1 record start (absent in empty template TXX.Q7P)
+...     variable    Per-section volume/reverb/pan overrides
+0x17F   end         End of F1 data
+```
+
+The F1 record is absent in the empty template (TXX.Q7P), indicating it only exists
+when sections have non-default parameter values.
 
 ## Timing Configuration (0x180 - 0x18F)
 
@@ -199,7 +250,31 @@ Offset  Size  Format  Description
 - `0x001F` = Tracks 1-5 enabled
 - `0x00FF` = All 8 tracks enabled
 
-## Volume Table (0x220 - 0x26F)
+## Volume Table (0x220 - 0x255)
+
+### Revised Parameter Table Layout (Session 5 Discovery)
+
+The parameter tables at 0x220-0x2BF follow a consistent structure:
+
+```
+Offset  Size  Description                          Default   Status
+------  ----  -----------                          -------   ------
+0x220   6     Volume header/reserved (zeros)                 ✓ Verified
+0x226   16    Volume data (16 tracks)              0x64=100  ✓ Verified
+0x236   16    Unknown CC#74? (16 tracks)           0x40=64   Needs verify
+0x246   16    Chorus Send (16 tracks)              0x00=0    ✓ NEW Session 5
+0x256   16    Reverb Send (16 tracks)              0x28=40   ✓ Verified
+0x266   16    Padding/separator (zeros)                      ✓ Verified
+0x276   16    Pan data (16 tracks, section 0)      0x40=64   ✓ Verified
+0x286   16    Pan data (section 1 or extended)     0x40=64   ✓ Verified
+0x296   16    Pan data (section 2 or extended)     0x40=64   ✓ Verified
+0x2A6   16    Pan data (section 3 or extended)     0x40=64   ✓ Verified
+0x2B6   10    Pan data (continued)                 0x40=64   ✓ Verified
+```
+
+**Key correction (Session 5):** The area at 0x286-0x2BF was previously suspected to be
+Chorus Send data, but is actually **extended Pan data** (all values 0x40 = center pan default).
+Chorus Send is at **0x246-0x255**.
 
 ### Structure
 
@@ -207,14 +282,28 @@ Offset  Size  Format  Description
 Offset  Size  Description
 ------  ----  -----------
 0x220   6     Header/reserved (zeros)
-0x226   16    Volume values per track/section
-0x236   26    Additional volume data
-...
+0x226   16    Volume values per track
+0x236   16    Unknown parameter (CC#74? default 0x40=64)
 ```
 
 **XG Default Volume:** 100 (0x64)
 
-## Reverb Send Table (0x250 - 0x26F)
+## Chorus Send Table (0x246 - 0x255)
+
+**NEW - Discovered in Session 5**
+
+```
+Offset  Size  Description
+------  ----  -----------
+0x246   16    Chorus send values per track (one byte each)
+```
+
+**XG Default Chorus Send:** 0 (0x00)
+
+Both test files (T01.Q7P and TXX.Q7P) have all zeros at this offset,
+consistent with XG default chorus send = 0.
+
+## Reverb Send Table (0x250 - 0x265)
 
 **NEW - Discovered from XG analysis**
 
@@ -457,11 +546,6 @@ The QY700 supports up to 12 sections:
 | 9 | Main C | Third main pattern |
 | 10 | Main D | Fourth main pattern |
 | 11 | Ending 2 | Secondary ending |
-| Size | Variable | Fixed 3072 or 5120 bytes |
-| Encoding | 7-bit packed | Raw 8-bit |
-| Checksum | Per-message | None |
-| Sections | 6 | 6 (basic) or 12 (full) |
-| Tracks | 8 | **16** (TR1-TR16) |
 
 ## Unknown/Reserved Areas
 

@@ -267,6 +267,7 @@ def display_syx_info(
     full: bool = False,
 ) -> None:
     """Display complete SysEx file information with Rich formatting."""
+    from pathlib import Path
 
     # Header panel
     status = "[green]Valid[/green]" if analysis.valid else "[red]Invalid[/red]"
@@ -276,9 +277,25 @@ def display_syx_info(
         else f"[green]{analysis.valid_checksums}[/green]/[red]{analysis.invalid_checksums}[/red]"
     )
 
+    # Extract name from filename if not in SysEx data
+    # QY70 SysEx bulk dumps don't contain the pattern/style name
+    pattern_name = analysis.pattern_name
+    if not pattern_name:
+        filename = Path(analysis.filepath).stem  # Remove extension
+        # Try to extract meaningful name from common QY70 filename patterns
+        # e.g., "P - MR. Vain - 20231101.syx" -> "MR. Vain"
+        if " - " in filename:
+            parts = filename.split(" - ")
+            if len(parts) >= 2:
+                pattern_name = parts[1].strip()
+            else:
+                pattern_name = filename
+        else:
+            pattern_name = filename
+
     # Build header content like Q7P
     header_content = f"""[bold]File:[/bold] {analysis.filepath}
-[bold]Pattern Name:[/bold] {analysis.pattern_name or "N/A"}
+[bold]Pattern Name:[/bold] {pattern_name}
 [bold]Format:[/bold] QY70 SysEx
 [bold]Status:[/bold] {status}
 [bold]File Size:[/bold] {analysis.filesize} bytes
@@ -384,14 +401,9 @@ def display_syx_info(
             # Volume
             vol_str = str(track.volume) if track.has_data else "[dim]---[/dim]"
 
-            # Pan (convert to L/C/R format)
+            # Pan (use shared pan_to_string for consistent display)
             if track.has_data:
-                if track.pan == 64:
-                    pan_str = "C"
-                elif track.pan < 64:
-                    pan_str = f"L{64 - track.pan}"
-                else:
-                    pan_str = f"R{track.pan - 64}"
+                pan_str = pan_to_string(track.pan)
             else:
                 pan_str = "[dim]---[/dim]"
 

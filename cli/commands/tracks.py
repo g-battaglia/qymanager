@@ -166,7 +166,7 @@ def display_track_detail(
     cho_text.append(cho_bar)
     if chorus != XG_DEFAULTS["chorus_send"]:
         cho_text.append(f"  [≠{XG_DEFAULTS['chorus_send']}]", style="yellow")
-    table.add_row("Chorus Send", cho_text, "TBD")
+    table.add_row("Chorus Send", cho_text, f"0x{0x246 + track_num - 1:03X}")
 
     console.print(table)
     console.print()

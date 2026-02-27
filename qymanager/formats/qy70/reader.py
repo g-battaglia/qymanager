@@ -21,20 +21,33 @@ class QY70Reader:
     Parses .syx files and constructs Pattern objects from the
     contained bulk dump data.
 
+    AL addressing scheme (confirmed from QY70 SGT dump):
+        AL = section_index * 8 + track_index
+        Section 0 (Intro):   AL 0x00-0x07 (8 tracks)
+        Section 1 (Main A):  AL 0x08-0x0F
+        Section 2 (Main B):  AL 0x10-0x17
+        Section 3 (Fill AB): AL 0x18-0x1F
+        Section 4 (Fill BA): AL 0x20-0x27
+        Section 5 (Ending):  AL 0x28-0x2F
+        Header:              AL 0x7F
+
     Example:
         pattern = QY70Reader.read("style.syx")
         print(f"Pattern: {pattern.name}, Tempo: {pattern.tempo}")
     """
 
-    # Section index to SectionType mapping
+    # Section index to SectionType mapping (index 0-5, NOT AL address)
     SECTION_MAP = {
-        0x00: SectionType.INTRO,
-        0x01: SectionType.MAIN_A,
-        0x02: SectionType.MAIN_B,
-        0x03: SectionType.FILL_AB,
-        0x04: SectionType.FILL_BA,
-        0x05: SectionType.ENDING,
+        0: SectionType.INTRO,
+        1: SectionType.MAIN_A,
+        2: SectionType.MAIN_B,
+        3: SectionType.FILL_AB,
+        4: SectionType.FILL_BA,
+        5: SectionType.ENDING,
     }
+
+    # Number of tracks per section
+    TRACKS_PER_SECTION = 8
 
     def __init__(self):
         self.parser = SysExParser()
@@ -150,17 +163,28 @@ class QY70Reader:
         """
         Parse a single section from bulk dump data.
 
+        Each section has 8 tracks stored at:
+            AL = section_idx * 8 + track_idx  (track_idx 0-7)
+
         Args:
-            section_idx: Section index (0x00-0x05)
+            section_idx: Section index (0-5)
             section_type: Type of section
 
         Returns:
             Parsed Section or None if no data
         """
-        # Get data for this section
-        data = self._section_data.get(section_idx)
+        # Collect per-track data for this section using correct AL addressing
+        track_data_map: Dict[int, bytes] = {}
+        has_any_data = False
 
-        if not data:
+        for track_idx in range(self.TRACKS_PER_SECTION):
+            al = section_idx * self.TRACKS_PER_SECTION + track_idx
+            data = self._section_data.get(al)
+            if data and len(data) > 0:
+                track_data_map[track_idx] = bytes(data)
+                has_any_data = True
+
+        if not has_any_data:
             # Return empty section
             return Section.create_empty(section_type)
 
@@ -172,27 +196,35 @@ class QY70Reader:
         )
 
         # Parse track data
-        section.tracks = self._parse_tracks(bytes(data))
-        section._raw_data = bytes(data)
+        section.tracks = self._parse_tracks(track_data_map)
+
+        # Store combined raw data for the section
+        combined = bytearray()
+        for track_idx in range(self.TRACKS_PER_SECTION):
+            if track_idx in track_data_map:
+                combined.extend(track_data_map[track_idx])
+        section._raw_data = bytes(combined)
 
         return section
 
-    def _parse_tracks(self, data: bytes) -> List[Track]:
+    def _parse_tracks(self, track_data_map: Dict[int, bytes]) -> List[Track]:
         """
         Parse track data from section dump.
 
         Args:
-            data: Decoded section data
+            track_data_map: Dict mapping track_idx (0-7) to decoded track data
 
         Returns:
             List of 8 Track objects
         """
         tracks = []
 
-        # Create 8 tracks with default settings
-        # Actual parsing of track data would need more reverse engineering
-        for i in range(8):
-            track = Track(number=i + 1, enabled=True, settings=TrackSettings())
+        # Create 8 tracks, using available data where present
+        for i in range(self.TRACKS_PER_SECTION):
+            has_data = i in track_data_map and len(track_data_map[i]) > 0
+            track = Track(number=i + 1, enabled=has_data, settings=TrackSettings())
+            if has_data:
+                track._raw_data = track_data_map[i]
             tracks.append(track)
 
         return tracks
