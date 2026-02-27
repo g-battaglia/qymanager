@@ -595,6 +595,60 @@ Examples:
 
 ---
 
+### Sessione 9 — Event Decoder Prototype, Preamble Classification, lo7 Header Notes
+
+**Data:** 27 febbraio 2026
+**Obiettivo:** Costruire un decoder funzionante per tracce chord, scoprire la classificazione encoding basata sul preamble, e migliorare l'estrazione note con lo7 header fix.
+
+**Scoperte principali:**
+
+1. **Preamble-based track encoding classification (NUOVA SCOPERTA):**
+   - I bytes 0-1 del preamble (decoded bytes 24-25) **predicono perfettamente** quale modello di decodifica funziona
+   - `1FA3` = chord encoding (SR funziona, beat counter funziona, alta confidenza)
+   - `29CB` = arpeggio encoding (SR non funziona, beat counter ~30%, bassa confidenza)
+   - `2BE3` = bass encoding (struttura nota, campo semantica diversa)
+   - `2543` = drum encoding (D1, non decodificato)
+   - C4 cambia preamble tra sezioni: chord in default, arpeggio in fill
+
+2. **Header lo7 note extraction (NUOVA SCOPERTA):**
+   - Campi header 9-bit si decompongono come `[bit8: flag][lo7: MIDI note]`
+   - bit8=0: lo7 == valore raw (MAIN-A C2: [63,61,59,55,36] = D#4,C#4,B3,G3,C2)
+   - bit8=1: lo7 dà comunque nota MIDI valida; bit8 è flag voicing/registro
+   - Migliora estrazione note INTRO C2 da ~33% a **88.9%**
+   - Ogni battuta ha sempre accordo estraibile, anche con valori raw >127
+
+3. **Confidence scoring system:**
+   - Score pesato per bar: header validity (3x), beat counter (2x), F5 monotonicity (1x), note extraction (1x)
+   - Track confidence = media bar confidences con boost/penalty basato su preamble
+   - Shift register match rate RIMOSSO dalla confidenza (funziona solo quando beats ripetono stesso accordo)
+
+4. **Event decoder prototype completato:**
+   - `midi_tools/event_decoder.py` (862 righe)
+   - Implementa: SysEx parsing → DC bar splitting → 9-bit field extraction → R=9 de-rotation → F3/F4/F5 decomposition → chord-tone mask application → preamble classification → confidence scoring → MIDI file generation
+   - 23 tracce decodificate, 300 eventi totali, 97.3% note extraction rate
+   - C2 MAIN-A/B/FILL-AB: 100% confidenza (perfetto)
+   - C3/C4 sezioni default: 89-91% confidenza
+   - C2 INTRO/FILL-BA/ENDING: 52-57% confidenza (accordi diversi per battuta)
+   - C1 tutte le sezioni: 22% (encoding arpeggio, modello chord non applicabile)
+
+5. **MIDI output generato:**
+   - `/tmp/sgt_all_chord.mid` con 23 tracce, 151 BPM
+   - Conversione F5→tick a 480 ticks/beat (F5 spacing 16 = 1 beat)
+   - Velocity da f4_param4 (scale 0-15 → 40-120)
+   - Durata note: eighth note default (da raffinare)
+
+**Aggiornamenti documentazione (sessione 9):**
+- Tutti 3 doc aggiornati con scoperte Session 8 (QY70_FORMAT.md, MIDI_REVERSE_ENGINEERING.md, QY70_QY700_MAPPING.md)
+- SESSION_RECAP.md creato (riepilogo cumulativo)
+- TODO.md riscritto (lista prioritizzata completa)
+
+**Git commit:** `5660701` "feat: deep QY70 bitstream reverse engineering, 16 bug fixes, NEONGROOVE custom style" (47 files, 20,607 lines)
+
+**Script creati (sessione 9):**
+- `midi_tools/event_decoder.py` — decoder chord track completo con output MIDI
+
+---
+
 ## Problemi Aperti da Risolvere
 
 | # | Problema | File Coinvolto | Stato |
@@ -622,10 +676,13 @@ Examples:
 | 21 | Area 0x236-0x245 funzione sconosciuta | q7p_analyzer.py | Nuovo — possibile CC#74 (default 0x40) |
 | 22 | F1 record non parsato | q7p_analyzer.py | Nuovo — 87 bytes in T01, assente in TXX |
 | 23 | ~~7-byte group alignment~~ | QY70_FORMAT.md | **CONFERMATO Session 6** — reale struttura, non artefatto encoding |
-| 24 | Note field bit-packing QY70 | QY70_FORMAT.md | **IN PROGRESSO Session 8** — R=9 universale, F3/F4/F5 parzialmente decodificati |
-| 25 | Bar header 13-byte format | QY70_FORMAT.md | **IN PROGRESSO Session 8** — F0-F4 = note accordo, chord-tone mask in F4 |
+| 24 | Note field bit-packing QY70 | QY70_FORMAT.md | **SOSTANZIALE Session 9** — Chord tracks decodificati (100% C2 default, 89-91% C3/C4) |
+| 25 | Bar header 13-byte format | QY70_FORMAT.md | **RISOLTO Session 9** — lo7 estrae note MIDI anche con bit8 flag set |
 | 26 | D1 drum `28 0F` structural marker | QY70_FORMAT.md | Aperto — struttura interna sconosciuta |
 | 27 | F3 mid3 semantica | QY70_FORMAT.md | Nuovo Session 8 — tipo voce/traccia? Serve più dati |
-| 28 | F4 header valori >127 | QY70_FORMAT.md | Nuovo Session 8 — header potrebbe codificare intervalli, non MIDI notes |
+| 28 | F4 header valori >127 | QY70_FORMAT.md | **RISOLTO Session 9** — bit8 è flag, lo7 è nota MIDI valida |
 | 29 | F5 lo3/mid4 semantica precisa | QY70_FORMAT.md | Nuovo Session 8 — lo3=gate? mid4=beat position? |
-| 30 | Conversione dati evento QY70↔QY700 | converters | Aperto — richiede decodifica completa bitstream |
+| 30 | Conversione dati evento QY70↔QY700 | converters | Aperto — richiede decodifica arpeggio/bass/drum |
+| 31 | Preamble-based encoding classification | QY70_FORMAT.md | **SCOPERTO Session 9** — 4 tipi: chord(1FA3), arpeggio(29CB), bass(2BE3), drum(2543) |
+| 32 | Decoder chord track funzionante | event_decoder.py | **COMPLETATO Session 9** — 23 tracce, 300 eventi, 97.3% estrazione note |
+| 33 | Arpeggio encoding (preamble 29CB) | QY70_FORMAT.md | Aperto — C1, fill C4, D2, PC usano encoding diverso |

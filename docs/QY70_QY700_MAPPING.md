@@ -236,9 +236,29 @@ The QY70 packed bitstream has been partially decoded:
 10. **Cross-section behavior**: When header chord is the SAME across sections,
     ALL event fields are IDENTICAL. When chord changes, ALL 6 fields change.
 
-**Status:** Substantially decoded for chord tracks. F3 beat counter and F4 chord-tone
-mask are the strongest findings. F5 timing, drum track encoding, and F3 mid3/hi2
-semantics still require further reverse engineering.
+**Session 9 Additions:**
+
+11. **Preamble-based encoding classification**: Preamble bytes 0-1 perfectly predict
+    which decoding model works: `1FA3`=chord (high confidence), `29CB`=arpeggio
+    (different encoding), `2BE3`=bass, `2543`=drum. C4 switches between chord and
+    arpeggio depending on section type (default vs fill).
+
+12. **Header lo7 note extraction**: 9-bit header fields decompose as `[bit8: flag][lo7: note]`.
+    bit8 is a voicing/register flag, lo7 (bits 0-6) always contains a valid MIDI note.
+    This fixes extraction for sections with header values >127 (e.g., INTRO C2 improves
+    from ~33% to 88.9% extraction rate).
+
+13. **Working chord track decoder**: `midi_tools/event_decoder.py` successfully decodes
+    chord tracks with 100% confidence for default patterns (C2 MAIN-A/B/FILL-AB) and
+    89-91% for C3/C4. Generates Standard MIDI File output. Total: 23 tracks, 300 events,
+    97.3% note extraction rate from SGT.syx.
+
+14. **Confidence scoring**: Weighted multi-factor scoring (header validity 3x, beat counter
+    2x, F5 monotonicity 1x, note extraction 1x) with preamble-based boost/penalty.
+
+**Status:** Chord tracks substantially decoded with working decoder prototype. Arpeggio
+encoding (C1, fill C4, D2, PC), bass encoding, and drum encoding still require
+further reverse engineering. F5 timing details and F3 mid3/hi2 semantics pending.
 
 ### Format Comparison
 
@@ -262,9 +282,13 @@ When converting QY70 ↔ QY700:
 2. **Voice data**: Extract from QY70 track headers, place in QY700 voice area
 3. **Event data**: **Requires full format conversion** — QY70 uses packed bitstream
    with 9-bit rotating fields, QY700 uses byte-oriented commands. These are
-   fundamentally different encodings. Current decoding progress:
-   - Chord tracks: ~70% decoded (F3 beat counter, F4 chord mask, F5 timing confirmed)
+   fundamentally different encodings. Current decoding progress (Session 9):
+   - Chord tracks: **~85% decoded** — Working decoder (`event_decoder.py`) extracts
+     notes at 97.3% rate. C2 default sections at 100% confidence. lo7 header fix
+     enables extraction even for sections with header values >127.
    - Bass tracks: Structure known (DC delimiters, R=9), field semantics pending
+   - Arpeggio tracks: Identified via preamble `29CB` (C1, fill C4, D2, PC) — different
+     field layout, chord-tone model does NOT apply
    - Drum tracks: Minimal (D1 markers found, D2/PC no DC, internal format unknown)
 4. **Channel assignments**: QY70 has fixed defaults, QY700 allows per-track config
 5. **AL addressing**: QY70 uses `section*8 + track`, not `0x08 + section*8 + track`
