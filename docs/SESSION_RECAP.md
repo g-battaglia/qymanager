@@ -1,9 +1,9 @@
-# QYConv — Recap Sessioni 1-8
+# QYConv — Recap Sessioni 1-10
 
 ## Panoramica del Progetto
 
 **qyconv** converte pattern/style tra Yamaha QY70 (SysEx .syx) e QY700 (binario .Q7P).
-In 8 sessioni abbiamo: stabilito la connessione MIDI, corretto 16 bug nel core library,
+In 10 sessioni abbiamo: stabilito la connessione MIDI, corretto 16 bug nel core library,
 creato uno stile custom, e condotto un reverse engineering profondo del formato bitstream QY70.
 
 ---
@@ -57,19 +57,22 @@ Scoperta fondamentale: **QY70 e QY700 usano formati evento completamente diversi
 | F4 = 5-bit chord-tone mask + 4-bit param | Media | 8 |
 | F5 = timing/gate (+16 per beat) | Media | 8 |
 | Bar header 13 byte → note accordo (MIDI) | Alta | 7 |
+| Preamble slot-based (non voice-based) | Alta | 10 |
+| D1 msgs 0-4 identici, solo msg 5 differisce | Alta | 10 |
+| General encoding (29CB) usa R=47 | Alta | 10 |
+| SGT vs NEONGROOVE dati traccia 100% identici | Alta | 10 |
 | DC delimiter solo in chord/bass tracks | Alta | 6-8 |
 | Empty-marker pattern: BF DF EF F7 FB FD FE | Alta | 5 |
 | Style name NON in ASCII nel dump | Alta | 5 |
 
 #### Stato decodifica per tipo traccia
 
-| Traccia | Decodifica | Note |
-|---------|-----------|------|
-| Chord (C1-C4) | ~70% | Struttura eventi, beat counter, chord mask |
-| Bass | ~40% | DC delimiters, R=9, struttura nota |
-| Drum D1 | ~15% | Marker `28 0F`, nessun DC, struttura interna ignota |
-| Drum D2 | ~10% | Nessun DC, sezioni quasi identiche |
-| Percussion PC | ~10% | Nessun DC, differenze S0 vs S2-S5 |
+| Traccia | Encoding | Decodifica | Note |
+|---------|----------|-----------|------|
+| Chord (CHD2,PHR1,PHR2) | chord (1FA3) | ~85% | Struttura eventi, beat counter, chord mask, decoder funzionante |
+| General (RHY2,CHD1,PAD) | general (29CB) | ~15% | R=47, no SR, no beat counter, struttura diversa |
+| Bass slot (BASS) | bass_slot (2BE3) | ~40% | DC delimiters, R=9, struttura nota |
+| Drum primary (RHY1) | drum_primary (2543) | ~15% | Marker `28 0F`, msgs 0-4 identici, solo msg 5 varia |
 
 ---
 
@@ -85,6 +88,7 @@ qymanager/formats/qy70/writer.py        — Checksum fix
 cli/commands/info.py                     — Display fix
 cli/commands/tracks.py                   — Chorus offset display
 cli/display/tables.py                    — Pan display fix
+midi_tools/event_decoder.py             — Chord track decoder (893 lines), slot-based naming fix
 ```
 
 ## Documentazione
@@ -102,26 +106,25 @@ cli/display/tables.py                    — Pan display fix
 
 ### 1. Ground Truth (PRIORITA MASSIMA)
 Catturare 3-4 pattern .syx dal QY70 con contenuto noto e semplice:
-- **Pattern A**: Un solo accordo C major, un beat per battuta, solo C2 attivo
+- **Pattern A**: Un solo accordo C major, un beat per battuta, solo CHD2 attivo
 - **Pattern B**: Come A ma con accordo diverso (Am o G)
-- **Pattern C**: Come A ma con traccia D1 drum (solo kick su beat 1)
+- **Pattern C**: Come A ma con traccia RHY1 drum (solo kick su beat 1)
 - **Pattern D**: Come A ma 2 sezioni con accordi diversi
 
 Ogni cattura valida/smentisce le ipotesi su F3, F4, F5 in modo definitivo.
-Questo e il singolo passo con il miglior rapporto effort/risultato.
+Questo è il singolo passo con il miglior rapporto effort/risultato.
 
-### 2. Decoder Prototype per Chord Tracks
-Costruire `QY70EventDecoder` che:
-1. Estrae bar header → decodifica note accordo
-2. De-ruota eventi (R=9) → estrae 6 campi da 9 bit
-3. Applica F4 chord-tone mask → determina note suonate
-4. Calcola timing da F5 → posiziona nel tempo
-5. Genera output MIDI verificabile a orecchio
+### 2. Decode General Encoding (29CB)
+L'encoding general (preamble 29CB) è usato da RHY2, CHD1, PAD:
+- R=47 (inverso del chord R=9) è ottimale
+- Shift register non funziona — struttura campi completamente diversa
+- DC potrebbe non essere delimitatore in questo encoding
+- Serve analisi a livello di bit con pattern noti
 
-### 3. Drum Track Decoding
-- Analizzare marker `28 0F` di D1 con pattern drum noti (kick/snare/hi-hat)
+### 3. Drum Track Decoding (RHY1)
+- Analizzare marker `28 0F` di RHY1 con pattern drum noti (kick/snare/hi-hat)
+- Msgs 0-4 identici tra sezioni, solo msg 5 differisce — concentrare analisi su msg 5
 - Cercare correlazione tra posizione nel bitstream e note MIDI percussive
-- D2 e PC: confrontare differenze S0 vs S2-S5 per isolare contenuto musicale
 
 ### 4. Conversione Eventi QY70 ↔ QY700
 Una volta decodificato il bitstream:
@@ -138,12 +141,13 @@ Una volta decodificato il bitstream:
 
 ## Numeri
 
-- **8 sessioni** di lavoro
+- **10 sessioni** di lavoro
 - **16 bug** corretti nel core library
 - **33 test** tutti verdi
-- **20+ script** di analisi creati
+- **28+ script** di analisi creati
 - **1 stile custom** (NEONGROOVE) generato
 - **3 file .syx** analizzati (SGT, NEONGROOVE, captured dump)
 - **2 file .Q7P** analizzati (T01, TXX)
-- **~70%** decodifica tracce chord QY70
+- **~85%** decodifica tracce chord QY70
+- **~15%** decodifica tracce general (29CB)
 - **0%** conversione dati evento implementata

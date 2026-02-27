@@ -125,15 +125,22 @@ Header:              AL 0x7F (640 bytes decoded)
 
 ## Track Data Sizes
 
-Typical sizes per track (decoded):
+**Session 10 CORRECTION:** Track names below are QY70 **slot names**, NOT voice
+assignments. In any given style, the actual voice on a slot may differ from the
+slot name (e.g., SGT style has drum voice on BASS slot, bass voice on CHD1 slot).
 
-| Track | Size | Messages | Notes |
-|-------|------|----------|-------|
-| D1 | 768 bytes | 6 × 128 | Main drum pattern |
-| D2 | 256 bytes | 2 × 128 | Secondary drums |
-| PC | 128 bytes | 1 × 128 | Percussion/chord |
-| BA | 256 bytes | 2 × 128 | Bass line |
-| C1-C4 | 128-256 bytes | 1-2 × 128 | Chord tracks |
+Typical sizes per track slot (decoded):
+
+| Slot | Name | Size | Messages | Preamble | Encoding |
+|------|------|------|----------|----------|----------|
+| 0 | RHY1 | 768 bytes | 6 × 128 | `2543` | drum_primary |
+| 1 | RHY2 | 256 bytes | 2 × 128 | `29CB` | general |
+| 2 | BASS | 128 bytes | 1 × 128 | `2BE3` | bass_slot |
+| 3 | CHD1 | 256 bytes | 2 × 128 | `29CB` | general |
+| 4 | CHD2 | 128 bytes | 1 × 128 | `1FA3` | chord |
+| 5 | PAD | 256 bytes | 2 × 128 | `29CB` | general |
+| 6 | PHR1 | 256 bytes | 2 × 128 | `1FA3` | chord |
+| 7 | PHR2 | 128 bytes | 1 × 128 | `1FA3`/`29CB` | chord/general |
 
 ## Voice Encoding Differences
 
@@ -185,7 +192,7 @@ The QY70 uses a **proprietary packed bitstream**, NOT a byte-oriented command se
   a 2-byte construct rather than a 1-byte delimiter
 - Repeating trigrams: `E3 71 78`, `8F C7 E3`, `71 78 BE` — likely bit patterns
   within the packed stream
-- Cross-section D1 data is byte-identical across all 6 sections
+- Cross-section D1 data: messages 0-4 identical across all 6 sections; only message 5 differs
 - Track PC (offset 64+) shows 7-byte blocks starting with `0x88` — possibly
   a configuration/setup region distinct from note events
 

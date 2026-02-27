@@ -4,13 +4,20 @@
 Decodes QY70 SysEx packed bitstream events into readable musical data
 and generates Standard MIDI File output for verification.
 
-Based on discoveries from Sessions 6-8:
-- R=9 barrel rotation between consecutive events
+Based on discoveries from Sessions 6-10:
+- R=9 barrel rotation between consecutive events (chord encoding)
+- R=47 (left-rotate by 9) for arpeggio encoding — same magnitude, opposite direction
 - 6 x 9-bit fields per event (F0-F5 + 2-bit remainder)
 - F3 = hi2|mid3|lo4 (lo4 = one-hot beat counter)
 - F4 = 5-bit chord-tone mask + 4-bit parameter
 - F5 = timing/gate encoding (+16 per beat)
 - 13-byte bar headers encode chord notes as 9-bit fields
+
+Session 10 corrections:
+- Preambles are SLOT-BASED (fixed per track index), NOT voice-based
+- Track slot names (RHY1,RHY2,BASS,CHD1,CHD2,PAD,PHR1,PHR2) differ from
+  actual voice assignments — SGT has drum voice on BASS slot, bass voice on CHD1
+- D1 messages 0-4 are identical across all 6 sections; only message 5 differs
 """
 
 import struct
@@ -25,10 +32,25 @@ from qymanager.formats.qy70.sysex_parser import SysExParser
 
 # --- Constants ---
 
-TRACK_NAMES = {0: "D1", 1: "D2", 2: "BASS", 3: "C1", 4: "C2", 5: "PC", 6: "C3", 7: "C4"}
-CHORD_TRACKS = [3, 4, 6, 7]  # C1, C2, C3, C4
-BASS_TRACK = 2
-DRUM_TRACKS = [0, 1, 5]  # D1, D2, PC
+# Track slot names — these are the QY70's fixed slot names, NOT the voice assignments.
+# In any given style, the actual voice (drum/bass/chord) can differ from the slot name.
+# Example: SGT style has drum voice on BASS slot (2), bass voice on CHD1 slot (3).
+TRACK_NAMES = {
+    0: "RHY1",
+    1: "RHY2",
+    2: "BASS",
+    3: "CHD1",
+    4: "CHD2",
+    5: "PAD",
+    6: "PHR1",
+    7: "PHR2",
+}
+
+# Track indices where chord decoding works (preamble 1FA3)
+CHORD_TRACKS = [4, 6, 7]  # CHD2, PHR1, PHR2 — always chord encoding
+BASS_SLOT = 2  # BASS slot — preamble 2BE3
+DRUM_PRIMARY = 0  # RHY1 — preamble 2543, 6 messages (768B)
+GENERAL_TRACKS = [1, 3, 5]  # RHY2, CHD1, PAD — preamble 29CB (general encoding)
 
 SECTION_NAMES = {
     0: "MAIN-A",
@@ -41,20 +63,29 @@ SECTION_NAMES = {
 
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
-R = 9  # Universal rotation constant
+R = 9  # Rotation constant for chord encoding (right-rotate by 9)
+R_ARPEGGIO = 47  # Rotation constant for arpeggio encoding (= left-rotate by 9)
 TICKS_PER_BEAT = 480  # Standard MIDI resolution
 
-# Preamble-based track type classification (discovered Session 9)
-# Preamble bytes 0-1 determine the event encoding type
-PREAMBLE_CHORD = bytes.fromhex("1fa3")  # Standard chord: SR works, beat counter works
-PREAMBLE_ARPEGGIO = bytes.fromhex("29cb")  # Arpeggio/complex: no SR, no beat counter
-PREAMBLE_BASS = bytes.fromhex("2be3")  # Bass line
-PREAMBLE_DRUM = bytes.fromhex("2543")  # D1 drum
+# Preamble-based encoding classification (Sessions 9-10)
+# Preambles are SLOT-BASED (fixed per track index), NOT voice-based.
+# The preamble determines the DATA FORMAT, independent of voice assignment.
+#
+# Slot 0 (RHY1):           2543 = primary drum encoding (6 msgs, 768B)
+# Slots 1,3,5 (RHY2,CHD1,PAD): 29CB = general encoding (2 msgs, 256B), R=47
+# Slot 2 (BASS):           2BE3 = bass slot encoding (1 msg, 128B)
+# Slots 4,6,7 (CHD2,PHR1,PHR2): 1FA3 = chord encoding (1-2 msgs, 128-256B), R=9
+#
+# Exception: PHR2 (slot 7) switches to 29CB in fill sections (FILL-AB, FILL-BA).
+PREAMBLE_CHORD = bytes.fromhex("1fa3")  # Chord: R=9, SR works, beat counter works
+PREAMBLE_GENERAL = bytes.fromhex("29cb")  # General: R=47, no SR, no beat counter
+PREAMBLE_BASS_SLOT = bytes.fromhex("2be3")  # Bass slot encoding
+PREAMBLE_DRUM_PRIMARY = bytes.fromhex("2543")  # Primary drum (RHY1)
 
 ENCODING_CHORD = "chord"  # Shift register + chord-tone mask (high confidence)
-ENCODING_ARPEGGIO = "arpeggio"  # Different field layout (low confidence)
-ENCODING_BASS = "bass"  # Bass-specific encoding (low confidence)
-ENCODING_DRUM = "drum"  # Drum-specific encoding (not decoded)
+ENCODING_GENERAL = "general"  # R=47, different field layout (low confidence)
+ENCODING_BASS_SLOT = "bass_slot"  # Bass slot encoding (low confidence)
+ENCODING_DRUM_PRIMARY = "drum_primary"  # Primary drum encoding (not decoded)
 ENCODING_UNKNOWN = "unknown"
 
 
@@ -163,12 +194,12 @@ def classify_encoding(preamble: bytes) -> str:
     key = preamble[:2]
     if key == PREAMBLE_CHORD:
         return ENCODING_CHORD
-    elif key == PREAMBLE_ARPEGGIO:
-        return ENCODING_ARPEGGIO
-    elif key == PREAMBLE_BASS:
-        return ENCODING_BASS
-    elif key == PREAMBLE_DRUM:
-        return ENCODING_DRUM
+    elif key == PREAMBLE_GENERAL:
+        return ENCODING_GENERAL
+    elif key == PREAMBLE_BASS_SLOT:
+        return ENCODING_BASS_SLOT
+    elif key == PREAMBLE_DRUM_PRIMARY:
+        return ENCODING_DRUM_PRIMARY
     return ENCODING_UNKNOWN
 
 
@@ -438,7 +469,7 @@ def decode_track(syx_path: str, section: int, track: int) -> Optional[DecodedTra
         # Boost confidence for chord-type preamble, reduce for others
         if encoding == ENCODING_CHORD:
             bar_conf = min(1.0, bar_conf * 1.1)
-        elif encoding in (ENCODING_ARPEGGIO, ENCODING_BASS):
+        elif encoding in (ENCODING_GENERAL, ENCODING_BASS_SLOT):
             bar_conf *= 0.5
 
         decoded_bars.append(

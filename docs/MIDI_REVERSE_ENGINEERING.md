@@ -649,6 +649,67 @@ Examples:
 
 ---
 
+### Sessione 10 — Slot-Based Preambles, Arpeggio Analysis, D1 Per-Message
+
+**Data:** 27 febbraio 2026
+**Obiettivo:** Correggere la nomenclatura preamble (voice-based → slot-based), analizzare l'encoding arpeggio/general (29CB), e analizzare D1 a livello di singolo messaggio.
+
+**Scoperte principali:**
+
+1. **Preamble è SLOT-BASED, non voice-based (CORREZIONE CRITICA):**
+   - Scoperta precedente ERRATA: i preamble NON sono legati al tipo di voce assegnata
+   - I preamble sono FISSI per indice slot, indipendentemente dalla voce:
+
+   | Slot | Nome | Preamble | Encoding | Msgs | Size |
+   |------|------|----------|----------|------|------|
+   | 0 | RHY1 | `2543` | drum_primary | 6 | 768B |
+   | 1 | RHY2 | `29CB` | general | 2 | 256B |
+   | 2 | BASS | `2BE3` | bass_slot | 1 | 128B |
+   | 3 | CHD1 | `29CB` | general | 2 | 256B |
+   | 4 | CHD2 | `1FA3` | chord | 1 | 128B |
+   | 5 | PAD | `29CB` | general | 2 | 256B |
+   | 6 | PHR1 | `1FA3` | chord | 2 | 256B |
+   | 7 | PHR2 | `1FA3`/`29CB` | chord/general | 1 | 128B |
+
+   - Nello stile SGT, le assegnazioni voce DIFFERISCONO dai nomi slot:
+     - Slot 2 (BASS) ha voce **drum** (40 80) — lo stile usa 3 tracce drum
+     - Slot 3 (CHD1) ha marker **bass** (00 04) — linea di basso su slot chord
+     - Slot 5 (PAD) ha **Bank4/Prg11** — variante vibrafono
+
+2. **Rinominazione encoding types:**
+   - `arpeggio` → `general` (nome più accurato — l'encoding 29CB non è specifico per arpeggi)
+   - `bass` → `bass_slot` (è l'encoding dello slot BASS, non legato alla voce basso)
+   - `drum` → `drum_primary` (solo RHY1/slot 0)
+   - Costanti aggiornate in `event_decoder.py`
+
+3. **Analisi encoding general/arpeggio (29CB):**
+   - **R=47 (left-rotate by 9)** è ottimale — l'INVERSO del chord R=9
+   - Hamming distance medio: 13.7-17.8 (più alto del chord's 10)
+   - **Shift register completamente fallisce** (0% F1[i]==F0[i-1])
+   - Nessuna dimensione evento fissa funziona per segmenti tra DC marker
+   - DC nelle tracce 29CB potrebbe essere dato, non delimitatore (solo 1/4 allineato a 7-byte)
+   - CHD1 S0 vs S4: primi 169 byte identici, ultimi 59 byte differiscono (variazione fill)
+
+4. **Analisi D1/RHY1 per messaggio (CORREZIONE):**
+   - 768 bytes (6 messaggi × 128), solo 1 DC alla posizione 580
+   - **Messaggi 0-4 IDENTICI** tra tutte le 6 sezioni; solo messaggio 5 (ultimi 128B) differisce (~73 bytes)
+   - Documentazione precedente diceva "D1 byte-identical across all sections" — **ERRATO**, l'ultimo messaggio varia
+   - Marker `28 0F` appaiono 13 volte con spaziature [28, 37, 42, 42, 58, 42, 42, 23, 142, 42, 28, 79]
+   - Marker `40 78` appaiono 8 volte
+   - R=47 marginalmente migliore rotazione (avg 24.7) ma debole — drum encoding potrebbe non usare rotazione
+
+5. **SGT vs NEONGROOVE comparison:**
+   - Tutti i dati traccia (eventi) sono **100% identici** — NEONGROOVE templato da SGT
+   - Non utilizzabile per analisi comparativa
+
+6. **Fix event_decoder.py:**
+   - Costanti rinominate alla dichiarazione ma riferimenti NON aggiornati in `classify_encoding()` e confidence scoring
+   - **CORRETTO**: `PREAMBLE_ARPEGGIO` → `PREAMBLE_GENERAL`, `ENCODING_ARPEGGIO` → `ENCODING_GENERAL`, `PREAMBLE_BASS` → `PREAMBLE_BASS_SLOT`, `ENCODING_BASS` → `ENCODING_BASS_SLOT`, `PREAMBLE_DRUM` → `PREAMBLE_DRUM_PRIMARY`, `ENCODING_DRUM` → `ENCODING_DRUM_PRIMARY`
+
+**Git:** Commit pendente con fix event_decoder.py + aggiornamento documentazione.
+
+---
+
 ## Problemi Aperti da Risolvere
 
 | # | Problema | File Coinvolto | Stato |

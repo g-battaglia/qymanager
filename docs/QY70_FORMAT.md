@@ -715,7 +715,7 @@ C2 vs C4 header differences at bytes [5, 9, 11, 12] — likely voice/register co
 
 - **C1**: 100% identical across all 6 sections (every byte)
 - **C3**: Section 0 has unique musical data; sections 1-5 use default pattern
-- **D1**: Byte-identical across all 6 sections (confirmed)
+- **D1**: Messages 0-4 identical across all 6 sections; **only message 5 (last 128B) differs** (~73 bytes vary)
 - **BASS**: Bar 0 identical across all 6 sections
 
 ##### D1 Drum Track Structure
@@ -1006,17 +1006,21 @@ Cross-section groupings:
 The 4-byte preamble at decoded bytes 24-27 (`XX XX 60 00`) **perfectly predicts**
 which decoding model works for a given track. Bytes 0-1 classify into 4 encoding types:
 
-| Preamble | Type | Tracks | Shift Register | Beat Counter | Header Notes Valid |
-|----------|------|--------|---------------|-------------|-------------------|
-| `1F A3` | **chord** | C2, C3, C4 (default sections) | 100% (when same chord) | 100% (C2) | 100% (MAIN-A C2) |
-| `29 CB` | **arpeggio** | C1, D2, PC, C4 (fill sections) | 0% | ~30% | 0-40% |
-| `2B E3` | **bass** | BASS | 27% | ~15% | ~20% |
-| `25 43` | **drum** | D1 | N/A | N/A | N/A |
+| Preamble | Type | Slots (Session 10 corrected) | Shift Register | Beat Counter | Header Notes Valid |
+|----------|------|------|---------------|-------------|-------------------|
+| `1F A3` | **chord** | CHD2(4), PHR1(6), PHR2(7) default | 100% (when same chord) | 100% (CHD2) | 100% (MAIN-A CHD2) |
+| `29 CB` | **general** | RHY2(1), CHD1(3), PAD(5), PHR2(7) fill | 0% | ~30% | 0-40% |
+| `2B E3` | **bass_slot** | BASS(2) | 27% | ~15% | ~20% |
+| `25 43` | **drum_primary** | RHY1(0) | N/A | N/A | N/A |
+
+**Session 10 CRITICAL CORRECTION:** Preambles are **SLOT-BASED** (fixed per track index),
+NOT voice-based. The slot name (e.g., BASS) does not imply the actual voice assignment.
+In SGT style, slot 2 (BASS) has a drum voice, and slot 3 (CHD1) has a bass voice.
 
 **Chord preamble (`1FA3`)** tracks decode with high confidence using the 9-bit field model.
-**Arpeggio preamble (`29CB`)** tracks use a fundamentally different encoding — the
-chord-tone model does NOT apply. Note that C4 switches preamble between sections
-(chord in default, arpeggio in fill sections).
+**General preamble (`29CB`)** tracks use a fundamentally different encoding (R=47, no
+shift register) — the chord-tone model does NOT apply. PHR2 switches preamble between
+sections (chord in default, general in fill sections).
 
 ##### Header lo7 Note Extraction (KEY DISCOVERY)
 
@@ -1059,6 +1063,10 @@ Full decode of all chord tracks across 6 sections:
 | C2 ENDING | chord | 3 | 8 | 57% |
 | C1 (all sections) | arpeggio | 5 | 21 | 22% |
 | C4 (fill sections) | arpeggio | 2 | 10 | 20% |
+
+**NOTE (Session 10):** Track names C1-C4 in the table above refer to QY70 slot names
+(CHD1=C1, CHD2=C2, PAD=C3, PHR1=C4), NOT to voice assignments. The actual voice on
+each slot may differ from the slot name.
 
 **Total: 23 tracks decoded, 300 events, 97.3% note extraction rate.**
 MIDI output generated with proper timing (F5→tick conversion at 480 ticks/beat).
