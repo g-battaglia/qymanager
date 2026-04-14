@@ -69,19 +69,21 @@ Channel mapping (Style track → Pattern track → MIDI ch):
 
 | Style Track | Pattern Track | 1~8 | 9~16 | **Confirmed** |
 |-------------|---------------|-----|------|---------------|
-| RHY1 (slot 0) | D1 (Drum 1) | ch 1 | ch 9 | **Yes** (Session 13) |
+| RHY1 (slot 0) | D1 (Drum 1) | ch 1 | ch 9 | Session 13 (Style mode). **NOT confirmed in Pattern mode** (Session 17: 0 drum notes) |
 | RHY2 (slot 1) | D2 (Drum 2) | ch 2 | ch 10 | — |
 | PAD (slot 5) | PC (Percussion) | ch 3 | ch 11 | — |
 | BASS (slot 2) | BA (Bass) | ch 4 | ch 12 | **Yes** (Session 13) |
-| CHD1 (slot 3) | C1 (Chord 1) | ch 5 | ch 13 | **Yes** (Session 13) |
+| CHD1 (slot 3) | C1 (Chord 1) | ch 5 | ch 13 | **Yes** (Session 13, Session 17 Pattern mode) |
 | CHD2 (slot 4) | C2 (Chord 2) | ch 6 | ch 14 | **Yes** (Session 13) |
 | PHR1 (slot 6) | C3 (Chord 3) | ch 7 | ch 15 | — |
 | PHR2 (slot 7) | C4 (Chord 4) | ch 8 | ch 16 | — |
 
 Note: PAD→PC and PHR1/PHR2→C3/C4 mapping is inferred from position order, not yet hardware-confirmed.
 
+**Pattern mode drum output issue (Session 17)**: In Pattern mode with MIDI SYNC=External, chord tracks (CHD1) output correctly on their PATT OUT channels, but drum tracks (RHY1) produce **zero MIDI output** despite having valid data. Tested with known_pattern.syx (7 drum events), claude_test.syx (drum pattern), and QY70_SGT.syx (full style). All show only CHD1 notes on ch13. Drum output may require Style mode, or a different QY70 MIDI setting.
+
 Related MIDI parameters (same UTILITY → MIDI screen):
-- **MIDI SYNC**: Internal/External — set to Internal for standalone operation
+- **MIDI SYNC**: Internal/External — **must be External** for computer-driven playback via MIDI Start+Clock (Session 17 finding: 0 notes with Internal sync)
 - **MIDI CONTROL**: Off/In/Out/In/Out — set to "In" or "In/Out" to accept MIDI Start/Stop from computer
 - **ECHO BACK**: Off/Thru/RecMontr — controls MIDI IN→OUT echo
 - **XG PARM OUT**: Off/On — transmit XG voice/effect parameters on song/pattern change
@@ -96,3 +98,6 @@ Source: QY70 Owner's Manual, page 222-224.
 - ~~**Identity Request**~~: QY70 **DOES** respond correctly (Session 16). Previous "no response" finding was caused by mido SysEx bug on macOS. Reply: `F0 7E 7F 06 02 43 00 41 02 55 00 00 00 01 F7`.
 - **mido SysEx bug**: mido silently drops ALL SysEx messages on macOS CoreMIDI. Use `rtmidi` directly for all SysEx communication.
 - **Style track output**: defaults to internal only — must set PATT OUT CH to 1~8 or 9~16 to capture playback via MIDI
+- **Bulk dump timing** (Session 17): Init message needs **500ms** delay, bulk messages need **150ms** between each. With wrong timing, QY70 silently ignores the dump. Correct timing → ~160 XG parameter responses confirming load.
+- **Edit buffer only**: All bulk dumps write to AM=0x7E (edit buffer). Writing to AM=0x00-0x3F (user pattern slots) is rejected. Data in the edit buffer is playable in Pattern mode.
+- **Drum PATT OUT in Pattern mode**: Drum tracks do NOT output via PATT OUT CH when in Pattern mode + External sync (tested Session 17). Chord tracks work correctly.

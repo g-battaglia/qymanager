@@ -6,9 +6,9 @@ This script sends all SysEx messages from a .syx file to the QY70,
 loading the style into the user style memory.
 
 Protocol (from reverse engineering):
-  1. Send Init message (F0 43 1n 5F 00 00 00 01 F7), wait 100ms
+  1. Send Init message (F0 43 1n 5F 00 00 00 01 F7), wait 500ms
   2. Send Bulk Dump messages (F0 43 0n 5F BH BL AH AM AL [data] CS F7)
-     with 30ms delay between each
+     with 150ms delay between each
   3. Send Close message (F0 43 1n 5F 00 00 00 00 F7)
 
 The QY70 silently discards messages with bad checksums — no ACK/NAK.
@@ -242,9 +242,9 @@ def validate_file(filepath, verbose=True):
 def send_style_to_qy70(
     filepath,
     port_name=None,
-    delay_ms=30,
-    init_delay_ms=100,
-    close_delay_ms=50,
+    delay_ms=150,
+    init_delay_ms=500,
+    close_delay_ms=100,
     verbose=True,
     device_override=None,
 ):
@@ -258,16 +258,16 @@ def send_style_to_qy70(
     Protocol:
         1. Open MIDI output port via rtmidi
         2. Pre-validate all messages (checksums, structure)
-        3. Send Init message, wait init_delay_ms
+        3. Send Init message, wait init_delay_ms (500ms for QY70 to enter bulk receive)
         4. Send Bulk Dump messages with delay_ms between each
         5. Wait close_delay_ms, send Close message
 
     Args:
         filepath: Path to .syx file
         port_name: MIDI output port name (auto-detect if None)
-        delay_ms: Delay between bulk dump messages in ms (default: 30)
-        init_delay_ms: Delay after Init message in ms (default: 100)
-        close_delay_ms: Delay before Close message in ms (default: 50)
+        delay_ms: Delay between bulk dump messages in ms (default: 150)
+        init_delay_ms: Delay after Init message in ms (default: 500)
+        close_delay_ms: Delay before Close message in ms (default: 100)
         verbose: Print progress
         device_override: Override device number in all messages (0-15)
 
@@ -459,20 +459,20 @@ Note: The QY70 must be at the main playing screen (not in menus)
         "--delay",
         "-d",
         type=int,
-        default=30,
-        help="Delay between bulk dump messages in ms (default: 30)",
+        default=150,
+        help="Delay between bulk dump messages in ms (default: 150)",
     )
     parser.add_argument(
         "--init-delay",
         type=int,
-        default=100,
-        help="Delay after Init message in ms (default: 100)",
+        default=500,
+        help="Delay after Init message in ms (default: 500)",
     )
     parser.add_argument(
         "--close-delay",
         type=int,
-        default=50,
-        help="Delay before Close message in ms (default: 50)",
+        default=100,
+        help="Delay before Close message in ms (default: 100)",
     )
     parser.add_argument(
         "--device",

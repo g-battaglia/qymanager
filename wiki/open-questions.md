@@ -73,14 +73,14 @@ The preamble value at bytes 24-25 encodes **track-level metadata** (possibly cho
 
 F1 top 2 bits = beat (confirmed), lower F1 + F2 top bits = clock (59% monotonicity). But F3 and F4 roles within position encoding still unknown — they're shared by simultaneous events. Possibly encode groove template parameters or sub-beat resolution.
 
-## ~~Priority 7: Correct Dump Request Test~~ — MOSTLY RESOLVED (Session 16)
+## ~~Priority 7: Correct Dump Request Test~~ — RESOLVED (Session 17)
 
-**Session 16 corrections**:
-- **Identity Request WORKS**: QY70 responds correctly (Yamaha XG 0x4100, Model 0x5502). Previous "no response" was caused by **mido SysEx bug** — mido silently drops ALL SysEx on macOS CoreMIDI.
-- **SysEx sending WORKS via rtmidi direct**: `send_style.py` rewritten, 105/105 messages sent successfully.
-- **Bulk Dump Request partially works**: QY70 echoes most requests on MIDI OUT. AM=0x00 (User Pattern 1) got `F0 F7` response (empty pattern). Other addresses just echoed. Likely mode-dependent (needs Pattern/Song Standby per List Book p.54).
+**Session 17 findings**:
+- **Bulk dump SEND works end-to-end**: with correct timing (500ms init, 150ms between msgs), QY70 loads the style/pattern and responds with ~160 XG parameter messages. All bulk dumps write to AM=0x7E (edit buffer). Writing to AM=0x00-0x3F is rejected.
+- **Playback via MIDI Start+Clock works**: QY70 MIDI SYNC must be **External**. With external clock, chord tracks output correctly on PATT OUT CH channels (CHD1→ch13 confirmed). Pattern loops at the correct bar count.
+- **Drum track output issue**: RHY1 drum data does NOT output via PATT OUT in Pattern mode despite having valid data. All 3 test patterns (known_pattern, claude_test, SGT) show only CHD1 notes. May work in Style mode (Session 13 confirmed in Style mode).
 
-**Alternative for playback validation**: Set [PATT OUT CH](qy70-device.md#midi-output-for-patternstyle-playback) to 9~16 and capture live playback via `capture_playback_json.py`.
+**Playback capture workflow**: `send_and_capture.py` → send style → MIDI Start + Clock → capture on PATT OUT channels.
 
 ## Other Open Questions
 
@@ -96,6 +96,7 @@ F1 top 2 bits = beat (confirmed), lower F1 + F2 top bits = clock (59% monotonici
 - **Control event content**: F1-F5 fields of control events not decoded. They carry structural commands (bar repeat? section link? fill?). Cross-track identical bytes suggest format-level structure.
 - ~~**event_decoder.py off-by-one**~~: RESOLVED (Session 12e) — confirmed R=9×(i+1) is correct, decoder updated.
 - **Trailing bytes cross-encoding**: 54% of segments across ALL encoding types have trailing bytes. BASS/CHD2/PHR1 share identical patterns. Format-level feature, not encoding-specific. Purpose still unknown.
+- **Drum PATT OUT in Pattern mode** (Session 17): RHY1/RHY2 drum tracks produce ZERO MIDI output via PATT OUT CH in Pattern mode + External sync. Chord tracks (CHD1) work correctly. Is this a QY70 firmware limitation? Does Style mode handle drums differently? Does a specific MIDI setting enable drum output?
 
 ## External Resources
 

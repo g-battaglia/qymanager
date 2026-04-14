@@ -52,6 +52,9 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 - **Multi-segment residual failures**: Model G cascade (std→skip-ctrl→R=47) achieves 94-96% but ~3 events per track still fail (n=1, n=8). May be a different event type not yet classified
 - ~~**New preambles 0x2D2B, 0x303B**~~: SOLVED — same chord encoding as 1FA3 (F4 masks and F5 timing identical). Preamble value is track-level metadata, not encoding type
 - **Bar header chord notes**: 9-bit fields give valid MIDI notes for SGT but >127 values for other patterns
+- **Chord transposition layer** (Session 17): Live playback of known_pattern produces C major [60,64,67] on ch13/CHD1, but the decoded bar header notes are completely different (F3, A4, E7, etc.). The QY70 applies real-time chord transposition — bitstream stores chord-relative patterns, not absolute MIDI notes. This is the key missing piece for chord decoding.
+- **CHD1 uses 29DC encoding** (not 1FA3): In known_pattern, CHD1 (which outputs on ch13) uses general_29dc encoding. CHD2 and PHR1 use 1FA3 chord encoding but produce NO MIDI output on ch14/ch15.
+- **Drum PATT OUT missing**: RHY1 drum data present in pattern but zero MIDI output via PATT OUT in Pattern mode (Session 17). Chord tracks work, drums don't.
 - **Control event content**: F1-F5 fields carry structural commands, partially classified by F5 value
 - **Trailing bytes**: segment metadata (2B most common), d878 = ctrl tail, CHD2/PHR1 share identical trails
 
@@ -71,5 +74,6 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | 13 | First live playback capture (330 notes), PATT OUT CH discovery | Hardware validation path established |
 | **14** | **R=9×(i+1) PROVEN (7/7), per-segment index, 2D2B/303B = chord variants of 1FA3** | **2543 rotation solved, preamble classification expanded** |
 | **15-16** | **BC formula fixed, mido SysEx bug found, rtmidi fix, round-trip 705/705 on SGT** | **SysEx sending works, encoder/decoder 100% on note events** |
+| **17** | **Bulk dump timing (500ms/150ms), MIDI SYNC=External, chord playback capture** | **End-to-end: send→load→play→capture WORKS for chord tracks. Chord transposition layer discovered** |
 
 See also: [2543 Encoding](2543-encoding.md), [Bitstream](bitstream.md), [Event Fields](event-fields.md), [Open Questions](open-questions.md)

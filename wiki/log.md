@@ -2,6 +2,29 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-14] session-17 | End-to-end playback capture, chord transposition discovered
+
+### Bulk Dump Protocol
+- **Timing SOLVED**: Init needs **500ms**, bulk messages need **150ms** between each. Wrong timing → QY70 silently ignores everything.
+- **All bulk dumps write to AM=0x7E (edit buffer)**: Writing to AM=0x00 (User Pattern 1) is rejected. Edit buffer data IS playable in Pattern mode.
+- **Load confirmation**: QY70 responds with ~160 messages (XG params, CCs, Program Changes) on first load. Subsequent loads to same buffer get fewer responses.
+- `send_style.py` defaults updated: init_delay 100→500ms, delay 30→150ms.
+
+### Playback Discovery
+- **MIDI SYNC must be External**: Without external MIDI Clock, QY70 produces ZERO notes on PATT OUT despite receiving MIDI Start. With external clock (Start + 24ppqn), chord tracks output correctly.
+- **Chord playback CAPTURED**: known_pattern CHD1 → ch13: C major [60,64,67], vel=127, ~1070 tick duration, every 5 bars. Same pattern confirmed with SGT and claude_test styles.
+- **Drum tracks DO NOT output** via PATT OUT in Pattern mode. All 3 test patterns (known_pattern, claude_test, SGT) show only CHD1 on ch13. No notes on ch9-12 or ch14-16.
+
+### Chord Transposition Discovery
+- **Playback notes ≠ decoded bitstream notes**: QY70 outputs [60,64,67] (C major) but decoder extracts [F3, A4, E7, etc.] from the bar headers. The QY70 applies **real-time chord transposition** — the bitstream stores chord-relative patterns, not absolute MIDI notes.
+- **CHD1 uses 29DC encoding** in known_pattern (not 1FA3). CHD2/PHR1 have 1FA3 encoding but produce zero output on ch14/ch15.
+
+### Scripts
+- `send_style.py`: timing defaults fixed
+- `capture_playback.py`: rewritten to use rtmidi (was mido)
+- `send_and_capture.py`: NEW — combined send + clock + capture workflow
+- Saved: `known_pattern_playback.json` — first chord capture ground truth
+
 ## [2026-04-14] session-16 | mido SysEx bug found, rtmidi fix, Identity Reply confirmed
 
 - **ROOT CAUSE FOUND: mido drops SysEx on macOS CoreMIDI**. `sysex_diag.py` loopback test: rtmidi direct sends SysEx correctly (QY70 echoes all messages AND responds to Identity Request), mido sends **nothing** (zero SysEx received on MIDI IN for all message types). Notes work via both methods. The bug is in mido's SysEx serialization on CoreMIDI backend.

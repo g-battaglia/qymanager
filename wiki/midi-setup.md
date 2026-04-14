@@ -53,9 +53,14 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 
 **All SysEx must use rtmidi directly** (not mido). The `send_style.py` script has been fixed (Session 16).
 
+**Critical timing** (Session 17): QY70 requires **500ms** after Init and **150ms** between bulk messages. Default timing in `send_style.py` has been updated. With correct timing, QY70 responds with ~160 messages (XG params, CC resets, Program Changes) confirming successful load.
+
 ```bash
-# Send a .syx style file to QY70
-.venv/bin/python3 midi_tools/send_style.py tests/fixtures/QY70_SGT.syx --delay 50
+# Send a .syx style file to QY70 (defaults: 500ms init, 150ms between msgs)
+.venv/bin/python3 midi_tools/send_style.py tests/fixtures/QY70_SGT.syx
+
+# Send + capture playback (combined workflow)
+.venv/bin/python3 midi_tools/send_and_capture.py tests/fixtures/QY70_SGT.syx -d 10
 
 # Request bulk dump from QY70
 .venv/bin/python3 midi_tools/request_dump.py --ah 02 --am 00 --al 00
@@ -71,7 +76,9 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 | Script | Purpose |
 |--------|---------|
 | `sysex_diag.py` | SysEx loopback diagnostic (rtmidi vs mido comparison) |
-| `send_style.py` | Send .syx style files to QY70 (rtmidi direct) |
+| `send_style.py` | Send .syx style files to QY70 (rtmidi direct, 500ms/150ms timing) |
+| `send_and_capture.py` | Combined send + playback capture workflow |
+| `capture_playback.py` | Capture MIDI playback output (rtmidi, replaces mido version) |
 | `request_dump.py` | Request bulk dump from QY70 (rtmidi direct) |
 | `capture_dump.py` | Capture bulk dump to .syx file |
 | `event_decoder.py` | Decode [bitstream](bitstream.md) events from .syx files |
