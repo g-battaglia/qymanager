@@ -1,6 +1,6 @@
 # Decoder Status
 
-Current state of [QY70 bitstream](bitstream.md) decoding as of Session 14 (2026-04-14).
+Current state of [QY70 bitstream](bitstream.md) decoding as of Session 16 (2026-04-14).
 
 ## Per-Encoding Confidence
 
@@ -43,7 +43,7 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 - **F1-F4 = position**: simultaneous events share identical F1-F4 values
 - **F5 = gate time**: physically reasonable durations (kick=412 ticks, HH=30 ticks)
 - **Velocity decoded**: 4-bit inverted code [F0_bit8:F0_bit7:rem], 0=fff(127), 15=pppp(7)
-- **Round-trip encoder/decoder**: 100% validation on 47 note events (build_ground_truth_syx.py)
+- **Round-trip encoder/decoder**: 100% on 47 events (ground_truth), 705/705 on SGT fixture (1219 total events, 711 in XG range, 6 control events excluded — clock overflow in terminators)
 
 ## What Doesn't Work Yet
 
@@ -70,5 +70,6 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | 12f | Unified decoder, correct ctrl detection (lo7>87), R=47 fallback | 94%→96% global, 5 tracks at 100% |
 | 13 | First live playback capture (330 notes), PATT OUT CH discovery | Hardware validation path established |
 | **14** | **R=9×(i+1) PROVEN (7/7), per-segment index, 2D2B/303B = chord variants of 1FA3** | **2543 rotation solved, preamble classification expanded** |
+| **15-16** | **BC formula fixed, mido SysEx bug found, rtmidi fix, round-trip 705/705 on SGT** | **SysEx sending works, encoder/decoder 100% on note events** |
 
 See also: [2543 Encoding](2543-encoding.md), [Bitstream](bitstream.md), [Event Fields](event-fields.md), [Open Questions](open-questions.md)
