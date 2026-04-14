@@ -33,13 +33,18 @@ from qymanager.utils.checksum import verify_sysex_checksum
 
 
 def find_midi_port(port_name=None, direction="output"):
-    """Find a MIDI port by name or return the first available."""
-    import mido
+    """Find a MIDI port by name or return the first available.
+
+    Uses rtmidi directly (not mido) for reliable SysEx support.
+    """
+    import rtmidi
 
     if direction == "output":
-        ports = mido.get_output_names()
+        m = rtmidi.MidiOut()
     else:
-        ports = mido.get_input_names()
+        m = rtmidi.MidiIn()
+
+    ports = [m.get_port_name(i) for i in range(m.get_port_count())]
 
     if not ports:
         return None
@@ -246,8 +251,12 @@ def send_style_to_qy70(
     """
     Send a style file to the QY70.
 
+    Uses rtmidi directly (NOT mido) because mido's SysEx sending is broken
+    on macOS CoreMIDI — confirmed by sysex_diag.py loopback tests showing
+    rtmidi sends SysEx correctly while mido silently drops it.
+
     Protocol:
-        1. Open MIDI output port
+        1. Open MIDI output port via rtmidi
         2. Pre-validate all messages (checksums, structure)
         3. Send Init message, wait init_delay_ms
         4. Send Bulk Dump messages with delay_ms between each
@@ -265,12 +274,12 @@ def send_style_to_qy70(
     Returns:
         True if all messages sent without errors, False otherwise
     """
-    import mido
+    import rtmidi
 
     # ── Step 1: Pre-validate ──
     if verbose:
         print("=" * 60)
-        print("QY70 Style Transmission")
+        print("QY70 Style Transmission (rtmidi direct)")
         print("=" * 60)
         print()
         print("── Pre-validation ──")
@@ -290,18 +299,31 @@ def send_style_to_qy70(
         print("  Validation: ALL CHECKS PASSED")
         print()
 
-    # ── Step 2: Find port ──
-    out_port = find_midi_port(port_name, "output")
-    if not out_port:
+    # ── Step 2: Find port via rtmidi ──
+    mo = rtmidi.MidiOut()
+    port_idx = None
+    available = []
+    for i in range(mo.get_port_count()):
+        name = mo.get_port_name(i)
+        available.append(name)
+        if port_name and port_name.lower() in name.lower():
+            port_idx = i
+        elif port_idx is None and ("steinberg" in name.lower() or "ur22" in name.lower()):
+            port_idx = i
+
+    if port_idx is None and available:
+        port_idx = 0  # Fall back to first port
+
+    if port_idx is None:
         print("ERROR: No MIDI output port found.")
-        print("Available ports:")
-        for p in mido.get_output_names():
-            print(f"  - {p}")
+        print("Available ports:", available)
         return False
+
+    out_port_name = available[port_idx]
 
     if verbose:
         print(f"── Transmission ──")
-        print(f"  Port: {out_port}")
+        print(f"  Port: {out_port_name} (rtmidi direct)")
         print(f"  Delay: {delay_ms}ms between bulk dumps")
         print(f"  Init delay: {init_delay_ms}ms")
         print(f"  Close delay: {close_delay_ms}ms")
@@ -309,66 +331,67 @@ def send_style_to_qy70(
             print(f"  Device override: {device_override}")
         print()
 
-    # ── Step 3: Send messages ──
+    # ── Step 3: Send messages via rtmidi ──
     sent_count = 0
     error_count = 0
     total = len(messages)
 
     try:
-        with mido.open_output(out_port) as outport:
-            for i, (msg_bytes, info) in enumerate(messages):
-                try:
-                    # Optionally override device number
-                    if device_override is not None:
-                        msg_bytes = _override_device(msg_bytes, info, device_override)
+        mo.open_port(port_idx)
 
-                    # Send as raw SysEx via mido (strip F0 and F7)
-                    msg_data = list(msg_bytes[1:-1])
-                    msg = mido.Message("sysex", data=msg_data)
-                    outport.send(msg)
-                    sent_count += 1
+        for i, (msg_bytes, info) in enumerate(messages):
+            try:
+                # Optionally override device number
+                if device_override is not None:
+                    msg_bytes = _override_device(msg_bytes, info, device_override)
 
-                    # Progress display
-                    if verbose:
-                        if info["type"] == "init":
-                            print(f"  [{i + 1:3d}/{total}] INIT")
-                        elif info["type"] == "close":
-                            print(f"  [{i + 1:3d}/{total}] CLOSE")
-                        elif info["type"] == "bulk_dump":
-                            al = info["al"]
-                            sec = al // 8 if al != 0x7F else -1
-                            trk = al % 8 if al != 0x7F else -1
-                            if al == 0x7F:
-                                label = "Header"
-                            else:
-                                label = f"Sec{sec}/Trk{trk}"
-                            cs = "OK" if info["checksum_valid"] else "BAD"
-                            print(
-                                f"  [{i + 1:3d}/{total}] Bulk AL=0x{al:02X} "
-                                f"({label}) {info['payload_size']}B cs={cs}"
-                            )
-                        else:
-                            print(f"  [{i + 1:3d}/{total}] {info['type']}")
+                # Send complete SysEx including F0 and F7 via rtmidi
+                mo.send_message(list(msg_bytes))
+                sent_count += 1
 
-                    # Timing
+                # Progress display
+                if verbose:
                     if info["type"] == "init":
-                        time.sleep(init_delay_ms / 1000.0)
+                        print(f"  [{i + 1:3d}/{total}] INIT")
                     elif info["type"] == "close":
-                        pass  # No delay after close
-                    else:
-                        # Check if next message is close — add extra delay
-                        if i + 1 < total and messages[i + 1][1]["type"] == "close":
-                            time.sleep(close_delay_ms / 1000.0)
+                        print(f"  [{i + 1:3d}/{total}] CLOSE")
+                    elif info["type"] == "bulk_dump":
+                        al = info["al"]
+                        sec = al // 8 if al != 0x7F else -1
+                        trk = al % 8 if al != 0x7F else -1
+                        if al == 0x7F:
+                            label = "Header"
                         else:
-                            time.sleep(delay_ms / 1000.0)
+                            label = f"Sec{sec}/Trk{trk}"
+                        cs = "OK" if info["checksum_valid"] else "BAD"
+                        print(
+                            f"  [{i + 1:3d}/{total}] Bulk AL=0x{al:02X} "
+                            f"({label}) {info['payload_size']}B cs={cs}"
+                        )
+                    else:
+                        print(f"  [{i + 1:3d}/{total}] {info['type']}")
 
-                except Exception as e:
-                    error_count += 1
-                    if verbose:
-                        print(f"  [{i + 1:3d}] SEND ERROR: {e}")
+                # Timing
+                if info["type"] == "init":
+                    time.sleep(init_delay_ms / 1000.0)
+                elif info["type"] == "close":
+                    pass  # No delay after close
+                else:
+                    # Check if next message is close — add extra delay
+                    if i + 1 < total and messages[i + 1][1]["type"] == "close":
+                        time.sleep(close_delay_ms / 1000.0)
+                    else:
+                        time.sleep(delay_ms / 1000.0)
+
+            except Exception as e:
+                error_count += 1
+                if verbose:
+                    print(f"  [{i + 1:3d}] SEND ERROR: {e}")
+
+        mo.close_port()
 
     except Exception as e:
-        print(f"ERROR: Failed to open MIDI port '{out_port}': {e}")
+        print(f"ERROR: Failed to open MIDI port '{out_port_name}': {e}")
         return False
 
     # ── Step 4: Summary ──

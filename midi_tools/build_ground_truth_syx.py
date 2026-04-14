@@ -68,10 +68,14 @@ def build_sysex_msg(device_num, ah, am, al, raw_data):
 
     Format: F0 43 0n 5F BH BL AH AM AL [7bit-data] CS F7
     Checksum covers BH BL AH AM AL + encoded payload.
+
+    raw_data is padded to 128 bytes (QY70 requires fixed-size messages).
+    BC = len(encoded) = 147 for 128 decoded bytes.
     """
-    encoded = encode_7bit(raw_data)
-    # Byte count = 3 (AH AM AL) + len(encoded)
-    bc = 3 + len(encoded)
+    # Pad to 128 bytes — QY70 requires all bulk messages to be 158 bytes total
+    padded = raw_data + bytes(128 - len(raw_data)) if len(raw_data) < 128 else raw_data[:128]
+    encoded = encode_7bit(padded)
+    bc = len(encoded)
     bh = (bc >> 7) & 0x7F
     bl = bc & 0x7F
 

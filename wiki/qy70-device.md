@@ -93,5 +93,6 @@ Source: QY70 Owner's Manual, page 222-224.
 - Style name is NOT stored in ASCII in the bulk dump (proprietary encoding or not stored)
 - Dump Request for "all patterns" (AM=7F) is not supported — use individual addresses AM=00-3F
 - Cross-device .syx files (QY100 → QY70) require checksum modification
-- **Identity Request**: QY70 does NOT respond to Universal Identity Request (`F0 7E 7F 06 01 F7`). MIDI bidirectional communication is confirmed (notes sent from computer are heard, SysEx is received), but the device simply ignores Identity Request messages.
+- ~~**Identity Request**~~: QY70 **DOES** respond correctly (Session 16). Previous "no response" finding was caused by mido SysEx bug on macOS. Reply: `F0 7E 7F 06 02 43 00 41 02 55 00 00 00 01 F7`.
+- **mido SysEx bug**: mido silently drops ALL SysEx messages on macOS CoreMIDI. Use `rtmidi` directly for all SysEx communication.
 - **Style track output**: defaults to internal only — must set PATT OUT CH to 1~8 or 9~16 to capture playback via MIDI

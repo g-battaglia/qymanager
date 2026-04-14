@@ -88,7 +88,9 @@ def verify_sysex_checksum(message: Union[bytes, List[int]]) -> bool:
     # Extract byte count + address + data (from BH to last data byte, before checksum)
     # Format: F0 43 0n 5F BH BL AH AM AL [data...] CS F7
     #         0  1  2  3  4  5  6  7  8  ...      -2 -1
-    # QY70 checksum includes BH BL, not just AH AM AL
+    # QY70 checksum includes BH BL AH AM AL + encoded data.
+    # BC (BH<<7 | BL) = len(encoded_data) = 147 for standard 128-byte blocks.
+    # Note: BC does NOT include AH AM AL (unlike some Yamaha docs).
     checksum_data = message[4:-2]  # BH BL AH AM AL + data
     expected_checksum = message[-2]
 

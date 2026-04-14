@@ -9,21 +9,25 @@ Hardware setup for communicating with [QY70](qy70-device.md) and [QY700](qy700-d
 - **Port names**: "Steinberg UR22C Porta 1" (may vary by OS)
 - **Virtual env**: always use `.venv/bin/python3` (system python3 lacks `mido`)
 
-## MIDI Validation (Session 12f)
+## MIDI Validation (Session 16)
 
 Bidirectional MIDI confirmed:
-- **Computer → QY70**: SysEx bulk data received and loaded (known_pattern.syx). Notes sent from computer are heard on QY70 speakers.
+- **Computer → QY70**: SysEx bulk data sent and received. Notes sent from computer are heard on QY70 speakers.
 - **QY70 → Computer**: Keyboard notes received. Manual bulk dump captured. CC reset messages on MIDI Stop confirmed.
-- **Identity Request**: QY70 does **NOT** respond to Universal Identity Request (`F0 7E 7F 06 01 F7`). This is a device limitation, not a connection issue.
+- **Identity Request**: QY70 **responds correctly** to `F0 7E 7F 06 01 F7` with Identity Reply `F0 7E 7F 06 02 43 00 41 02 55 00 00 00 01 F7` (Yamaha, XG Family 0x4100, Model 0x5502). Previous "no response" finding was caused by mido SysEx bug.
 - **Style playback MIDI output**: requires [PATT OUT CH](qy70-device.md#midi-output-for-patternstyle-playback) to be set (default is Off).
+
+**CRITICAL**: use `rtmidi` directly for all SysEx — `mido` silently drops SysEx on macOS CoreMIDI.
 
 ## Identity Check
 
 ```bash
-.venv/bin/python3 midi_tools/midi_status.py
+.venv/bin/python3 midi_tools/sysex_diag.py
 ```
 
-Sends `F0 7E 7F 06 01 F7` (Universal Identity Request). **The QY70 does NOT respond** — this is a known device limitation. MIDI connectivity should be verified by sending notes or SysEx instead. See [Identity Reply](identity-reply.md) for the expected response format (obtained from other sources).
+Sends Identity Request and various SysEx via rtmidi loopback test. The QY70 responds with Identity Reply confirming Family 0x4100 (XG), Model 0x5502.
+
+**Do NOT use mido for SysEx** — it silently drops all SysEx messages on macOS CoreMIDI (confirmed Session 16).
 
 ## Capturing a Bulk Dump
 
@@ -47,22 +51,31 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 
 ## Sending SysEx to QY70
 
+**All SysEx must use rtmidi directly** (not mido). The `send_style.py` script has been fixed (Session 16).
+
 ```bash
-.venv/bin/python3 midi_tools/send_request.py --address 02 7E 7F  # Request header
-.venv/bin/python3 midi_tools/send_request.py --style             # Full style (NOT SUPPORTED)
+# Send a .syx style file to QY70
+.venv/bin/python3 midi_tools/send_style.py tests/fixtures/QY70_SGT.syx --delay 50
+
+# Request bulk dump from QY70
+.venv/bin/python3 midi_tools/request_dump.py --ah 02 --am 00 --al 00
+
+# Diagnostic: test SysEx loopback
+.venv/bin/python3 midi_tools/sysex_diag.py
 ```
 
-**Dump Request does not work** — the QY70 does not respond. Use manual bulk dump instead.
+**Dump Request**: QY70 echoes requests but response is mode-dependent. Works best with AM=0x00-0x3F (specific pattern slots). Manual bulk dump via UTILITY menu remains more reliable.
 
 ## Analysis Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `midi_status.py` | Port listing, passive listen, Identity Request, dump test |
+| `sysex_diag.py` | SysEx loopback diagnostic (rtmidi vs mido comparison) |
+| `send_style.py` | Send .syx style files to QY70 (rtmidi direct) |
+| `request_dump.py` | Request bulk dump from QY70 (rtmidi direct) |
 | `capture_dump.py` | Capture bulk dump to .syx file |
-| `send_request.py` | Send SysEx dump requests (note: QY70 ignores these) |
 | `event_decoder.py` | Decode [bitstream](bitstream.md) events from .syx files |
-| `ground_truth_analyzer.py` | Validate decoder against known content |
+| `build_claude_test.py` | Build test pattern .syx with known drum events |
 
 ## Enabling Pattern Playback Output
 
@@ -88,3 +101,4 @@ See [QY70 MIDI Output](qy70-device.md#midi-output-for-patternstyle-playback) for
 | `ground_truth_preset.syx` | 7337B | 812 XG Parameter Change msgs (not bulk dump) |
 | `ground_truth_style.syx` | 3211B | Real pattern: 133 BPM, 7 tracks, 6 bars |
 | `known_pattern.syx` | 2542B | 7 known drum events, 100% round-trip verified |
+| `claude_test.syx` | 2388B | 8-beat rock pattern: Kick+HH on 1,3, Snare+HH on 2,4 |

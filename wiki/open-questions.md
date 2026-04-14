@@ -73,13 +73,14 @@ The preamble value at bytes 24-25 encodes **track-level metadata** (possibly cho
 
 F1 top 2 bits = beat (confirmed), lower F1 + F2 top bits = clock (59% monotonicity). But F3 and F4 roles within position encoding still unknown — they're shared by simultaneous events. Possibly encode groove template parameters or sub-beat resolution.
 
-## ~~Priority 7: Correct Dump Request Test~~ — PARTIALLY RESOLVED
+## ~~Priority 7: Correct Dump Request Test~~ — MOSTLY RESOLVED (Session 16)
 
-The previous `midi_status.py` test sent AM=`7E` (edit buffer) which is NOT a valid request address. The correct address is AM=`00`-`3F` for individual patterns.
+**Session 16 corrections**:
+- **Identity Request WORKS**: QY70 responds correctly (Yamaha XG 0x4100, Model 0x5502). Previous "no response" was caused by **mido SysEx bug** — mido silently drops ALL SysEx on macOS CoreMIDI.
+- **SysEx sending WORKS via rtmidi direct**: `send_style.py` rewritten, 105/105 messages sent successfully.
+- **Bulk Dump Request partially works**: QY70 echoes most requests on MIDI OUT. AM=0x00 (User Pattern 1) got `F0 F7` response (empty pattern). Other addresses just echoed. Likely mode-dependent (needs Pattern/Song Standby per List Book p.54).
 
-**Session 12f finding**: QY70 does NOT respond to Identity Request, and likely ignores Dump Request as well (not confirmed). The manual (p.225) shows Bulk Dump is triggered **manually** from UTILITY → Bulk Dump. Use manual bulk dump instead.
-
-**Alternative for playback validation**: Set [PATT OUT CH](qy70-device.md#midi-output-for-patternstyle-playback) to 9~16 and capture live playback via `capture_playback.py`.
+**Alternative for playback validation**: Set [PATT OUT CH](qy70-device.md#midi-output-for-patternstyle-playback) to 9~16 and capture live playback via `capture_playback_json.py`.
 
 ## Other Open Questions
 

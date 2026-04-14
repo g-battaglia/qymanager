@@ -72,4 +72,25 @@ BF DF EF F7 FB FD FE
 
 Each byte is `0xFF` with one bit (6→0) cleared in descending order. This fills unused mixer slots and track data areas.
 
+## SysEx Bulk Dump Format
+
+QY70 style data is transmitted as Yamaha SysEx bulk dump messages:
+
+```
+F0 43 0n 5F BH BL AH AM AL [encoded_data] CS F7
+```
+
+**Key rules** (discovered Session 15, verified against all captures):
+
+| Field | Value | Notes |
+|-------|-------|-------|
+| BC = BH<<7 \| BL | `len(encoded_data)` = **147** | NOT 3+len(encoded). Does not include AH AM AL |
+| Decoded block size | **128 bytes** always | Last block zero-padded |
+| Message total | **158 bytes** always | 9 header + 147 payload + 1 checksum + 1 F7 |
+| Checksum region | BH BL AH AM AL + encoded | `(128 - (sum & 0x7F)) & 0x7F` |
+| AH AM | `0x02 0x7E` | Style edit buffer |
+| AL | `section*8 + track` | 0x00-0x37 for tracks, 0x7F for header |
+
+**Confidence**: High — verified against `user_style_live.syx` (17/17 checksums), `QY70_SGT.syx` (103/103 checksums), `qy70_dump_20260414_114506.syx` (6/6 checksums). Only `ground_truth_style.syx` has 2 corrupted messages from capture errors.
+
 See also: [Bar Structure](bar-structure.md), [Event Fields](event-fields.md), [Decoder Status](decoder-status.md).
