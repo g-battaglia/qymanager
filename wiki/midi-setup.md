@@ -9,15 +9,21 @@ Hardware setup for communicating with [QY70](qy70-device.md) and [QY700](qy700-d
 - **Port names**: "Steinberg UR22C Porta 1" (may vary by OS)
 - **Virtual env**: always use `.venv/bin/python3` (system python3 lacks `mido`)
 
+## MIDI Validation (Session 12f)
+
+Bidirectional MIDI confirmed:
+- **Computer → QY70**: SysEx bulk data received and loaded (known_pattern.syx). Notes sent from computer are heard on QY70 speakers.
+- **QY70 → Computer**: Keyboard notes received. Manual bulk dump captured. CC reset messages on MIDI Stop confirmed.
+- **Identity Request**: QY70 does **NOT** respond to Universal Identity Request (`F0 7E 7F 06 01 F7`). This is a device limitation, not a connection issue.
+- **Style playback MIDI output**: requires [PATT OUT CH](qy70-device.md#midi-output-for-patternstyle-playback) to be set (default is Off).
+
 ## Identity Check
 
 ```bash
 .venv/bin/python3 midi_tools/midi_status.py
 ```
 
-Sends `F0 7E 7F 06 01 F7` (Universal Identity Request) and displays the response. The QY70 replies with Family `0x4100`, Member `0x5502`. See [Identity Reply](identity-reply.md).
-
-**Note**: Identity Request sometimes fails on first attempt — the script retries up to 10 times.
+Sends `F0 7E 7F 06 01 F7` (Universal Identity Request). **The QY70 does NOT respond** — this is a known device limitation. MIDI connectivity should be verified by sending notes or SysEx instead. See [Identity Reply](identity-reply.md) for the expected response format (obtained from other sources).
 
 ## Capturing a Bulk Dump
 
@@ -58,6 +64,22 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 | `event_decoder.py` | Decode [bitstream](bitstream.md) events from .syx files |
 | `ground_truth_analyzer.py` | Validate decoder against known content |
 
+## Enabling Pattern Playback Output
+
+To capture style/pattern playback via MIDI, you must enable PATT OUT CH:
+
+1. Press **[MENU]** → select **Utility**
+2. Press **[MENU]** → select **MIDI**
+3. Set **PATT OUT CH** to **"9~16"** (recommended: drums on ch 9-10, bass on ch 12, chords on ch 13-16)
+4. Optionally set **MIDI CONTROL** to **"In"** or **"In/Out"** to accept MIDI Start/Stop
+
+Then use `capture_playback.py` to capture notes during style playback:
+```bash
+.venv/bin/python3 midi_tools/capture_playback.py -d 10
+```
+
+See [QY70 MIDI Output](qy70-device.md#midi-output-for-patternstyle-playback) for full channel mapping.
+
 ## Captured Files
 
 | File | Size | Content |
@@ -65,3 +87,4 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 | `ground_truth_A.syx` | 808B | Empty style (header only) |
 | `ground_truth_preset.syx` | 7337B | 812 XG Parameter Change msgs (not bulk dump) |
 | `ground_truth_style.syx` | 3211B | Real pattern: 133 BPM, 7 tracks, 6 bars |
+| `known_pattern.syx` | 2542B | 7 known drum events, 100% round-trip verified |

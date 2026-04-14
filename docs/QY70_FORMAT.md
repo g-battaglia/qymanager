@@ -116,9 +116,42 @@ def decode_7bit(encoded: bytes) -> bytes:
     return bytes(result)
 ```
 
-## Address Map
+## Sequencer Address Map (Table 1-9 from QY70 List Book)
 
-### Style Data (AH=0x02, AM=0x7E)
+The QY70 sequencer (Model ID 0x5F) uses these base addresses:
+
+| AH | AM | AL | Size | Description |
+|----|----|----|------|-------------|
+| 00 | 00 | 00 | 1 | Bulk mode on/off |
+| 01 | 00-13 | 00 | 147/msg | Song 1-20 |
+| 01 | 7F | 00 | — | Song all (request only) |
+| **02** | **00-3F** | **00** | **147/msg** | **User Pattern 1-64** |
+| 02 | 7F | 00 | — | User Pattern all (request only) |
+| 03 | 00 | 00 | 32 | Setup parameter |
+| 05 | 00 | 00 | 320 | Song information |
+| 05 | 01 | 00 | 512 | Pattern info 1-32 |
+| 05 | 01 | 01 | 512 | Pattern info 33-64 |
+| 08 | 00 | 00 | 1 | Clear song (command) |
+| 08 | 01 | 00 | 1 | Clear pattern (command) |
+
+### Bulk Dump Request Format (substatus=0x20)
+
+```
+F0 43 2n 5F AH AM AL F7
+```
+
+To request user pattern 1: `F0 43 20 5F 02 00 00 F7`
+To request all patterns: `F0 43 20 5F 02 7F 00 F7`
+
+### AM=0x7E: Edit Buffer Convention
+
+In actual bulk dump DATA messages (substatus=0x00), AM=0x7E indicates the
+**edit buffer** (currently loaded pattern/style). The QY70 always dumps from
+the edit buffer when triggered via UTILITY → Bulk Dump.
+
+When RECEIVING a bulk dump, AM=0x00-0x3F specifies the target user pattern slot.
+
+### Style/Pattern Data (AH=0x02, AM=0x7E)
 
 **CORRECTED (2026-02-26): AL = section_index * 8 + track_index**
 
@@ -135,6 +168,21 @@ There is NO separate "phrase data" region. ALL AL 0x00-0x2F are track data.
 | 0x7F | Header/config | 640 bytes decoded |
 
 Track sizes are always multiples of 128: 128, 256, or 768 bytes.
+
+## Section Control (from List Book page 54)
+
+Controls which section is playing on the QY70:
+
+```
+F0 43 7E 00 ss dd F7
+```
+
+| Field | Description |
+|-------|-------------|
+| 7E | Style identifier |
+| 00 | Section Control |
+| ss | Section: 08=INTRO, 0E=MAIN A, ... |
+| dd | On/Off |
 
 ## Parameter Change Format
 

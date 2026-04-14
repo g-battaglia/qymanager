@@ -21,7 +21,8 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 - [Header Section](header-section.md) — Global pattern/style header (AL=0x7F, 640 bytes)
 - [Bitstream Encoding](bitstream.md) — R=9 rotation, 9-bit field packing, preambles
 - [Bar Structure](bar-structure.md) — 13-byte bar headers, DC/9E delimiters
-- [Event Fields](event-fields.md) — F0-F5 field decomposition, beat counter, chord mask
+- [Event Fields](event-fields.md) — F0-F5 field decomposition, beat counter, chord mask (1FA3)
+- [2543 Encoding](2543-encoding.md) — Drum/pattern encoding: R=9×(i+1) PROVEN, F0=note, F5=gate
 - [XG Defaults](xg-defaults.md) — Yamaha XG default parameter values
 
 ## Infrastructure

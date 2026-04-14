@@ -1,0 +1,10 @@
+# Claude test pattern: 8-beat rock
+# Format: event_index note velocity_quantized gate tick name
+0 36 127 200 240 Kick1
+1 42 103 30 240 HHclosed
+2 38 111 150 720 Snare1
+3 42 103 30 720 HHclosed
+4 36 95 200 1200 Kick1
+5 42 103 30 1200 HHclosed
+6 38 111 150 1680 Snare1
+7 42 103 30 1680 HHclosed

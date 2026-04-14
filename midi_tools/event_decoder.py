@@ -70,7 +70,7 @@ SECTION_NAMES = {
 
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
-R = 9  # Rotation constant for chord encoding (right-rotate by 9)
+R = 9  # Rotation constant — cumulative R = (event_index + 1) * 9
 R_ARPEGGIO = 47  # Rotation constant for arpeggio encoding (= left-rotate by 9)
 TICKS_PER_BEAT = 480  # Standard MIDI resolution
 
@@ -85,7 +85,11 @@ TICKS_PER_BEAT = 480  # Standard MIDI resolution
 #
 # Exception: PHR2 (slot 7) switches to 29CB in fill sections (FILL-AB, FILL-BA).
 PREAMBLE_CHORD = bytes.fromhex("1fa3")  # Chord: R=9, SR works, beat counter works
+PREAMBLE_CHORD_2D2B = bytes.fromhex("2d2b")  # Chord variant: same encoding as 1FA3 (Session 14)
+PREAMBLE_CHORD_303B = bytes.fromhex("303b")  # Chord variant: same encoding as 1FA3 (Session 14)
 PREAMBLE_GENERAL = bytes.fromhex("29cb")  # General: R=47, no SR, no beat counter
+PREAMBLE_GENERAL_29DC = bytes.fromhex("29dc")  # General variant: CHD1 in SGT style
+PREAMBLE_GENERAL_294B = bytes.fromhex("294b")  # General variant: RHY2
 PREAMBLE_BASS_SLOT = bytes.fromhex("2be3")  # Bass slot encoding
 PREAMBLE_DRUM_PRIMARY = bytes.fromhex("2543")  # Primary drum (RHY1)
 
@@ -181,6 +185,123 @@ def extract_9bit(val: int, field_idx: int, total_width: int = 56) -> int:
     return (val >> shift) & 0x1FF
 
 
+def is_control_event(evt_bytes: bytes, event_index: int = 0) -> bool:
+    """Detect control events: lo7 > 87 after de-rotation.
+
+    Control events are structural markers (sub-sequence terminators)
+    that appear across all encoding types. They are always at odd
+    event positions and often mark the last event in a segment.
+    ALL control events end with byte 0x78.
+
+    Uses cumulative R=9*(i+1) for detection. Control events give
+    lo7 > 87 at most rotations due to their byte structure.
+    """
+    val = int.from_bytes(evt_bytes, "big")
+    r = 9 * (event_index + 1)
+    derot = rot_right(val, r)
+    f0 = extract_9bit(derot, 0)
+    lo7 = f0 & 0x7F
+    return lo7 > 87
+
+
+def decode_drum_event(
+    evt_bytes: bytes, event_index: int, note_index: int = -1
+) -> Optional[dict]:
+    """Decode a 2543/29CB/29DC drum/general event.
+
+    Session 14: R=9*(i+1) cumulative PROVEN correct on known_pattern.syx
+    with 7/7 PERFECT match (note, velocity, tick, gate all correct).
+    Event index is per-segment (resets at each DC delimiter).
+
+    Model G cascade (Session 14, 96%/94% accuracy):
+      1. Cumulative R=9*(event_index+1) — PROVEN primary model
+      2. Control event detection (lo7 > 87 at cumulative R)
+      3. Skip-ctrl R=9*(note_index+1) — for post-ctrl events
+      4. Constant R=47 fallback (helps RHY2/294b and edge cases)
+    Returns dict with note/control fields, or None if failed.
+
+    Args:
+        evt_bytes: 7-byte raw event
+        event_index: position in segment (all events including ctrl)
+        note_index: count of note events before this one in segment.
+                    If -1, skip step 3 (backwards compatible).
+
+    The velocity is a 4-bit inverted code:
+        vel_code = [F0_bit8 : F0_bit7 : rem_bit1 : rem_bit0]
+        MIDI_velocity = max(1, 127 - vel_code * 8)
+    """
+    val = int.from_bytes(evt_bytes, "big")
+
+    # Step 1: cumulative R=9*(event_index+1) — proven correct
+    r_cum = (9 * (event_index + 1)) % 56
+    derot = rot_right(val, r_cum)
+    f0 = extract_9bit(derot, 0)
+    note = f0 & 0x7F
+
+    if not (13 <= note <= 87):
+        # Step 2: control event check at cumulative R
+        if is_control_event(evt_bytes, event_index):
+            fields = [extract_9bit(derot, i) for i in range(6)]
+            return {
+                "type": "control",
+                "f0": fields[0], "f1": fields[1], "f2": fields[2],
+                "f3": fields[3], "f4": fields[4], "f5": fields[5],
+                "remainder": derot & 0x3,
+            }
+        # Step 3: skip-ctrl R — uses note_index (excludes ctrl events)
+        if note_index >= 0:
+            r_skip = (9 * (note_index + 1)) % 56
+            if r_skip != r_cum:
+                derot = rot_right(val, r_skip)
+                f0 = extract_9bit(derot, 0)
+                note = f0 & 0x7F
+                if 13 <= note <= 87:
+                    pass  # success — fall through to field extraction
+                else:
+                    f0 = None  # mark as failed, try R=47
+            else:
+                f0 = None
+        else:
+            f0 = None
+
+        # Step 4: R=47 fallback (for RHY2/294b encoding and edge cases)
+        if f0 is None or not (13 <= (f0 & 0x7F) <= 87):
+            derot = rot_right(val, 47)
+            f0 = extract_9bit(derot, 0)
+            note = f0 & 0x7F
+            if not (13 <= note <= 87):
+                return None
+
+    f1 = extract_9bit(derot, 1)
+    f2 = extract_9bit(derot, 2)
+    f5 = extract_9bit(derot, 5)
+    remainder = derot & 0x3
+
+    # Velocity: 4-bit inverted code from F0 flags + remainder
+    bit8 = (f0 >> 8) & 1
+    bit7 = (f0 >> 7) & 1
+    vel_code = (bit8 << 3) | (bit7 << 2) | remainder
+    velocity = max(1, 127 - vel_code * 8)
+
+    # Timing: beat from F1 top bits, clock from F1 low + F2 top
+    beat = f1 >> 7
+    clock = ((f1 & 0x7F) << 2) | (f2 >> 7)
+    tick = beat * 480 + clock
+
+    return {
+        "type": "note",
+        "note": note,
+        "velocity": velocity,
+        "gate": f5,
+        "tick": tick,
+        "f0": f0, "f1": f1, "f2": f2,
+        "f3": extract_9bit(derot, 3),
+        "f4": extract_9bit(derot, 4),
+        "f5": f5,
+        "remainder": remainder,
+    }
+
+
 def lo4_to_beat(lo4: int) -> int:
     """Convert lo4 to beat number (0-3). Returns -1 if unrecognized.
 
@@ -197,17 +318,22 @@ def classify_encoding(preamble: bytes) -> str:
     """Classify track encoding type based on preamble bytes 0-1.
 
     Preamble correlates perfectly with decoder behavior:
-    - 1fa3: shift register works, beat counter works → chord encoding
+    - 1fa3, 2d2b, 303b: chord encoding (same R=9 rotation, F4 chord mask, F5 timing)
     - 29cb: no shift register, no beat counter → arpeggio/complex
     - 2be3: bass-specific encoding
     - 2543: drum encoding (D1)
+
+    Session 14: 2D2B and 303B proven to use identical encoding as 1FA3
+    (F4 masks and F5 values match exactly across bar segments).
+    The preamble value likely encodes chord template or voice parameters,
+    not a different data format.
     """
     if len(preamble) < 2:
         return ENCODING_UNKNOWN
     key = preamble[:2]
-    if key == PREAMBLE_CHORD:
+    if key in (PREAMBLE_CHORD, PREAMBLE_CHORD_2D2B, PREAMBLE_CHORD_303B):
         return ENCODING_CHORD
-    elif key == PREAMBLE_GENERAL:
+    elif key in (PREAMBLE_GENERAL, PREAMBLE_GENERAL_29DC, PREAMBLE_GENERAL_294B):
         return ENCODING_GENERAL
     elif key == PREAMBLE_BASS_SLOT:
         return ENCODING_BASS_SLOT
@@ -383,7 +509,8 @@ def decode_event(
                     If None, falls back to header_fields[:5] filtered to 0-127.
     """
     val = int.from_bytes(evt_bytes, "big")
-    derot = rot_right(val, event_index * R)
+    # event_index is 0-based; first event uses R=9, not R=0
+    derot = rot_right(val, (event_index + 1) * R)
 
     # Extract 6 x 9-bit fields
     f0 = extract_9bit(derot, 0)

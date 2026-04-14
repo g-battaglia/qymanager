@@ -1,6 +1,8 @@
-# Event Fields
+# Event Fields (Chord Encoding — 1FA3)
 
 After [de-rotation](bitstream.md), each 7-byte (56-bit) event decomposes into 6 fields of 9 bits each, plus 2 remainder bits.
+
+> **Note**: This page describes the chord encoding (`1FA3`) field layout. The drum/pattern encoding (`2543`) uses the same 9-bit field structure but with completely different field meanings — see [2543 Encoding](2543-encoding.md).
 
 ## Field Map
 

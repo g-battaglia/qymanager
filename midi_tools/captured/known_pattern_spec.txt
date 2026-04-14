@@ -1,0 +1,9 @@
+# Known pattern specification
+# Format: event_index note velocity gate tick name
+0 36 127 412 240 Kick1
+1 49 127 74 240 Crash1
+2 44 119 30 240 HHpedal
+3 44 95 30 720 HHpedal
+4 38 127 200 960 Snare1
+5 44 95 30 960 HHpedal
+6 44 95 30 1440 HHpedal

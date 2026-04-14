@@ -8,14 +8,26 @@ Each 7-byte event (56 bits) is **barrel-rotated** before storage. Consecutive ev
 
 ### Rotation
 
+**R=9 right-rotate = R=47 left-rotate** (because 56 - 47 = 9). Both are the same operation.
+
+All encoding types appear to use **cumulative** rotation:
+
+| Preambles | Shift Amount | Confidence |
+|-----------|-------------|------------|
+| `1FA3`, `2D2B`, `303B`, `29CB`, `2BE3` | `(event_index + 1) × 9` | **Proven** (1FA3, 2543), High (others) |
+| `2543` | `(event_index + 1) × 9` | **Proven** (7/7 known_pattern.syx) |
+
 ```python
+# Cumulative rotation (all encodings)
 def derotate(raw_bytes: bytes, event_index: int) -> int:
-    val = int.from_bytes(raw_bytes, "big")  # 56-bit value
-    shift = (event_index * 9) % 56
+    val = int.from_bytes(raw_bytes, "big")
+    shift = ((event_index + 1) * 9) % 56
     return ((val >> shift) | (val << (56 - shift))) & ((1 << 56) - 1)
 ```
 
-**R=9 right-rotate = R=47 left-rotate** (because 56 - 47 = 9). Both are the same operation. All encoding types use this rotation.
+**2543 PROVEN** (Session 14): R=9×(i+1) definitively proven with known_pattern.syx — 7/7 events match perfectly on all fields (note, velocity, tick, gate). Event index resets per segment at DC delimiter. See [2543 Encoding](2543-encoding.md#rotation--proven-cumulative-r9i1).
+
+**2D2B/303B = chord variants** (Session 14): preambles 2D2B and 303B use identical encoding as 1FA3 — same F4 chord masks, F5 timing, and event similarity patterns. The preamble value encodes track-level metadata, not a different data format.
 
 ### 9-Bit Field Extraction
 
@@ -37,7 +49,7 @@ Each track's data (after the 24-byte track header) starts with a 4-byte preamble
 | `1FA3` | chord | CHD2, PHR1, PHR2 | 82% |
 | `29CB` | general | RHY2, CHD1, PAD (and sometimes BASS) | 38% |
 | `2BE3` | bass_slot | BASS (when bass voice) | 38% |
-| `2543` | drum_primary | RHY1 | 61% |
+| `2543` | [drum_primary](2543-encoding.md) | RHY1 (+ all Pattern mode tracks) | 77% |
 
 Preambles are **slot-based** (fixed per track index), NOT voice-based. The encoding type is independent of the voice assignment.
 
