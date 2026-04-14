@@ -1,10 +1,11 @@
-# QYConv — Recap Sessioni 1-10
+# QYConv — Recap Sessioni 1-11
 
 ## Panoramica del Progetto
 
 **qyconv** converte pattern/style tra Yamaha QY70 (SysEx .syx) e QY700 (binario .Q7P).
-In 10 sessioni abbiamo: stabilito la connessione MIDI, corretto 16 bug nel core library,
-creato uno stile custom, e condotto un reverse engineering profondo del formato bitstream QY70.
+In 11 sessioni abbiamo: stabilito la connessione MIDI, corretto 16 bug nel core library,
+creato uno stile custom, condotto un reverse engineering profondo del formato bitstream QY70,
+e diagnosticato/fixato la causa del bricking QY700.
 
 ---
 
@@ -59,7 +60,7 @@ Scoperta fondamentale: **QY70 e QY700 usano formati evento completamente diversi
 | Bar header 13 byte → note accordo (MIDI) | Alta | 7 |
 | Preamble slot-based (non voice-based) | Alta | 10 |
 | D1 msgs 0-4 identici, solo msg 5 differisce | Alta | 10 |
-| General encoding (29CB) usa R=47 | Alta | 10 |
+| General encoding (29CB) usa R=47 left = R=9 right | Alta | 10,12 |
 | SGT vs NEONGROOVE dati traccia 100% identici | Alta | 10 |
 | DC delimiter solo in chord/bass tracks | Alta | 6-8 |
 | Empty-marker pattern: BF DF EF F7 FB FD FE | Alta | 5 |
@@ -69,10 +70,10 @@ Scoperta fondamentale: **QY70 e QY700 usano formati evento completamente diversi
 
 | Traccia | Encoding | Decodifica | Note |
 |---------|----------|-----------|------|
-| Chord (CHD2,PHR1,PHR2) | chord (1FA3) | ~85% | Struttura eventi, beat counter, chord mask, decoder funzionante |
-| General (RHY2,CHD1,PAD) | general (29CB) | ~15% | R=47, no SR, no beat counter, struttura diversa |
-| Bass slot (BASS) | bass_slot (2BE3) | ~40% | DC delimiters, R=9, struttura nota |
-| Drum primary (RHY1) | drum_primary (2543) | ~15% | Marker `28 0F`, msgs 0-4 identici, solo msg 5 varia |
+| Chord (CHD2,PHR1,PHR2) | chord (1FA3) | ~82% | Beat counter 90%, 9E sub-bar delimiter, chord mask confermato |
+| General (RHY2,CHD1,PAD) | general (29CB) | ~38% | R=9 right funziona! Beat counter confermato, stessa rotazione di chord |
+| Bass slot (BASS) | bass_slot (2BE3) o general (29CB) | ~38% | BASS può usare 29CB, beat counter 100% |
+| Drum primary (RHY1) | drum_primary (2543) | ~61% | 9E sub-bar, beat accuracy 51% |
 
 ---
 
@@ -139,15 +140,111 @@ Una volta decodificato il bitstream:
 
 ---
 
+## Sessione 11: Diagnosi Bricking e Analisi Profonda
+
+### Causa del bricking QY700 (RISOLTA)
+
+Il converter `qy70_to_qy700.py` scriveva a 3 offset **non confermati** nel file Q7P:
+- `0x1E6`: presunto Bank MSB → scriveva **0x7F** per drum tracks
+- `0x1F6`: presunto Program Change
+- `0x206`: presunto Bank LSB
+
+**Conferma**: deep diff T01.Q7P vs TXX.Q7P mostra che **tutte e 3 le aree sono ZERO** in entrambi i file. L'ipotesi voice era sbagliata — scrivere valori non-zero in un'area che deve essere zero ha corrotto il file.
+
+### Fix applicati
+
+1. **Disabilitata `_extract_and_apply_voices()`** — non scrive piu' a offset non confermati
+2. **Fixato bounds check pan**: `< 0x246` → `< 0x2C0` (era un no-op totale)
+3. **Aggiunto `_validate_critical_areas()`** — verifica post-conversione che aree critiche siano intatte
+
+### Nuove scoperte formato Q7P
+
+| Scoperta | Confidenza |
+|----------|-----------|
+| Voice offsets 0x1E6/0x1F6/0x206 = tutti ZERO (NON sono voice data) | Alta |
+| Track enable flags (0x1E5): bitmask sezioni attive (0x01=1, 0x1F=5) | Alta |
+| Section config usa record F0/F1/F2: F0=section header, F1=data block, F2=end | Alta |
+| Section pointers (0x100+): 16-bit BE offsets, 0xFEFE=inattivo | Alta |
+| Phrase data (0x360-0x677) in Q7P 3072B: NON usa formato D0/E0 commands | Alta |
+| Phrase data contiene valori 0x2D-0x7F senza command bytes → formato diverso | Alta |
+
+### Nuove scoperte formato QY70 SysEx
+
+| Scoperta | Confidenza |
+|----------|-----------|
+| Track header byte14/15 = indicatore TIPO traccia, non Bank MSB/Program | Alta |
+| 0x40/0x80 = famiglia drum/auto (D1, D2, BASS) | Alta |
+| 0x00/0x04 = modo chord-following (CHD1) | Alta |
+| 0x00/0x00 = default melodia (CHD2, PHR1, PHR2) | Alta |
+| Flags 80/8E/83 = tracce auto (drum/bass), 00/0F/10 = melodia | Alta |
+
+### Script creati
+
+- `midi_tools/safe_q7p_tester.py` — genera 10 file Q7P diagnostici per test incrementale
+- `midi_tools/ground_truth_analyzer.py` — valida decoder chord su dati con contenuto noto
+- `midi_tools/q7p_test_files/` — 10 file test + DIFF_SUMMARY.txt
+
+---
+
+---
+
+## Sessione 12: Scoperta Delimitatori e Miglioramento Decoder
+
+### Scoperte chiave
+
+| Scoperta | Confidenza |
+|----------|-----------|
+| **0x9E = sub-bar delimiter** (chord change within bar) | Alta |
+| **lo4=0000 = beat 0** (non "invalid") | Alta |
+| **R=9 right = R=47 left** (stessa operazione su 56 bit) | Alta |
+| **General encoding (29CB) usa R=9** (come chord) | Alta |
+| **BASS slot può usare preamble 29CB** (non solo 2BE3) | Alta |
+| **Nessun .syx QY70 free disponibile online** | Alta |
+| **QY70 non supporta Dump Request remoto** | Alta |
+| **QY70 Identity Reply: Family=0x4100 Member=0x5502** | Alta |
+| **Bar headers con campi >127 = encoding non-lineare** | Media |
+
+### Miglioramenti al decoder
+
+| Metrica | Prima | Dopo |
+|---------|-------|------|
+| Chord confidence | 68% | **82%** |
+| Beat accuracy | 48% | **90%** |
+| Bars decodificate (CHD2) | 4 | **6** (sub-bars) |
+| BASS beat accuracy | 60% | **100%** |
+| General tracks confidence | 15% | **38%** (con sub-bars) |
+
+### Fix applicati
+
+1. **`extract_bars()` aggiornato** — ora riconosce 0x9E come sub-bar delimiter
+2. **`lo4_to_beat()` fixato** — lo4=0000 mappa a beat 0 (prima era -1/invalid)
+3. **`send_request.py`** — fixato bug AL addressing (sec*8+trk, non 0x08+sec*8+trk)
+4. **`midi_status.py`** — aggiunta identificazione dispositivi Yamaha da Identity Reply
+5. **`qy700_to_qy70.py`** — fixato commento stale sull'AL addressing
+
+### File catturati
+
+- `ground_truth_A.syx` — 808B, stile vuoto (solo header)
+- `ground_truth_preset.syx` — 7337B, 812 XG Parameter Change (non usabile)
+- `ground_truth_style.syx` — 3211B, pattern reale 133 BPM, 7 tracce attive
+
+### Stato ricerca .syx online
+
+- qy100.doffu.net: stili QY70-compatibili ma a **pagamento** (Patreon)
+- groups.io/YamahaQY70AndQY100: probabilmente ha file, **richiede iscrizione**
+- GitHub, KVR, forum vari: nessun file scaricabile trovato
+
+---
+
 ## Numeri
 
-- **10 sessioni** di lavoro
-- **16 bug** corretti nel core library
+- **12 sessioni** di lavoro
+- **16 bug** corretti nel core library + **3 fix** converter sicurezza + **4 fix** decoder/tools
 - **33 test** tutti verdi
-- **28+ script** di analisi creati
+- **30+ script** di analisi creati
 - **1 stile custom** (NEONGROOVE) generato
-- **3 file .syx** analizzati (SGT, NEONGROOVE, captured dump)
+- **4 file .syx** analizzati (SGT, NEONGROOVE, captured dump, ground_truth_style)
 - **2 file .Q7P** analizzati (T01, TXX)
-- **~85%** decodifica tracce chord QY70
-- **~15%** decodifica tracce general (29CB)
+- **~82%** decodifica tracce chord QY70
+- **~38%** decodifica tracce general (29CB)
 - **0%** conversione dati evento implementata

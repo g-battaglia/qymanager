@@ -13,7 +13,7 @@ Where:
   AH AM AL = address of data to request
     - 02 7E 7F = Style header
     - 02 7E 00-05 = Section data (Intro, MainA, MainB, FillAB, FillBA, Ending)
-    - 02 7E 08-2F = Track data (section * 8 + track)
+    - 02 7E 00-2F = Track data (section * 8 + track)
 
 Usage:
     python3 midi_tools/send_request.py --address 02 7E 7F        # Request header
@@ -159,18 +159,13 @@ def request_full_style(port_name=None, device_number=0, timeout=30, output_path=
 
     # Request addresses for a complete style:
     # 0x7F = Header
-    # 0x00-0x05 = Section phrase data
-    # 0x08-0x37 = Track data (6 sections * 8 tracks)
+    # 0x00-0x2F = Track data (6 sections * 8 tracks, AL = section*8 + track)
     addresses = []
 
-    # Section phrase data
-    for sec in range(6):
-        addresses.append((0x02, 0x7E, sec))
-
-    # Track data
+    # Track data (AL 0x00-0x2F)
     for sec in range(6):
         for trk in range(8):
-            al = 0x08 + (sec * 8) + trk
+            al = sec * 8 + trk
             addresses.append((0x02, 0x7E, al))
 
     # Header last

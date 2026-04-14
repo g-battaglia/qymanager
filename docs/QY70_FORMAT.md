@@ -649,9 +649,30 @@ Only C4/PHR changes preamble between sections.
 
 DC acts as a bar separator in the event stream:
 - Present in chord tracks: C1 (1-3 per message), C2 (3), C3 (2-4), C4 (2-3)
-- Absent in: D1 (only 1 DC in 740 event bytes), D2, BASS
+- Also present in BASS tracks with general encoding (29CB) — up to 5 DCs
+- Absent in: D1 (only 1 DC in 740 event bytes), D2
 - After DC, a 13-byte "bar header" follows, then 7-byte event groups
-- Last DC is followed by `0x00` terminator
+- Last DC is followed by `0x00` terminator or padding
+
+##### 9E (0x9E) Sub-Bar Delimiter (Session 12 Discovery)
+
+0x9E acts as a **chord change delimiter within a bar**:
+- Found within DC-separated segments when a bar contains multiple chords
+- After 9E, a new 13-byte bar header follows (same structure as after DC)
+- Each sub-bar has its own header with different chord information
+- Example: a bar with 3 chord changes produces 3 sub-bars of 4 events each,
+  separated by 2 instances of 0x9E
+- 9E sub-bars share the same bar-level timing context but have independent chord headers
+
+The delimiter hierarchy is: DC (bar boundary) > 9E (chord change within bar).
+
+##### R=9 and R=47 Equivalence (Session 12 Discovery)
+
+R=47 left-rotate on 56 bits ≡ R=9 right-rotate on 56 bits (because 56 - 47 = 9).
+There is only ONE rotation constant: earlier sessions found R=47 (left) for general
+encoding and R=9 (right) for chord encoding, but they are the **same operation**.
+Both chord (1FA3) and general (29CB) tracks use R=9 right-rotate (= R=47 left-rotate).
+The beat counter works correctly in BOTH encodings.
 
 ##### 41-Byte Bar Structure (Chord Tracks)
 

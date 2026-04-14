@@ -216,6 +216,26 @@ def test_example(q7p_data):  # Fixture from conftest.py
 
 ---
 
+## Wiki
+
+The project maintains a persistent knowledge base in `wiki/`. This is the compiled, interlinked reference for all reverse-engineered format knowledge.
+
+- **`wiki/index.md`** — Master index (update on every page add/remove)
+- **`wiki/log.md`** — Chronological session log (append with date prefix)
+- **`wiki/decoder-status.md`** — Current decoding state per track type
+- **`wiki/open-questions.md`** — Priorities and unresolved hypotheses
+
+### Wiki Maintenance Rules
+
+1. After discoveries: update relevant wiki page + `log.md`
+2. After adding/removing a page: update `index.md`
+3. Cross-link between pages with `[text](page.md)`
+4. Note confidence levels (High/Medium/Low) for RE findings
+5. One topic per page; split if >200 lines
+6. The wiki synthesizes `/docs/` content — don't duplicate, link
+
+---
+
 ## Display Formatting
 
 ### Bar Graphics (from formatters.py)

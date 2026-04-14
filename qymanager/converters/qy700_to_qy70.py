@@ -229,8 +229,8 @@ class QY700ToQY70Converter:
         # 1. Init message (required by QY70 to prepare for bulk data)
         messages.append(self._create_init_message())
 
-        # 2. Generate track data for each section (0x08-0x2F)
-        # Track data is at AL = 0x08 + (section_index * 8) + track_index
+        # 2. Generate track data for each section (0x00-0x2F)
+        # Track data is at AL = section_index * 8 + track_index
         # Only include tracks that have actual data (non-empty)
         for section_idx in range(6):
             track_messages = self._generate_track_messages(section_idx)

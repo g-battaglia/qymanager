@@ -18,6 +18,13 @@ Session 10 corrections:
 - Track slot names (RHY1,RHY2,BASS,CHD1,CHD2,PAD,PHR1,PHR2) differ from
   actual voice assignments — SGT has drum voice on BASS slot, bass voice on CHD1
 - D1 messages 0-4 are identical across all 6 sections; only message 5 differs
+
+Session 12 corrections:
+- 0x9E is a sub-bar delimiter (chord change within a bar), separate from DC (bar delimiter)
+- lo4=0000 maps to beat 0 (previously was treated as "invalid/unknown")
+- Bar headers starting with 0x1A have fixed structure: bytes 4=0x7F, 6=0x34
+- First bar (header starting with 0xDE) has different structure (initialization bar)
+- 9-bit header fields can be >127 in some patterns (not just simple MIDI notes)
 """
 
 import struct
@@ -175,8 +182,14 @@ def extract_9bit(val: int, field_idx: int, total_width: int = 56) -> int:
 
 
 def lo4_to_beat(lo4: int) -> int:
-    """Convert one-hot lo4 to beat number (0-3). Returns -1 if not one-hot."""
-    mapping = {0b1000: 0, 0b0100: 1, 0b0010: 2, 0b0001: 3}
+    """Convert lo4 to beat number (0-3). Returns -1 if unrecognized.
+
+    Session 12 correction: lo4=0000 maps to beat 0 (not "invalid").
+    The encoding is: 0=beat0, 4=beat1, 2=beat2, 1=beat3.
+    Only 1000 (8) is the one-hot form for beat 0, but 0000 also appears
+    as beat 0 in real data (possibly "sustain from previous bar" semantic).
+    """
+    mapping = {0b0000: 0, 0b1000: 0, 0b0100: 1, 0b0010: 2, 0b0001: 3}
     return mapping.get(lo4, -1)
 
 
@@ -264,6 +277,11 @@ def get_track_data(syx_path: str, section: int, track: int) -> bytes:
 def extract_bars(data: bytes) -> Tuple[bytes, List[Tuple[bytes, List[bytes]]]]:
     """Extract preamble and bars from decoded track data.
 
+    Session 12: Now splits on both DC (0xDC, bar delimiter) and 9E (0x9E,
+    sub-bar chord change delimiter). DC separates major bars; 9E separates
+    chord changes within a bar (e.g., bar 3 with 3 different chords becomes
+    3 sub-bars, each with its own 13-byte header).
+
     Returns:
         (preamble_4bytes, [(header_13bytes, [event_7bytes, ...]), ...])
     """
@@ -273,12 +291,14 @@ def extract_bars(data: bytes) -> Tuple[bytes, List[Tuple[bytes, List[bytes]]]]:
     preamble = data[24:28]
     event_data = data[28:]
 
-    # Split by DC delimiter
-    dc_pos = [i for i, b in enumerate(event_data) if b == 0xDC]
+    # Split by both DC (bar) and 9E (sub-bar chord change) delimiters
+    delim_pos = sorted(
+        i for i, b in enumerate(event_data) if b in (0xDC, 0x9E)
+    )
 
     segments = []
     prev = 0
-    for dp in dc_pos:
+    for dp in delim_pos:
         segments.append(event_data[prev:dp])
         prev = dp + 1
     segments.append(event_data[prev:])

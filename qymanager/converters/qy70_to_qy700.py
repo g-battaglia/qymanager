@@ -201,12 +201,18 @@ class QY70ToQY700Converter:
         # Start with template - this has correct structure
         self._buffer = bytearray(self.template_data)
 
-        # Only modify SAFE fields:
+        # Only modify SAFE fields (confirmed offsets only):
         self._extract_and_apply_name()
         self._extract_and_apply_tempo()
         self._extract_and_apply_volumes()
         self._extract_and_apply_pans()
-        self._extract_and_apply_voices()
+        # DISABLED: voice offsets (0x1E6, 0x1F6, 0x206) are UNCONFIRMED.
+        # Writing 0x7F to 0x1E6 for drum tracks caused QY700 to brick.
+        # Re-enable only after offsets are validated on hardware.
+        # self._extract_and_apply_voices()
+
+        # Post-conversion safety check: verify critical areas are intact
+        self._validate_critical_areas()
 
         return bytes(self._buffer)
 
@@ -310,7 +316,8 @@ class QY70ToQY700Converter:
                         pan = track_data[22] & 0x7F
                         # Q7P pan offset: 0x276 + (section * 8) + track
                         pan_offset = self.Offsets.PAN_TABLE + (section_idx * 8) + track_num
-                        if pan_offset < self.Offsets.CHORUS_TABLE:
+                        # Pan area ends before TABLE_3 at 0x2C0
+                        if pan_offset < 0x2C0:
                             self._buffer[pan_offset] = pan
 
     def _extract_and_apply_voices(self) -> None:
@@ -373,6 +380,28 @@ class QY70ToQY700Converter:
                 # Chord/melody track: byte 14 = Bank MSB, byte 15 = Program
                 self._buffer[bank_msb_offset] = voice_byte_14 & 0x7F
                 self._buffer[program_offset] = voice_byte_15 & 0x7F
+
+    def _validate_critical_areas(self) -> None:
+        """Verify that critical Q7P areas were not accidentally modified.
+
+        Compares the output buffer against the original template for areas
+        that must remain unchanged. Raises ValueError if corruption detected.
+        """
+        template = self.template_data
+        checks = [
+            ("Header", 0x000, 0x010),
+            ("Section pointers", 0x100, 0x120),
+            ("Section config", 0x120, 0x180),
+            ("Tempo padding", 0x180, 0x188),
+            ("Fill area (0xFE)", 0x9C0, 0xB10),
+            ("Pad area (0xF8)", 0xB10, 0xC00),
+        ]
+        for name, start, end in checks:
+            if self._buffer[start:end] != template[start:end]:
+                raise ValueError(
+                    f"SAFETY: Critical area '{name}' (0x{start:03X}-0x{end:03X}) "
+                    f"was modified during conversion. Aborting to prevent hardware damage."
+                )
 
     def convert_and_save(
         self, source_path: Union[str, Path], output_path: Union[str, Path]
