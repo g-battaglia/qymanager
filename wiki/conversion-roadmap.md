@@ -4,36 +4,57 @@ End-to-end status for QY70 → QY700 conversion.
 
 ## Pipeline Overview
 
+> **Session 19 finding**: The SysEx bitstream decoder **FAILS on factory styles** (~0% accuracy against ground truth). Two conversion pipelines now exist: the original (broken for factory styles) and a new capture-based approach.
+
+### Pipeline A: SysEx Decode (original) — BLOCKED for factory styles
+
 ```
 QY70 .syx → [Decode Bitstream] → [Abstract Events] → [Encode Q7P] → QY700 .Q7P
 ```
 
+| Stage | Status | User Patterns | Factory Styles |
+|-------|--------|--------------|----------------|
+| Parse SysEx | Done | High | High |
+| 7-bit decode | Done | High | High |
+| Bitstream unpack | Done | High | High |
+| Rotation decode (R=9×(i+1)) | Done | **100%** (7/7 proven) | **~0%** (FAILS) |
+| Chord event decode | F4 mask → notes | Untested | 0% precision |
+| Bass event decode | Chaotic | Untested | 15% precision |
+| Drum event decode | R proven for user | **100%** | ~9% precision |
+| Chord transposition | Unknown | Unknown | Unknown |
+
+### Pipeline B: Capture-Based (NEW, Session 19) — RECOMMENDED
+
+```
+QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Abstract Events] → [Encode Q7P] → QY700 .Q7P
+```
+
 | Stage | Status | Confidence |
 |-------|--------|------------|
-| Parse SysEx | Done | High |
-| 7-bit decode | Done | High |
-| Bitstream unpack | Done | High |
-| Rotation decode (R=9×(i+1)) | Done (single-segment) | High |
-| Chord event decode | F4 mask → notes | 82% |
-| Bass event decode | Chaotic results | 25-31% |
-| Drum event decode | R proven, fields decoded | 80% (drum) |
-| General event decode | Same as chord? | 38% |
-| Chord transposition | Templates, not absolute | Unknown |
-| Q7P metadata write | Name, tempo, vol, pan | High |
+| Send .syx to QY70 | Done (`send_style.py`) | High |
+| Start playback (MIDI Start+Clock) | Done (`send_and_capture.py`) | High |
+| Capture MIDI notes | Done (`capture_playback.py`) | High |
+| Parse captured events | Done (JSON format) | High |
+| Quantize to beats/bars | Not started | Medium |
+| Map to Q7P events | Not started | 30% |
+| Q7P metadata write | Done | High |
 | Q7P event write (3072) | Format partially mapped | 30% |
-| Q7P event write (5120) | Format understood (D0/E0) | 0% (no template) |
+
+**Advantages**: bypasses all unsolved decoding problems (rotation model, chord transposition, groove templates). Captures the EXACT notes the QY70 produces.
+
+**Requirements**: QY70 hardware must be connected. PATT OUT=9~16, ECHO BACK=Off, MIDI SYNC=External.
+
+**Limitation**: drums don't output via PATT OUT in Pattern mode. May need Style mode for drum capture.
 
 ## Blocking Issues
 
-### 1. Chord Transposition (blocks ALL chord/melody conversion)
+### 1. Factory Style Decoding FAILS (blocks Pipeline A for all factory styles)
 
-Bar headers store chord-RELATIVE templates. The QY70 applies real-time transposition based on user chord input. Without the transposition formula, decoded notes don't match playback.
+**Session 19**: R=9×(i+1) rotation produces ~0% accuracy on factory styles (SGT) despite 100% on user patterns. The encoding for dense factory data is fundamentally different or uses additional obfuscation not yet understood. See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
 
-**What's needed**: Multi-chord capture comparison (CM, Dm, G7) using `capture_chord_test.py`.
+**Impact**: Pipeline A is usable ONLY for user-created patterns, not factory/preset styles.
 
-**Hardware config**: PATT OUT=9~16, ECHO BACK=Off, MIDI SYNC=External.
-
-### 2. Q7P Event Writing (blocks output generation)
+### 2. Q7P Event Writing (blocks output generation for both pipelines)
 
 Two paths exist:
 
@@ -44,15 +65,17 @@ Two paths exist:
 
 **Recommendation**: Get a 5120-byte Q7P from QY700 hardware. Create a pattern with known notes → save as Q7P → use as template.
 
-### 3. Bass Encoding (blocks bass track conversion)
+### 3. Capture Quantization (blocks Pipeline B)
 
-Both 2BE3 and 29CB encodings produce chaotic results (25-31% confidence). The rotation model works but F3-F5 field interpretation is wrong for bass.
+Captured MIDI notes have real-time timestamps. Need to quantize to beat/bar grid and map to Q7P event format. Also need drum capture (drums don't output in Pattern mode).
 
-**What's needed**: Ground truth capture — program a bass pattern with known notes on QY70, capture bulk dump, compare with decoded output.
+### 4. Chord Transposition (blocks Pipeline A chord tracks)
 
-### 4. Multi-segment Rotation (minor, ~5% events affected)
+Bar headers store chord-RELATIVE templates. Irrelevant for Pipeline B (capture already has absolute notes).
 
-Control events at odd positions disrupt the cumulative index in multi-segment tracks. Model G cascade (std→skip-ctrl→R=47) achieves 94-96% but ~3 events per track still fail.
+### 5. Bass Encoding (blocks Pipeline A bass track)
+
+Both 2BE3 and 29CB produce chaotic results. Irrelevant for Pipeline B.
 
 ## What Works Today
 
@@ -65,12 +88,16 @@ Musical event conversion is NOT implemented — output always has the template's
 
 ## Recommended Next Steps (by priority)
 
-1. **Hardware**: Set QY70 to PATT OUT=9~16, ECHO BACK=Off, run `capture_chord_test.py` with CM/Dm/G7
-2. **Hardware**: On QY700, create pattern with known notes, save as Q7P, hex-analyze
-3. **Software**: Implement transposition formula from step 1 data
-4. **Software**: If 5120-byte Q7P obtained in step 2, implement D0/E0 event writer
-5. **Software**: If no 5120, decode 3072-byte command semantics from step 2 patterns
-6. **Software**: Integrate event decoder + writer into converter pipeline
+### Pipeline B (capture-based) — highest priority
+1. **Software**: Build capture→quantize pipeline (MIDI timestamps → beat/bar grid)
+2. **Hardware**: Capture full SGT style via playback (all tracks, all sections)
+3. **Software**: Build quantized-events → Q7P writer
+4. **Hardware**: On QY700, create pattern with known notes, save as Q7P, hex-analyze (needed for Q7P format)
+5. **Hardware**: Find way to capture drums (Style mode? Different PATT OUT setting?)
+
+### Pipeline A (SysEx decode) — lower priority, research only
+6. **Research**: Investigate why factory styles use different encoding than user patterns
+7. **Hardware**: Run `capture_chord_test.py` with CM/Dm/G7 to study chord transposition (useful for understanding QY70 internals even if not needed for Pipeline B)
 
 ## File Map
 
@@ -83,5 +110,7 @@ Musical event conversion is NOT implemented — output always has the template's
 | `midi_tools/q7p_sequence_analyzer.py` | Q7P sequence events analyzer |
 | `midi_tools/capture_chord_test.py` | Chord transposition capture tool |
 | `midi_tools/send_and_capture.py` | Combined send + capture workflow |
+| `midi_tools/validate_sgt_capture.py` | Ground truth validation (Session 19) |
+| `midi_tools/captured/sgt_full_capture.json` | SGT playback capture (2570 msgs, 6 channels) |
 
 See [Q7P Format](q7p-format.md), [Event Fields](event-fields.md), [Open Questions](open-questions.md).

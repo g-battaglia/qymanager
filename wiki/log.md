@@ -2,6 +2,49 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-15] session-19 | Ground truth validation: ALL decoders FAIL on factory styles
+
+### CRITICAL FINDING: Decoder accuracy ~0% on factory styles
+
+Validated all decoders against `sgt_full_capture.json` (2570 MIDI messages captured from QY70 hardware playback of SGT style):
+
+| Track | Captured | Decoder Precision | Verdict |
+|-------|---------|------------------|---------|
+| RHY1 (2543 drum) | 680 notes, 6 unique [36,38,42,44,54,68] | 8.9% | FAIL |
+| CHD2 (1FA3 chord) | 114 notes, 8 unique [65-77] | 0% | FAIL |
+| PHR1 (1FA3 chord) | 151 notes, 8 unique [65-77] | 0% | FAIL |
+| BASS (2BE3) | 131 notes, 4 unique [29,31,33,38] | 15.4% | FAIL |
+| RHY2 (29CB general) | 170 notes, 1 unique [37] | ~random | FAIL |
+
+### Root cause analysis
+
+- **R=9×(i+1) works ONLY for user-created patterns** (known_pattern: 33% zero bytes, sparse). Factory styles have dense data (0-2% zeros) and the rotation model produces random output.
+- **All alternative rotation models tested** (R=7*(i+1), R=11*(i+1), R=constant, R=0, etc.) — ALL at random-chance level.
+- **Brute-force R search misleading**: P(random hit) ≈ 93% for drum targets, all "matches" were noise.
+- **Section data duplication**: ALL 6 style sections have IDENTICAL track data per slot.
+- **Previous confidence metrics were false**: 82-100% accuracy was self-consistency (valid note range), NOT ground truth.
+
+### Strategic pivot: capture-based conversion
+
+Since SysEx decoding fails for factory styles, alternative pipeline bypasses decoder:
+```
+QY70 Hardware → MIDI Playback Capture → Quantize → Q7P
+```
+This captures actual notes after all transposition/groove processing.
+
+### Scripts created
+- `validate_sgt_capture.py` — ground truth validation framework
+- `sgt_deep_diagnosis.py` — exhaustive R-value brute force analysis
+- `sgt_raw_hex_analysis.py` — hex dump with delimiter marking, multi-encoding search
+- `sgt_section0_focused.py` — local vs global R comparison, capture timing
+- `sgt_message_structure.py` — SysEx message structure, section duplication discovery
+- `sgt_no_delimiters_test.py` — tests 0x9E/0xDC as data bytes hypothesis (rejected)
+
+### Wiki updated
+- `decoder-status.md` — downgraded factory style confidence, added ground truth results
+- `conversion-roadmap.md` — added Pipeline B (capture-based), reorganized priorities
+- `open-questions.md` — added factory encoding as top priority
+
 ## [2026-04-15] session-18 | PATT OUT 1~8 test, Q7P sequence events breakthrough
 
 ### PATT OUT CH = 1~8 Test

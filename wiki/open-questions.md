@@ -2,9 +2,28 @@
 
 Unresolved hypotheses and next steps for the [QY70](qy70-device.md)/[QY700](qy700-device.md) reverse engineering.
 
-## Priority 1: Ground Truth Capture
+## Priority 1: Factory Style Encoding (Session 19 — CRITICAL)
 
-**The single most impactful next step.** Program simple patterns on the QY70 with known content and capture via bulk dump.
+**Session 19 proved that ALL decoders FAIL on factory styles** (~0% accuracy against ground truth). The R=9×(i+1) rotation works for user-created patterns (sparse, 33% zeros) but NOT for factory preset styles (dense, 0-2% zeros). See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
+
+**Hypotheses to investigate**:
+- Factory styles use a different rotation key (not R=9)
+- Factory styles use additional encryption/obfuscation on top of rotation
+- The data structure is fundamentally different (not 7-byte events with 13-byte headers)
+- Factory styles store compressed/delta-encoded data
+- The preamble encodes a per-style key that modifies the rotation
+
+**Evidence**:
+- User patterns: sparse data (33% zero bytes), R=9×(i+1) gives 100% (7/7)
+- Factory SGT: dense data (0-2% zeros), ALL rotation models give random-chance results
+- ALL 6 sections in SGT have IDENTICAL track data per slot
+- Brute-force R search unreliable (P(random hit) ≈ 93% for 6-target drum set)
+
+**Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.
+
+## Priority 1b: Ground Truth Capture (still needed for Pipeline B validation)
+
+Program simple patterns on the QY70 with known content and capture via bulk dump.
 
 | Pattern | Content | Purpose |
 |---------|---------|---------|
