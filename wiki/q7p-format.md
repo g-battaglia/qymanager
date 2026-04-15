@@ -35,8 +35,18 @@ Offset    Size    Description                          Status
 0x246     16      Chorus Send (16 tracks)              Verified
 0x256     16      Reverb Send (16 tracks)              Verified
 0x276     74      Pan data (multi-section)             Verified
-0x360     792     Phrase data                          Unknown format
-0x678     504     Sequence events                      Unknown format
+0x360     80      Phrase velocity values               Session 18
+0x3B0     712     Velocity/parameter table             Session 18
+0x678     48      Sequence config header               Session 18
+0x6A8     30      Zero fill                            Verified
+0x6C6     32      Velocity LUT block 1 (0x64=vel100)   Session 18
+0x6E6     40      Zero fill                            Verified
+0x716     64      Velocity LUT block 2 (0x64=vel100)   Session 18
+0x756     128     Event data (commands + drum notes)   Session 18
+0x7D6     64      Velocity LUT block 3 (0x64=vel100)   Session 18
+0x816     64      Zero fill                            Verified
+0x856     16      Track flags? (0x03 repeated)         Unknown
+0x866     16      Padding (0x40)                       Verified
 0x876     10      Pattern name (ASCII)                 Verified
 0x9C0     336     Fill area (0xFE bytes)               Verified
 0xB10     240     Padding (0xF8 bytes)                 Verified
@@ -63,6 +73,106 @@ F0 00 FB pp 00 tt C0 bb F2
 ```python
 bpm = struct.unpack(">H", data[0x188:0x18A])[0] / 10.0
 ```
+
+## Phrase Velocity Area (0x360-0x3B0) — Session 18
+
+80 bytes of per-event velocity values. Range observed: `0x2D`-`0x7C` (45-124). Values outside `0x40` padding suggest real velocity data — NOT the D0/E0 byte-oriented commands expected by the 5120-byte phrase parser.
+
+## Velocity/Parameter Table (0x3B0-0x677) — Session 18
+
+712 bytes. Sparse structure with regions:
+
+| Offset | Content | Notes |
+|--------|---------|-------|
+| 0x3B0-0x3D0 | `0x7F`/`0x33`/`0x34`/`0x40` | Sparse values |
+| 0x3D1-0x3FC | Config params: `0x18 4D 27 4D 34...` | Structured data |
+| 0x400-0x677 | `0x5F`/`0x7F`/`0x3F`/`0x20` blocks | Alternating patterns |
+
+Purpose unknown. Possibly per-beat parameters, groove template, or note-attribute lookup.
+
+## Sequence Events (0x678-0x870) — Session 18
+
+504 bytes. **Contains the actual musical note data** for 3072-byte Q7P files. The 5120-byte phrase parser (D0/E0 commands) does NOT apply here.
+
+### Sub-structure
+
+```
+0x678-0x6A7  Config header (48 bytes)
+0x6A8-0x6C5  Zero fill (30 bytes)
+0x6C6-0x6E5  Velocity LUT 1 — 32 × 0x64 (vel=100)
+0x6E6-0x715  Zero fill (48 bytes)
+0x716-0x755  Velocity LUT 2 — 64 × 0x64 (vel=100)
+0x756-0x7D5  Event data — commands + note values (128 bytes)
+0x7D6-0x815  Velocity LUT 3 — 64 × 0x64 (vel=100)
+0x816-0x855  Zero fill
+0x856-0x865  Track flags (16 × 0x03)
+0x866-0x875  Padding (16 × 0x40)
+```
+
+### Config Header (0x678-0x6A7)
+
+```
+40 40 40 40  01 00 12 0A  08 0D 31 40  40 41 00 06
+36 4D 6A 00  40 40 00 05  00 00 0D 05  06 83 13 88
+13 88 00 4A  00 20 40 40  00 00 00 7F  40 00 00 00
+```
+
+Notable values: `0x1388` = 5000 (appears twice, purpose unknown). `0x7F` at 0x6A3 may be note range upper bound.
+
+### Event Data Commands (0x756-0x7D5)
+
+Uses command bytes `>= 0x80`, distinct from the 5120-byte D0/E0 format:
+
+| Command | Meaning (hypothesis) | Confidence |
+|---------|---------------------|------------|
+| `0x83` | Note group — followed by 1-6 simultaneous GM drum notes, padded with `0x7F` | Medium |
+| `0x84` | Timing/step — followed by 1 byte (often `0x1F` = 31) | Low |
+| `0x88` | Section end/marker — followed by 1 byte (seen `0x87`) | Low |
+| `0x82` | Unknown — seen once after `0x84` | Low |
+
+Example event stream (T01.Q7P USER TMPL):
+
+```
+84 1F  83 22 25 26 7F 7F    — step(31?) then BD2+SideStk+Snare1
+84 1F  83 26 28 7F 7F 7F    — step(31?) then Snare1+Snare2
+84 1F  83 22 28 7F 7F 7F    — step(31?) then BD2+Snare2
+2A 2C 2E 7F 7F 7F 7F 7F    — HHclose+HHpedal+HHopen (no command prefix)
+88 87 7F 7F 7F 7F 7F 7F    — end marker?
+```
+
+### Note Pool / Instrument Table (0x796-0x7D5)
+
+8 groups of 8 bytes, each listing related drum instruments (padded with `0x7F`):
+
+| Group | Notes (hex) | GM Drums |
+|-------|-------------|----------|
+| 0 | `28 28 24 28 28 28` | Snare2×4, Kick1, Snare2 |
+| 1 | `22 22 24 22 22` | BD2×4, Kick1 |
+| 2 | `26 26 23 26 26` | Snare1×4, Kick2(35) |
+| 3 | `3B 33 35` | Ride2, Ride1, RideBell |
+| 4 | `2E 2A` | OpenHH, CloseHH |
+| 5 | `3E 3E 21 3E 3E 46 45 52` | MuteConga×4, n33, Maracas, Cabasa, Shaker |
+| 6 | `1A 1A 1B 19 1C 1B` | XG: SnareRoll, FingerSnap, HiQ, Slap |
+| 7 | `25 25` | SideStick×2 |
+
+Purpose: possibly per-beat instrument assignment (which note variant plays on each beat), or a note palette referenced by the event stream. Confidence: Low.
+
+### Velocity LUT Blocks
+
+Three blocks of `0x64` (100 decimal = default MIDI velocity). Sizes: 32, 64, 64 bytes. Likely per-event velocity assignments — one value per note event.
+
+## T01.Q7P vs TXX.Q7P — Session 18
+
+Both are 3072-byte files. **Phrase data and sequence events are IDENTICAL.** Differences are only in metadata:
+
+| Area | T01 | TXX |
+|------|-----|-----|
+| Pattern number (0x010) | `0x02` | `0x01` |
+| Section pointers (0x102+) | 1 section only | 4 sections |
+| Section configs (0x129+) | Garbage/overflow after S0 | 4 valid configs (phrases 0-3, tracks 0-3, 4 bars each) |
+| Name (0x876) | "USER TMPL " | "USER TMPL " |
+
+TXX is a multi-section template (4 phrases × 4 tracks × 4 bars). T01 is single-section.
 
 ## Critical Safety Note
 

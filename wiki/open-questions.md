@@ -34,9 +34,24 @@ For the SGT style, the first 5 fields of the [13-byte bar header](bar-structure.
 
 **Test**: capture patterns with different velocities and note lengths. Compare param4 and F5 across captures.
 
-## Priority 4: Q7P Phrase Data Format
+## Priority 4: Q7P 3072-byte Musical Data — PARTIALLY SOLVED (Session 18)
 
-The phrase data at 0x360-0x677 in Q7P files does NOT use the expected D0/E0 byte-oriented commands. Values 0x2D-0x7F appear without command bytes, suggesting a different encoding. This blocks [event conversion](format-mapping.md#event-data--not-yet-mapped) in both directions.
+**Session 18 breakthrough**: the actual musical data is in the **Sequence Events** area (0x678-0x870), NOT in the Phrase Data area (0x360-0x677). The 5120-byte D0/E0 format does NOT apply to 3072-byte files.
+
+**Solved**:
+- Structure map: config header (0x678) → velocity LUTs → event data (0x756, 128 bytes) → note table
+- Event data = 16 × 8-byte groups. Groups 0-7 = sequence pattern, Groups 8-15 = note table
+- Note table (G8-15): per-instrument note palette with primary note + beat variations
+- Command bytes: `0x83` = note group, `0x84` = timing, `0x88` = section end
+- Phrase area (0x360-0x677) contains velocity/parameter tables, not note sequences
+
+**Still open**:
+- Exact semantics of `0x84` parameter (timing step? beat index? velocity?)
+- How sequence area (G0-7) maps to temporal beats
+- Cross-reference between sequence and note table (partial overlap, 7 shared notes)
+- How to WRITE events (needed for QY70→QY700 converter)
+
+See [Q7P Format](q7p-format.md#sequence-events-0x678-0x870--session-18) for full details.
 
 ## Priority 5: Voice Offset Discovery
 
@@ -97,6 +112,8 @@ F1 top 2 bits = beat (confirmed), lower F1 + F2 top bits = clock (59% monotonici
 - ~~**event_decoder.py off-by-one**~~: RESOLVED (Session 12e) — confirmed R=9×(i+1) is correct, decoder updated.
 - **Trailing bytes cross-encoding**: 54% of segments across ALL encoding types have trailing bytes. BASS/CHD2/PHR1 share identical patterns. Format-level feature, not encoding-specific. Purpose still unknown.
 - **Drum PATT OUT in Pattern mode** (Session 17): RHY1/RHY2 drum tracks produce ZERO MIDI output via PATT OUT CH in Pattern mode + External sync. Chord tracks (CHD1) work correctly. Is this a QY70 firmware limitation? Does Style mode handle drums differently? Does a specific MIDI setting enable drum output?
+- **PATT OUT 1~8 + ECHO BACK=Thru** (Session 18): This combination produces ZERO output on ALL channels. ECHO BACK=Thru monopolizes MIDI OUT for pass-through. Must use PATT OUT 9~16 + ECHO BACK=Off.
+- **Chord transposition formula** (Session 18): Bar headers store chord-relative templates, not absolute MIDI notes. Fields 1 and 5 are constant across bars, fields 2-4 change. Need multi-chord capture comparison (CM vs Dm vs G7) to derive the transformation formula.
 
 ## External Resources
 

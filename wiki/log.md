@@ -2,6 +2,43 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-15] session-18 | PATT OUT 1~8 test, Q7P sequence events breakthrough
+
+### PATT OUT CH = 1~8 Test
+- **PATT OUT 1~8 produces ZERO output** when ECHO BACK = Thru. With Thru enabled, the MIDI OUT port passes through incoming data and the QY70 suppresses PATT OUT note data.
+- Clock pass-through works (187/192 expected clocks echoed back), confirming QY70 receives external clock and is running.
+- Tested with both known_pattern.syx (19 msgs) and QY70_SGT.syx (105 msgs) — both loaded successfully but zero notes captured on any channel.
+- **Solution**: PATT OUT must be **9~16** with **ECHO BACK = Off** (the Session 17 configuration).
+
+### Chord Transposition Analysis
+- Decoded CHD1 (29DC encoding) from known_pattern.syx: 3 bars, 11 events. Bar header 9-bit fields do NOT contain [60,64,67] directly.
+- CHD2 and PHR1 (1FA3 chord encoding) have **identical data** in known_pattern — same headers, same events.
+- Bar header analysis across CHD2 bars 1-5: field 1 (=53) and field 5 (=484) are CONSTANT, fields 2-4 change per bar. These don't form recognizable chords as MIDI notes.
+- **Hypothesis**: Bar headers encode chord-RELATIVE templates (voicing patterns), not absolute notes. The QY70 applies real-time substitution based on the user's chord input.
+- Created `capture_chord_test.py` for systematic multi-chord comparison (CM, Dm, G7, etc.) when PATT OUT is fixed.
+
+### Q7P 3072-byte Sequence Events — BREAKTHROUGH
+- **Actual musical data is at 0x678-0x870** (Sequence Events area), NOT at 0x360-0x677 (Phrase Data).
+- 5120-byte D0/E0 command format does NOT apply to 3072-byte files.
+- Structure decoded: config header (48B) → 3 velocity LUT blocks (32+64+64 bytes of 0x64=vel100) → event data (128B) → track flags
+- Event data = 16 × 8-byte groups: Groups 0-7 = sequence pattern, Groups 8-15 = note table
+- Command bytes: `0x83` = note group, `0x84` = timing, `0x88` = section end (distinct from 5120-byte D0/E0)
+- Note table (G8-15): 8 instrument slots with per-beat note variants. Primary note repeated with 1-3 alternates per slot.
+- Sequence area (G0-7): 7 core drum notes (BD2, SideStk, Snare1, Snare2, HHclose, HHpedal, HHopen)
+- Note table has 20 unique notes incl. rides, congas, maracas, shaker — used for fills/variations
+- T01.Q7P vs TXX.Q7P: **identical** in phrase data + sequence events. Differ only in section pointers (T01=1 section, TXX=4 sections)
+- Created `q7p_sequence_analyzer.py` for structural analysis
+
+### BASS Decoder
+- BASS with 2BE3 (SGT): 12 events, confidence 0.25, chaotic field values
+- BASS with 29CB (known_pattern): 20 events, confidence 0.31, consistent F4 masks but selected notes in wrong range
+- Both encodings remain poorly understood (38% confidence)
+
+### Scripts
+- `capture_chord_test.py`: NEW — systematic chord transposition test
+- `q7p_sequence_analyzer.py`: NEW — Q7P sequence events structural analysis
+- Updated channel maps in `capture_playback.py` and `send_and_capture.py` for both 1~8 and 9~16 PATT OUT
+
 ## [2026-04-14] session-17 | End-to-end playback capture, chord transposition discovered
 
 ### Bulk Dump Protocol

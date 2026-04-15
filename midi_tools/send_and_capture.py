@@ -179,10 +179,16 @@ GM_DRUMS = {
     46: "HHopen", 49: "Crash1", 51: "Ride1", 53: "RideBell",
 }
 
-PATT_OUT_MAP = {
+PATT_OUT_MAP_9_16 = {
     9: "D1/RHY1", 10: "D2/RHY2", 11: "PC/PAD", 12: "BA/BASS",
     13: "C1/CHD1", 14: "C2/CHD2", 15: "C3/PHR1", 16: "C4/PHR2",
 }
+PATT_OUT_MAP_1_8 = {
+    1: "D1/RHY1", 2: "D2/RHY2", 3: "PC/PAD", 4: "BA/BASS",
+    5: "C1/CHD1", 6: "C2/CHD2", 7: "C3/PHR1", 8: "C4/PHR2",
+}
+# Active map — set via --patt-out flag
+PATT_OUT_MAP = {**PATT_OUT_MAP_9_16, **PATT_OUT_MAP_1_8}
 
 
 def analyze_and_save(captured, save_path=None):
@@ -238,7 +244,7 @@ def analyze_and_save(captured, save_path=None):
             label = PATT_OUT_MAP.get(ch, f"ch{ch}")
             print(f"\n    {label} (ch{ch}): {len(events)} notes")
             for t, note, vel in events[:20]:
-                if ch in (9, 10, 11):
+                if ch in (1, 2, 3, 9, 10, 11):
                     name = GM_DRUMS.get(note, f"n{note}")
                 else:
                     name = f"n{note}"

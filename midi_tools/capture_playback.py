@@ -259,16 +259,12 @@ def analyze_capture(captured, verbose=True):
         for t, ch, note, vel in note_ons:
             ch_notes.setdefault(ch, []).append((t, note, vel))
 
-        # PATT OUT CH=9~16 channel map
+        # PATT OUT CH map (both 1~8 and 9~16)
         ch_map = {
-            9: "D1/RHY1",
-            10: "D2/RHY2",
-            11: "PC/PAD",
-            12: "BA/BASS",
-            13: "C1/CHD1",
-            14: "C2/CHD2",
-            15: "C3/PHR1",
-            16: "C4/PHR2",
+            1: "D1/RHY1", 2: "D2/RHY2", 3: "PC/PAD", 4: "BA/BASS",
+            5: "C1/CHD1", 6: "C2/CHD2", 7: "C3/PHR1", 8: "C4/PHR2",
+            9: "D1/RHY1", 10: "D2/RHY2", 11: "PC/PAD", 12: "BA/BASS",
+            13: "C1/CHD1", 14: "C2/CHD2", 15: "C3/PHR1", 16: "C4/PHR2",
         }
 
         print(f"\n  Notes by channel:")
@@ -279,7 +275,7 @@ def analyze_capture(captured, verbose=True):
 
             # Show first N events
             for t, note, vel in notes[:16]:
-                name = GM_DRUMS.get(note, f"n{note}") if ch in (9, 10, 11) else f"n{note}"
+                name = GM_DRUMS.get(note, f"n{note}") if ch in (1, 2, 3, 9, 10, 11) else f"n{note}"
                 print(f"      t={t:6.3f}s {name:>8} ({note:3d}) v={vel:3d}")
             if len(notes) > 16:
                 print(f"      ... ({len(notes) - 16} more)")

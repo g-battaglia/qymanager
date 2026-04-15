@@ -101,3 +101,4 @@ Source: QY70 Owner's Manual, page 222-224.
 - **Bulk dump timing** (Session 17): Init message needs **500ms** delay, bulk messages need **150ms** between each. With wrong timing, QY70 silently ignores the dump. Correct timing → ~160 XG parameter responses confirming load.
 - **Edit buffer only**: All bulk dumps write to AM=0x7E (edit buffer). Writing to AM=0x00-0x3F (user pattern slots) is rejected. Data in the edit buffer is playable in Pattern mode.
 - **Drum PATT OUT in Pattern mode**: Drum tracks do NOT output via PATT OUT CH when in Pattern mode + External sync (tested Session 17). Chord tracks work correctly.
+- **PATT OUT 1~8 + ECHO BACK=Thru**: This combination produces **ZERO output** on all channels (Session 18). ECHO BACK=Thru monopolizes MIDI OUT for pass-through, suppressing PATT OUT data entirely. Must use **9~16 + ECHO BACK=Off**.
