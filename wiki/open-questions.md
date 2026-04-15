@@ -6,17 +6,31 @@ Unresolved hypotheses and next steps for the [QY70](qy70-device.md)/[QY700](qy70
 
 **Session 19 proved that ALL decoders FAIL on complex styles** (~0% accuracy against ground truth). The R=9×(i+1) rotation works for user-created patterns (sparse, 33% zeros) but NOT for factory preset styles (dense, 0-2% zeros). See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
 
-**Hypotheses to investigate**:
-- Factory styles use a different rotation key (not R=9)
-- Factory styles use additional encryption/obfuscation on top of rotation
-- The data structure is fundamentally different (not 7-byte events with 13-byte headers)
-- Factory styles store compressed/delta-encoded data
-- The preamble encodes a per-style key that modifies the rotation
+**Session 20: exhaustive elimination of hypotheses** (analysis on correct file `tests/fixtures/QY70_SGT.syx`):
+
+| Hypothesis | Test | Result | Status |
+|-----------|------|--------|--------|
+| Different rotation key | All a*(i+c) mod 56 | Best 13% (81 events) | **ELIMINATED** |
+| XOR with bar header | 5 variants tested | Max 7% | **ELIMINATED** |
+| XOR with header difference (KP⊕SGT) | Tested | 3-5/81 | **ELIMINATED** |
+| Different header size | Sizes 0-20 tested | Best 20% on 30 events | **ELIMINATED** |
+| Message boundary reset | Per-message indexing | No improvement | **ELIMINATED** |
+| Reversed 7-bit decoding | Compared with parser | Doesn't match | **ELIMINATED** |
+| Drum map indices | Notes 0-5 vs MIDI | Random chance | **ELIMINATED** |
+| Note-index skip | R by note count | 5/81 | **ELIMINATED** |
+
+**KEY FINDING — velocity impossibility**: n42 v32 (16 per bar in ground truth) requires F0=426. No SGT event produces this at ANY rotation. The barrel rotation model is **structurally incapable** of encoding the required data.
+
+**Remaining hypotheses** (not yet tested):
+- Completely different encoding scheme (not barrel rotation at all) for dense data
+- Compression or delta-encoding on top of events
+- Lookup table / codebook approach (events index into a table, not self-contained)
+- Hardware-specific key derived from style metadata not in the SysEx
 
 **Evidence**:
 - User patterns: sparse data (33% zero bytes), R=9×(i+1) gives 100% (7/7)
-- Factory SGT: dense data (0-2% zeros), ALL rotation models give random-chance results
-- ALL 6 sections in SGT have IDENTICAL track data per slot
+- SGT: dense data (0-2% zeros), ALL rotation models give random-chance results
+- Sections are NOT identical (corrected from Session 19)
 - Brute-force R search unreliable (P(random hit) ≈ 93% for 6-target drum set)
 
 **Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.

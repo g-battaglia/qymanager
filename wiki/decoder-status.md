@@ -1,6 +1,6 @@
 # Decoder Status
 
-Current state of [QY70 bitstream](bitstream.md) decoding as of Session 19 (2026-04-15).
+Current state of [QY70 bitstream](bitstream.md) decoding as of Session 20 (2026-04-15).
 
 > **CRITICAL (Session 19)**: All confidence percentages below were measured by **self-consistency** (valid note range, beat counter monotonicity, etc.), NOT against ground truth MIDI output. Session 19 validated against actual QY70 playback capture and found **~0% accuracy on complex styles**. The rotation model is proven ONLY for simple simple patterns.
 
@@ -66,11 +66,13 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | RHY2 | 170 (1 unique) | ~random | ~random | FAIL |
 | PAD | — | — | — | untested |
 
-**Root cause**: the R=9×(i+1) rotation model works for **sparse simple patterns** (known_pattern: 33% zero bytes) but NOT for **dense dense/complex data** (SGT: 0-2% zero bytes). All rotation models tested (R=9*(i+1), R=7*(i+1), R=constant, etc.) produce random-chance results on dense/complex data.
+**Root cause**: the R=9×(i+1) rotation model works for **sparse simple patterns** (known_pattern: 33% zero bytes) but NOT for **dense data** (SGT: 0-2% zero bytes). ALL rotation models tested produce random-chance results on dense data (Session 20 exhaustive analysis on correct file `tests/fixtures/QY70_SGT.syx`).
+
+**Velocity impossibility (Session 20)**: n42 v32 (the most common note in the ground truth — 16 per bar) requires F0=426 (9-bit field). Exhaustive search finds ZERO events that produce this F0 at ANY rotation. The model is structurally incapable of encoding the required data, not just misconfigured.
 
 **Why brute-force R search was misleading**: with 6 target drum notes out of 128 possible × 56 rotations, P(at least one hit) ≈ 93%. All brute-force "matches" were noise.
 
-**Section data duplication**: ALL 6 style sections (MAIN-A through ENDING) have IDENTICAL track data, so section doesn't differentiate musical content.
+**Section duplication (CORRECTED Session 20)**: sections are NOT identical — different byte counts per track across sections. Session 19 claim was wrong.
 
 ### Other known issues
 - **Chord transposition layer** (Session 17): bar headers store chord-relative templates, not absolute MIDI notes
@@ -98,6 +100,7 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | **17** | **Bulk dump timing (500ms/150ms), MIDI SYNC=External, chord playback capture** | **End-to-end: send→load→play→capture WORKS for chord tracks. Chord transposition layer discovered** |
 | **18** | **PATT OUT 1~8 fails, Q7P 3072 sequence events breakthrough** | **Q7P actual data at 0x678-0x870, not Phrase Data area** |
 | **19** | **Ground truth validation: ALL decoders FAIL on complex styles** | **R=9×(i+1) only works for simple patterns. Strategic pivot to capture-based conversion** |
+| **20** | **Exhaustive analysis on correct file, velocity impossibility proven** | **All rotation models definitively disproven. Velocity encoding cannot produce required values. Sparse vs dense = fundamentally different encodings** |
 
 ## Strategic Pivot: Capture-Based Conversion (Session 19)
 

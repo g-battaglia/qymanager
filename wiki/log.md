@@ -2,6 +2,49 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-15] session-20 | Exhaustive rotation analysis on CORRECT file, velocity impossibility
+
+### Correct file identified and analyzed
+
+Previous sessions analyzed wrong/corrupted files. Session 20 re-ran ALL analysis on the correct `tests/fixtures/QY70_SGT.syx` (16,292 bytes, 105 messages — same file used for ground truth capture).
+
+- **Full ground truth extraction**: extracted ALL 680 drum notes from `sgt_full_capture.json` raw MIDI data (not just `first_10`). Pattern: exactly 36 notes per bar at 16 time positions, repeating identically across 19 bars.
+- **Data integrity confirmed**: all 105 SysEx checksums valid, 7-bit decode verified correct, track headers byte-identical between known_pattern and SGT.
+- **Section duplication CORRECTION**: Session 19 claimed all 6 sections have identical data — this is WRONG. Sections have different byte counts per track.
+
+### ALL rotation models exhaustively disproven
+
+| Approach | Best Result | Verdict |
+|----------|------------|---------|
+| R=9*(i+1) on SGT RHY1 | 0-1% all tracks | FAIL |
+| All multipliers a*(i+c) mod 56 | Best 13% (81 events) | Random chance |
+| All header sizes 0-20 + all R offsets | Best 20% on 30 events | Not significant |
+| XOR with bar header (5 variants) | Max 7% (6/81) | FAIL |
+| XOR with KP⊕SGT header difference | 3-5/81 | FAIL |
+| Note-index skip (R by note count) | 5/81 | FAIL |
+| Reversed 7-bit bit mapping | Doesn't match parser | Invalid |
+| Drum map indices (0-5 vs MIDI notes) | Random chance | FAIL |
+| Message boundary reset | No correlation | FAIL |
+| Absolute byte offset as R | Random chance | FAIL |
+
+### Velocity encoding impossibility (KEY FINDING)
+
+n42 v32 (16 instances per bar in ground truth) requires vel_code ≥ 12, which means F0 = 426 (bit8=1, bit7=1, lo7=42). **Exhaustive search: ZERO events in SGT RHY1 produce F0=426 at ANY rotation.** This proves the barrel rotation + 9-bit field model is fundamentally incomplete for dense data — it's not just wrong rotation values, but structurally cannot encode the required data.
+
+### Sparse vs dense data structural difference
+
+- **known_pattern events**: SPARSE — many zero bytes (33%), events like `[1e0000000ce024]`, `[00000004a0623c]`
+- **SGT events**: ALL DENSE — zero bytes 0-2%, no recognizable patterns
+
+### Scripts created/used
+- `timing_constrained_solver.py`, `deep_comparison.py`, `xor_key_test.py`, `no_delimiter_test.py`, `message_boundary_analysis.py` — Session 20 analysis scripts
+- `rotation_cracker.py` — exhaustive R search across all events
+- `incremental_dump.py` — per-message data extraction tool
+
+### Wiki updated
+- `decoder-status.md` — velocity impossibility, corrected section duplication claim
+- `open-questions.md` — eliminated hypotheses documented
+
 ## [2026-04-15] session-19 | Ground truth validation: ALL decoders FAIL on complex styles
 
 ### CRITICAL FINDING: Decoder accuracy ~0% on complex styles

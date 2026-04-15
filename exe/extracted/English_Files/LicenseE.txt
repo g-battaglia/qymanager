@@ -1,0 +1,67 @@
+SOFTWARE LICENSING AGREEMENT
+
+The following is a legal agreement between you, the end user, and 
+Yamaha Corporation ("Yamaha"). The enclosed Yamaha software program 
+is licensed by Yamaha to the original purchaser for use only on the 
+terms set forth herein. Please read this licensing agreement with 
+care. Taking the floppy disk out of the package indicates that you 
+accept all terms outlined herein. If you do not agree to the terms, 
+return this floppy disk to Yamaha without taking out of the package.
+
+1. GRANT OF LICENSE AND COPYRIGHT 
+Yamaha grants you, the original purchaser, the right to use one copy 
+of the enclosed software program and data ("SOFTWARE") on a 
+single-user computer system. You may not use it on more than one 
+computer or computer terminal. The SOFTWARE is owned by Yamaha and is 
+protected by Japanese copyright laws and all applicable international 
+treaty provisions. You are entitled to claim ownership of the media 
+in which the SOFTWARE is included. Therefore, you must treat the 
+SOFTWARE like any other copyrighted materials.
+
+2. RESTRICTIONS 
+The SOFTWARE program is copyrighted. You may not engage in reverse 
+engineering or reproduction of the SOFTWARE by other conceivable 
+methods. You may not reproduce, modify, change, rent, lease, resell, 
+or distribute the SOFTWARE in whole or in part, or create derivative 
+works from the SOFTWARE. You may not transmit or network the SOFTWARE 
+with other computers.
+You may transfer ownership of the SOFTWARE and the accompanying 
+written materials on a permanent basis provided that you retain no 
+copies and the recipient agrees to the terms of the licensing 
+agreement.
+
+3. TERMINATION 
+The licensing condition of the software program becomes effective on 
+the day that you receive the SOFTWARE. If any one of the copyright 
+laws or clauses of the licensing conditions is violated, the licensing 
+agreement shall be terminated automatically without notice from Yamaha. 
+In this case, you must destroy the licensed SOFTWARE and its copies 
+immediately.
+
+4. PRODUCT WARRANTY 
+Yamaha warrants to the original purchaser that if the SOFTWARE, when 
+used in normal conditions, will not perform the functions described 
+in the manual provided by Yamaha, the sole remedy will be that Yamaha 
+will replace any media which proves defective in materials or 
+workmanship on an exchange basis without charge. Except as expressly 
+set forth above, the SOFTWARE is provided "as is," and no other 
+warranties, either expressed or implied, are made with respect to 
+this software, including, without limitation the implied warranties 
+of merchantability and fitness for a particular purpose. 
+
+5. LIMITED LIABILITY 
+Your sole remedies and Yamaha's entire liability are as set forth 
+above. In no event will Yamaha be liable to you or any other person 
+for any damages, including without limitation any incidental or 
+consequential damages, expenses, lost profits, lost savings or other 
+damages arising out of the use or inability to use such SOFTWARE even 
+if Yamaha or an authorized dealer has been advised of the possibility 
+of such damages, or for any claim by any other party.
+
+6. GENERAL 
+This license agreement shall be interpreted according to and governed 
+by Japanese laws. 
+
+
+
+
