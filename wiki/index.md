@@ -11,9 +11,11 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 ## File Formats
 
 - [SysEx Format](sysex-format.md) — QY70 System Exclusive bulk dump format
+- [BLK Format](blk-format.md) — QY Data Filer bulk file format (.blk = raw SysEx)
 - [Q7P Format](q7p-format.md) — QY700 binary pattern file format
 - [7-Bit Encoding](7bit-encoding.md) — Yamaha 7-bit MIDI data packing scheme
 - [Format Mapping](format-mapping.md) — Cross-format field mapping QY70 ↔ QY700
+- [QYFiler Reverse Engineering](qyfiler-reverse-engineering.md) — Disassembly of Yamaha QY Data Filer (Windows)
 
 ## Track & Event Data
 

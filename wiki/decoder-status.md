@@ -40,6 +40,7 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 
 ### Confirmed by ground truth (high confidence)
 - **Barrel rotation R=(9×(i+1))%56**: PROVEN on simple patterns — 7/7 perfect match on known_pattern.syx (all fields: note, velocity, tick, gate)
+- **Rotation is hardware-side (Session 20)**: [QYFiler.exe disassembly](qyfiler-reverse-engineering.md) proves the rotation happens INSIDE the QY70 hardware, not in host software. QYFiler contains NO rotation/XOR/scrambling. The .syx files contain data exactly as the QY70 stores it internally.
 - **Track classification**: preamble-based encoding detection 100% reliable
 - **Bar delimiters**: DC (bar) and 9E (sub-bar chord change) both recognized
 - **Round-trip encoder/decoder**: 100% on 47 events (ground_truth), 705/705 on SGT fixture — proves encoding/decoding is INTERNALLY consistent, even though decoded notes are wrong for complex styles
@@ -101,6 +102,7 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | **18** | **PATT OUT 1~8 fails, Q7P 3072 sequence events breakthrough** | **Q7P actual data at 0x678-0x870, not Phrase Data area** |
 | **19** | **Ground truth validation: ALL decoders FAIL on complex styles** | **R=9×(i+1) only works for simple patterns. Strategic pivot to capture-based conversion** |
 | **20** | **Exhaustive analysis on correct file, velocity impossibility proven** | **All rotation models definitively disproven. Velocity encoding cannot produce required values. Sparse vs dense = fundamentally different encodings** |
+| **20b** | **QYFiler.exe disassembly: NO rotation in host software** | **Barrel rotation is QY70 hardware-internal. BLK format = raw SysEx. Dump Request definitively unsupported** |
 
 ## Strategic Pivot: Capture-Based Conversion (Session 19)
 

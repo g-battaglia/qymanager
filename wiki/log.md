@@ -2,6 +2,80 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-15] session-20b | QYFiler.exe disassembly, BLK format, Dump Request confirmed unsupported
+
+### QYFiler.exe Reverse Engineering — CRITICAL FINDING
+
+Disassembled Yamaha QY Data Filer (`exe/extracted/English_Files/QYFiler.exe`, PE32, MSVC 6.0, 1.4MB) and `MidiCtrl.dll` (122KB). Full analysis in [qyfiler-reverse-engineering.md](qyfiler-reverse-engineering.md).
+
+**NO barrel rotation, XOR, encryption, or data scrambling anywhere in the binary.** The 7-bit encoding is the ONLY data transformation. This proves:
+- The barrel rotation `R=9*(i+1)` is performed **inside the QY70 hardware**
+- .syx/.blk files contain data exactly as the QY70 stores it internally
+- The QY70 stores events in rotated form, de-rotates during playback
+
+### Key Technical Details from Disassembly
+
+| Component | VA Address | Details |
+|-----------|-----------|---------|
+| 7-bit encoder | 0x411D70 | 18 iterations x 7 bytes + 2-byte tail. Shift-and-merge, matches our `yamaha_7bit.py` |
+| SysEx builder | 0x411E70 | 158-byte messages, checksum over bytes 4-155 |
+| Send protocol | 0x40B44D | 20 tracks, 128-byte blocks, + 654-byte system block at track=0x7F |
+| Receive protocol | 0x40E0BF | 512-byte block alignment (shl $9), 200ms inter-block delay, 3000ms timeout |
+| BLK file loader | 0x40EA40 | Skip 0x560 bytes, read 0xD0 chunks, validate F0 43 xx 5F |
+| Template table | 0x434630 | Init, Close, Identity, Dump Request, ACK templates |
+
+### MidiCtrl.dll Exports
+
+14 functions for MIDI I/O: `_ENTRYinOpen/Start/Stop/Close`, `_ENTRYoutOpen/Close/Write/Dump`, `_ENTRYcomGet/SetDeviceID`, `_ENTRYctrlSelectDevice/GetSysCurInstrument`. Thin wrappers around Windows `midiOutLongMsg`/`midiOutShortMsg`.
+
+### SysEx Template Table (at binary offset 0x34630)
+
+Found complete embedded templates:
+- Identity Request/Reply (with wildcard matching)
+- Init (`F0 43 10 5F 00 00 00 01 F7`) and Close (`...00 F7`)
+- Dump Request per song (`F0 43 20 5F 01 FF 00 F7`), per style (`...02 FF...`), system (`...03 00...`)
+- Dump Acknowledgment (`F0 43 30 5F 00 00 00 F7`)
+- QY70 Identity: Manufacturer 0x43, Family 0x00 0x41, Member 0x02 0x55
+
+### BLK File Format
+
+New wiki page [blk-format.md](blk-format.md). Key finding: `.blk` = raw concatenated SysEx with no proprietary header. First ~0x560 bytes = handshake/system messages, rest = bulk dump data. QYFiler validates: `F0 43 xx 5F`, byte[6] high nibble = `0x0_` for QY70.
+
+### 7-Bit Round-Trip Validation
+
+All 103 SGT messages decoded then re-encoded:
+- 92 messages: 1-byte mismatch at byte 144 (unused low bits of final group header)
+- 11 messages: byte-for-byte identical
+- All 103: **identical decoded data** — mismatch is cosmetic padding bits
+
+### Dump Request Definitively Unsupported (Hardware Test)
+
+QY70 does NOT respond to remote Dump Request (`F0 43 20 5F AH AM AL F7`) for:
+- AM=0x7E (edit buffer), AM=0x00 (user pattern 1), all 16 device numbers
+- Manual dump from hardware UTILITY menu is the only method
+- Created `incremental_dump.py` with `--manual-dump` mode
+
+### Previous Hardware Dumps Consistent
+
+Feb 26 and Apr 14 header captures differ by only 6/640 bytes — confirms QY70 faithfully reproduces data across separate dumps.
+
+### No Public RE of QY70 Pattern Format Exists
+
+Web search confirmed: no one has documented the internal bitstream encoding of QY70 patterns/styles publicly. This project is the most advanced RE effort. Existing tools:
+- QY Data Filer (Yamaha): save/load .blk, no format knowledge
+- QY100 Explorer (doffu.net): template .syx files, checksum converter QY70/QY100, no bitstream RE
+- Joe Orgren FAQ: confirms patterns are "compressed" but format undocumented
+
+### Wiki/Files Updated
+- NEW: [qyfiler-reverse-engineering.md](qyfiler-reverse-engineering.md) — full disassembly analysis
+- NEW: [blk-format.md](blk-format.md) — BLK file format
+- Updated: [sysex-format.md](sysex-format.md) — template table, Dump Ack type, protocol details
+- Updated: [7bit-encoding.md](7bit-encoding.md) — QYFiler encoder confirmation, round-trip validation
+- Updated: [decoder-status.md](decoder-status.md) — rotation is hardware-side
+- Updated: [open-questions.md](open-questions.md) — Dump Request unsupported, rotation location
+- Updated: [index.md](index.md) — added new pages
+- Updated: [midi-setup.md](midi-setup.md) — Dump Request limitation
+
 ## [2026-04-15] session-20 | Exhaustive rotation analysis on CORRECT file, velocity impossibility
 
 ### Correct file identified and analyzed

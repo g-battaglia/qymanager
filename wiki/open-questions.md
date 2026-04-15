@@ -21,11 +21,21 @@ Unresolved hypotheses and next steps for the [QY70](qy70-device.md)/[QY700](qy70
 
 **KEY FINDING — velocity impossibility**: n42 v32 (16 per bar in ground truth) requires F0=426. No SGT event produces this at ANY rotation. The barrel rotation model is **structurally incapable** of encoding the required data.
 
+### QYFiler.exe Disassembly Finding (Session 20)
+
+[QYFiler.exe reverse engineering](qyfiler-reverse-engineering.md) proves that the barrel rotation is performed **inside the QY70 hardware**, NOT by the host software. QYFiler contains NO rotation, XOR, or scrambling -- only [7-bit encoding](7bit-encoding.md). The .syx/.blk files contain data exactly as the QY70 stores it internally.
+
+This means:
+1. The rotation IS the QY70's internal storage format
+2. Simple and complex patterns are both stored rotated
+3. The failure on dense data is a problem of understanding the QY70's internal encoding, not a host-side transformation we're missing
+
 **Remaining hypotheses** (not yet tested):
 - Completely different encoding scheme (not barrel rotation at all) for dense data
 - Compression or delta-encoding on top of events
 - Lookup table / codebook approach (events index into a table, not self-contained)
-- Hardware-specific key derived from style metadata not in the SysEx
+- Different field layout for dense events (not 6x9-bit + 2-bit remainder)
+- The 13-byte bar header participates in decoding (not just metadata)
 
 **Evidence**:
 - User patterns: sparse data (33% zero bytes), R=9×(i+1) gives 100% (7/7)
@@ -34,6 +44,17 @@ Unresolved hypotheses and next steps for the [QY70](qy70-device.md)/[QY700](qy70
 - Brute-force R search unreliable (P(random hit) ≈ 93% for 6-target drum set)
 
 **Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.
+
+## Priority 1a: Dump Request NOT Supported (Session 20 — CONFIRMED)
+
+**QY70 does NOT respond to remote Dump Request** for ANY address. Session 20 hardware test confirmed:
+- AM=0x7E (edit buffer): no response
+- AM=0x00 (User Pattern 1): no response
+- All 16 device numbers tried: no response
+
+**Manual dump** (UTILITY -> MIDI -> Bulk Dump -> Style) is the ONLY way to get data back from the QY70. The `incremental_dump.py` script has a `--manual-dump` mode for this.
+
+**Previous hardware dumps are consistent**: Feb 26 and Apr 14 header captures differ by only 6/640 bytes, confirming faithful reproduction.
 
 ## Priority 1b: Ground Truth Capture (still needed for Pipeline B validation)
 

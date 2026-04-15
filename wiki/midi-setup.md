@@ -31,7 +31,7 @@ Sends Identity Request and various SysEx via rtmidi loopback test. The QY70 resp
 
 ## Capturing a Bulk Dump
 
-The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations). The dump must be triggered manually.
+The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations). The dump **must** be triggered manually from QY70 hardware. This was **definitively confirmed** in Session 20: all addresses (AM=0x7E, AM=0x00) and all 16 device numbers tested with zero response. The [QYFiler.exe](qyfiler-reverse-engineering.md) binary DOES contain Dump Request templates, suggesting Yamaha intended this feature but the QY70 firmware ignores it.
 
 ### Procedure
 
@@ -69,7 +69,7 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 .venv/bin/python3 midi_tools/sysex_diag.py
 ```
 
-**Dump Request**: QY70 echoes requests but response is mode-dependent. Works best with AM=0x00-0x3F (specific pattern slots). Manual bulk dump via UTILITY menu remains more reliable.
+**Dump Request**: Definitively unsupported (Session 20). QY70 ignores all Dump Request messages regardless of address or device number. Always use manual dump from UTILITY menu. Use `incremental_dump.py --manual-dump` for scripted capture with manual trigger.
 
 ## Analysis Scripts
 
