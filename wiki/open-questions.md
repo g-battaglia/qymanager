@@ -2,9 +2,9 @@
 
 Unresolved hypotheses and next steps for the [QY70](qy70-device.md)/[QY700](qy700-device.md) reverse engineering.
 
-## Priority 1: Factory Style Encoding (Session 19 — CRITICAL)
+## Priority 1: Complex Style Encoding (Session 19 — CRITICAL)
 
-**Session 19 proved that ALL decoders FAIL on factory styles** (~0% accuracy against ground truth). The R=9×(i+1) rotation works for user-created patterns (sparse, 33% zeros) but NOT for factory preset styles (dense, 0-2% zeros). See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
+**Session 19 proved that ALL decoders FAIL on complex styles** (~0% accuracy against ground truth). The R=9×(i+1) rotation works for user-created patterns (sparse, 33% zeros) but NOT for factory preset styles (dense, 0-2% zeros). See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
 
 **Hypotheses to investigate**:
 - Factory styles use a different rotation key (not R=9)

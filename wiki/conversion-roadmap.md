@@ -4,9 +4,9 @@ End-to-end status for QY70 → QY700 conversion.
 
 ## Pipeline Overview
 
-> **Session 19 finding**: The SysEx bitstream decoder **FAILS on factory styles** (~0% accuracy against ground truth). Two conversion pipelines now exist: the original (broken for factory styles) and a new capture-based approach.
+> **Session 19 finding**: The SysEx bitstream decoder **FAILS on complex styles** (~0% accuracy against ground truth). Two conversion pipelines now exist: the original (broken for complex styles) and a new capture-based approach.
 
-### Pipeline A: SysEx Decode (original) — BLOCKED for factory styles
+### Pipeline A: SysEx Decode (original) — BLOCKED for complex styles
 
 ```
 QY70 .syx → [Decode Bitstream] → [Abstract Events] → [Encode Q7P] → QY700 .Q7P
@@ -48,9 +48,9 @@ QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Abstract Events] → 
 
 ## Blocking Issues
 
-### 1. Factory Style Decoding FAILS (blocks Pipeline A for all factory styles)
+### 1. Factory Style Decoding FAILS (blocks Pipeline A for all complex styles)
 
-**Session 19**: R=9×(i+1) rotation produces ~0% accuracy on factory styles (SGT) despite 100% on user patterns. The encoding for dense factory data is fundamentally different or uses additional obfuscation not yet understood. See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
+**Session 19**: R=9×(i+1) rotation produces ~0% accuracy on complex styles (SGT) despite 100% on user patterns. The encoding for dense factory data is fundamentally different or uses additional obfuscation not yet understood. See [Decoder Status](decoder-status.md#what-doesnt-work--critical-session-19).
 
 **Impact**: Pipeline A is usable ONLY for user-created patterns, not factory/preset styles.
 
@@ -96,7 +96,7 @@ Musical event conversion is NOT implemented — output always has the template's
 5. **Hardware**: Find way to capture drums (Style mode? Different PATT OUT setting?)
 
 ### Pipeline A (SysEx decode) — lower priority, research only
-6. **Research**: Investigate why factory styles use different encoding than user patterns
+6. **Research**: Investigate why complex styles use different encoding than user patterns
 7. **Hardware**: Run `capture_chord_test.py` with CM/Dm/G7 to study chord transposition (useful for understanding QY70 internals even if not needed for Pipeline B)
 
 ## File Map

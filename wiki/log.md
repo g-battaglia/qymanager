@@ -2,9 +2,9 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
-## [2026-04-15] session-19 | Ground truth validation: ALL decoders FAIL on factory styles
+## [2026-04-15] session-19 | Ground truth validation: ALL decoders FAIL on complex styles
 
-### CRITICAL FINDING: Decoder accuracy ~0% on factory styles
+### CRITICAL FINDING: Decoder accuracy ~0% on complex styles
 
 Validated all decoders against `sgt_full_capture.json` (2570 MIDI messages captured from QY70 hardware playback of SGT style):
 
@@ -26,7 +26,7 @@ Validated all decoders against `sgt_full_capture.json` (2570 MIDI messages captu
 
 ### Strategic pivot: capture-based conversion
 
-Since SysEx decoding fails for factory styles, alternative pipeline bypasses decoder:
+Since SysEx decoding fails for complex styles, alternative pipeline bypasses decoder:
 ```
 QY70 Hardware → MIDI Playback Capture → Quantize → Q7P
 ```

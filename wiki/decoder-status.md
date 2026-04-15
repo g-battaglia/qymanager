@@ -2,21 +2,21 @@
 
 Current state of [QY70 bitstream](bitstream.md) decoding as of Session 19 (2026-04-15).
 
-> **CRITICAL (Session 19)**: All confidence percentages below were measured by **self-consistency** (valid note range, beat counter monotonicity, etc.), NOT against ground truth MIDI output. Session 19 validated against actual QY70 playback capture and found **~0% accuracy on factory styles**. The rotation model is proven ONLY for simple user-created patterns.
+> **CRITICAL (Session 19)**: All confidence percentages below were measured by **self-consistency** (valid note range, beat counter monotonicity, etc.), NOT against ground truth MIDI output. Session 19 validated against actual QY70 playback capture and found **~0% accuracy on complex styles**. The rotation model is proven ONLY for simple simple patterns.
 
 ## Per-Encoding Confidence
 
-| Encoding | Preamble | Tracks | User Pattern | Factory Style (SGT) | Key Findings |
+| Encoding | Preamble | Tracks | User Pattern | Complex Style (SGT) | Key Findings |
 |----------|----------|--------|-------------|---------------------|--------------|
-| [drum_primary](2543-encoding.md) | `2543` | RHY1 | **100%** (7/7 known_pattern) | **~9% precision** | R=9×(i+1) PROVEN for user patterns. FAILS on factory dense data |
+| [drum_primary](2543-encoding.md) | `2543` | RHY1 | **100%** (7/7 known_pattern) | **~9% precision** | R=9×(i+1) PROVEN for simple patterns. FAILS on factory dense data |
 | chord | `1FA3`, `2D2B`, `303B` | CHD1-2, PAD, PHR1-2 | Untested | **0% precision** | Self-consistency was 100%, real accuracy 0% |
 | general_29dc | `29DC` | CHD1 | Untested | **~0%** | Same failure |
 | general_294b | `294B` | RHY2 | Untested | **~0%** | Same failure |
 | general | `29CB` | PAD, BASS | Untested | **15% precision** (BASS) | Self-consistency was 78-95%, real accuracy near random |
 
-**Session 19 ground truth validation**: Decoded notes from `QY70_SGT.syx` compared against 2570 MIDI messages captured from QY70 hardware playback (`sgt_full_capture.json`). ALL decoders produce essentially random output for factory styles.
+**Session 19 ground truth validation**: Decoded notes from `QY70_SGT.syx` compared against 2570 MIDI messages captured from QY70 hardware playback (`sgt_full_capture.json`). ALL decoders produce essentially random output for complex styles.
 
-**User patterns (known_pattern.syx)**: R=9×(i+1) remains PROVEN correct — 7/7 events match perfectly. The model works for sparse data (33% zero bytes) but not for dense factory data (0-2% zeros).
+**User patterns (known_pattern.syx)**: R=9×(i+1) remains PROVEN correct — 7/7 events match perfectly. The model works for sparse data (33% zero bytes) but not for dense dense/complex data (0-2% zeros).
 
 ## Unified Decoder (`decode_drum_event`) — Model G
 
@@ -39,17 +39,17 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 ## What Works
 
 ### Confirmed by ground truth (high confidence)
-- **Barrel rotation R=(9×(i+1))%56**: PROVEN on user-created patterns — 7/7 perfect match on known_pattern.syx (all fields: note, velocity, tick, gate)
+- **Barrel rotation R=(9×(i+1))%56**: PROVEN on simple patterns — 7/7 perfect match on known_pattern.syx (all fields: note, velocity, tick, gate)
 - **Track classification**: preamble-based encoding detection 100% reliable
 - **Bar delimiters**: DC (bar) and 9E (sub-bar chord change) both recognized
-- **Round-trip encoder/decoder**: 100% on 47 events (ground_truth), 705/705 on SGT fixture — proves encoding/decoding is INTERNALLY consistent, even though decoded notes are wrong for factory styles
+- **Round-trip encoder/decoder**: 100% on 47 events (ground_truth), 705/705 on SGT fixture — proves encoding/decoding is INTERNALLY consistent, even though decoded notes are wrong for complex styles
 
-### Self-consistency only (unverified for factory styles)
+### Self-consistency only (unverified for complex styles)
 - **Beat counter (F3 lo4)**: 90%+ accuracy — but only tested against internal consistency, not playback
-- **F4 chord mask**: 5-bit mask selects from 5 header notes — pattern consistent but selected notes are WRONG for factory styles
+- **F4 chord mask**: 5-bit mask selects from 5 header notes — pattern consistent but selected notes are WRONG for complex styles
 - **Control events**: structural terminators at odd positions, lo7 > 87 at R=9, ALL end with byte 0x78
-- **F0 = note number**: correct for user patterns, wrong for factory styles
-- **Velocity decoded**: 4-bit inverted code — correct for user patterns, unverified for factory
+- **F0 = note number**: correct for simple patterns, wrong for complex styles
+- **Velocity decoded**: 4-bit inverted code — correct for simple patterns, unverified for factory
 
 ## What Doesn't Work — CRITICAL (Session 19)
 
@@ -66,7 +66,7 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | RHY2 | 170 (1 unique) | ~random | ~random | FAIL |
 | PAD | — | — | — | untested |
 
-**Root cause**: the R=9×(i+1) rotation model works for **sparse user patterns** (known_pattern: 33% zero bytes) but NOT for **dense factory data** (SGT: 0-2% zero bytes). All rotation models tested (R=9*(i+1), R=7*(i+1), R=constant, etc.) produce random-chance results on factory data.
+**Root cause**: the R=9×(i+1) rotation model works for **sparse simple patterns** (known_pattern: 33% zero bytes) but NOT for **dense dense/complex data** (SGT: 0-2% zero bytes). All rotation models tested (R=9*(i+1), R=7*(i+1), R=constant, etc.) produce random-chance results on dense/complex data.
 
 **Why brute-force R search was misleading**: with 6 target drum notes out of 128 possible × 56 rotations, P(at least one hit) ≈ 93%. All brute-force "matches" were noise.
 
@@ -97,11 +97,11 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | **15-16** | **BC formula fixed, mido SysEx bug found, rtmidi fix, round-trip 705/705 on SGT** | **SysEx sending works, encoder/decoder 100% on note events** |
 | **17** | **Bulk dump timing (500ms/150ms), MIDI SYNC=External, chord playback capture** | **End-to-end: send→load→play→capture WORKS for chord tracks. Chord transposition layer discovered** |
 | **18** | **PATT OUT 1~8 fails, Q7P 3072 sequence events breakthrough** | **Q7P actual data at 0x678-0x870, not Phrase Data area** |
-| **19** | **Ground truth validation: ALL decoders FAIL on factory styles** | **R=9×(i+1) only works for user patterns. Strategic pivot to capture-based conversion** |
+| **19** | **Ground truth validation: ALL decoders FAIL on complex styles** | **R=9×(i+1) only works for simple patterns. Strategic pivot to capture-based conversion** |
 
 ## Strategic Pivot: Capture-Based Conversion (Session 19)
 
-Since the SysEx bitstream decoder CANNOT decode factory styles, an alternative pipeline bypasses it entirely:
+Since the SysEx bitstream decoder CANNOT decode complex styles, an alternative pipeline bypasses it entirely:
 
 ```
 QY70 Hardware → MIDI Playback Capture → Abstract Events → Q7P
