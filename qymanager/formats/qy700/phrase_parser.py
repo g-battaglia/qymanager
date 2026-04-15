@@ -183,11 +183,71 @@ class QY700PhraseParser:
         return phrases
 
     def _parse_3072_phrases(self) -> List[PhraseBlock]:
-        """Parse phrase data from 3072-byte file (area-based format)."""
-        # In 3072-byte files, phrase data is at 0x360-0x678
-        # This format uses a different structure - phrase references
-        # For now, return empty list as this needs more research
-        return []
+        """Parse sequence events from 3072-byte file.
+
+        Session 18 discovery: 3072-byte Q7P files do NOT use D0/E0 commands.
+        Musical data is in the Sequence Events area (0x678-0x870), structured as:
+          - Config header (0x678-0x6A7, 48 bytes)
+          - Velocity LUT blocks (0x64 fill)
+          - Event data (0x756-0x7D5, 128 bytes = 16 groups × 8 bytes)
+          - Groups 0-7: sequence pattern (cmds 0x83/0x84/0x88 + note data)
+          - Groups 8-15: note table (per-instrument note palette)
+
+        Returns a single PhraseBlock with raw event data for downstream analysis.
+        The events list is populated with simplified representations.
+        """
+        # Extract section info from pointers
+        section_count = 0
+        for i in range(8):
+            ptr = (self.data[0x100 + i * 2] << 8) | self.data[0x100 + i * 2 + 1]
+            if ptr != 0xFEFE:
+                section_count += 1
+
+        # Read tempo
+        tempo_raw = (self.data[0x188] << 8) | self.data[0x189]
+        tempo = tempo_raw // 10 if tempo_raw > 0 else 120
+
+        # Read name
+        name_bytes = self.data[0x876:0x880]
+        name = bytes(
+            b if 0x20 <= b <= 0x7E else 0x20 for b in name_bytes
+        ).decode("ascii").strip()
+
+        # Extract event data (16 × 8 byte groups)
+        event_data = self.data[0x756:0x7D6]
+
+        # Parse into simplified MidiEvent objects
+        events = []
+        for g in range(16):
+            group = event_data[g * 8: (g + 1) * 8]
+            active_notes = [b for b in group if b < 0x80 and b != 0x7F]
+            commands = [b for b in group if b >= 0x80 and b != 0x7F]
+
+            for cmd in commands:
+                events.append(MidiEvent(
+                    event_type="ctrl",
+                    param=cmd,
+                    raw_bytes=bytes(group),
+                ))
+            for note in active_notes:
+                # Notes in groups 8-15 are the note table (instrument palette)
+                # Notes in groups 0-7 are the sequence pattern
+                etype = "drum" if g >= 8 else "note"
+                events.append(MidiEvent(
+                    event_type=etype,
+                    note=note,
+                    raw_bytes=bytes(group),
+                ))
+
+        return [PhraseBlock(
+            name=name,
+            offset=0x678,
+            midi_offset=0x756,
+            tempo=tempo,
+            note_range=(0, 127),
+            events=events,
+            raw_data=event_data,
+        )]
 
     def _parse_phrase_block(self, offset: int) -> Optional[PhraseBlock]:
         """

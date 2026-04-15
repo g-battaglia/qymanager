@@ -32,6 +32,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 
 ## Status & History
 
+- [Conversion Roadmap](conversion-roadmap.md) — End-to-end conversion status and blocking issues
 - [Decoder Status](decoder-status.md) — Current decoding confidence per track type
 - [Bricking Diagnosis](bricking.md) — QY700 bricking cause, fix, and safety rules
 - [Open Questions](open-questions.md) — Unresolved hypotheses and next steps
