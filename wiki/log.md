@@ -2,6 +2,69 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-25h | Summer: 4-bar pattern (not 5), cross-track ground truth, groove template
+
+### Major Correction: Summer is 4 bars, NOT 5
+Earlier wiki claimed Summer was a 5-bar pattern. Playback capture fingerprint
+analysis across all 12.4 bars proves otherwise:
+- bar1 fingerprint = bar5 = bar9 (identical drum note sequences)
+- bar2 = bar6 = bar10; bar3 = bar7 = bar11; bar4 = bar8 = bar12 (14-note fill)
+- **Pattern period: 8 seconds = 4 bars at 120 BPM**
+
+The RHY1 "seg 5" (4 events) is thus NOT a music bar — its content resembles bar 1
+with different bytes but identical output. Role: likely alt-fill or unused marker.
+
+### Cross-Track Ground Truth (`summer_ground_truth_v2.json`)
+Mapped all 4 active tracks across corrected 4-bar structure:
+
+| Track | AL | ch | MIDI notes | SysEx events (segs 1-4) | Hit rate |
+|-------|----|----|------------|--------------------------|----------|
+| RHY1  | 0x00 | 9  | 50 | 16 (4 per bar, 3-4 strikes each) | 49/50 |
+| CHD1  | 0x03 | 12 | 32 | 15 (4+2+5+4 per bar) | 28/32 |
+| CHD2  | 0x04 | 13 | 12 | 12 (1:1 event↔note) | - |
+| PHR1  | 0x05 | 14 | 0  | 12 (muted/zero volume) | - |
+| PHR2  | 0x06 | 15 | 32 | 15 (same layout as CHD1) | 28/32 |
+
+**Two distinct encoding regimes revealed**:
+- **Segmented dense** (RHY1/CHD1/PHR2, preambles 2543/2D2B): multi-event-per-beat, groove template applied
+- **Flat sparse-like** (CHD2/PHR1, preamble 303B): 1:1 event-to-note, but ZERO-byte events still produce valid notes
+
+### CHD2 Anomaly: Zero Events Play Notes
+CHD2 events 7-11 are ALL `00000000000000` (or nearly) but produce MIDI:
+- Bar 3 chord (t=4s): notes 64/67/71 (E minor) — bytes 0x80 0x00 0x00
+- Bar 4 chord (t=6s): notes 62/66/69 (D major) — ALL zeros
+
+Since 6 zero events produce 6 distinct notes, the note data MUST come from outside
+the event bytes. Likely source: **chord progression stored in header track AL=0x7F**,
+with event bytes 0 only signaling "play chord at this beat" (zero = use current chord).
+
+### Groove Template Hypothesis Strengthened
+Confirmed that RHY1 bytes encode a pattern+template reference, not raw velocities:
+- Bar 1/5 beat 3 have IDENTICAL velocities (118,124,112) but DIFFERENT bytes 1-3
+- Bytes 4-6 = `05 61 50` appears across 4 bars with DIFFERENT actual velocities
+- Timing is quantized (constant ~25ms MIDI latency, no swing/humanization)
+
+Runtime template applies deterministic velocity modulation based on beat position.
+
+### Files Created
+- `midi_tools/summer_ground_truth_full.py` — all 5 tracks initial mapping
+- `midi_tools/summer_ground_truth_v2.py` — corrected 4-bar mapping
+- `midi_tools/analyze_rhy1_encoding.py` — byte-role pattern analysis
+- `midi_tools/rhy1_timing_analysis.py` — micro-timing verification
+- `midi_tools/rhy1_bitfield_search.py` — brute-force bitfield position
+- `midi_tools/rhy1_rotation_search.py` — rotation schedule search (all fail)
+- `midi_tools/rhy1_groove_hypothesis.py` — coarse velocity quantization test
+- `midi_tools/chd1_analysis.py` — single-note chord voice analysis
+- `midi_tools/captured/summer_ground_truth_v2.json` — corrected test vector
+
+### Pragmatic Path Forward
+Dense encoding remains partially unsolved. For product goals:
+1. **Converter QY70→QY700**: use MIDI-capture pipeline (Session 21) — bypasses dense
+2. **Pattern editor**: use SPARSE encoding (proven R=9×(i+1)) for user-created patterns
+3. **Factory preset import**: capture MIDI + rebuild as sparse Q7P
+
+Dense decoding is a long-term research problem requiring QY70 ROM analysis.
+
 ## [2026-04-16] session-25g | Summer MIDI ground truth: 20 events → 61 strikes mapped
 
 ### Real Ground Truth Found
