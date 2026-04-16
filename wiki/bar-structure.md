@@ -74,4 +74,48 @@ Bars can also have 2 events (28 bytes + remainder) or more than 4 events.
 
 The last segment may contain zero-filled events (all bytes = 0x00), indicating unused/padding data.
 
+## Cross-Track Field Analysis (Session 25c)
+
+Comparing CHD1 and PHR1 bar headers in Summer reveals which 9-bit fields encode **chord info** vs **pattern-specific data**.
+
+### Fields SHARED between CHD1 and PHR1 (same bar)
+
+These fields are always identical between both chord tracks for the same bar, so they encode **chord/harmony information**:
+
+| Field | Bar 0 | Bars 1-3 | Notes |
+|-------|-------|----------|-------|
+| F0 | 429 | 53 | Changes only at bar 0 (init bar) |
+| F5 | 84 | 77 (bars 1-2), 502 (bar 3) | Changes per chord |
+
+F1 is also shared for bars 1-3 (=85) but differs in bar 0 (CHD1=17, PHR1=32).
+
+### Fields that DIFFER between CHD1 and PHR1
+
+These encode **pattern-specific voicing/articulation data**:
+
+| Field | Behavior |
+|-------|----------|
+| F2 | CHD1≈8, PHR1≈17 (track type indicator?) |
+| F3 | Different per track AND per bar |
+| F4 | Different per track AND per bar |
+| F7-F9 | Highly variable between tracks |
+
+### Raw Header Byte Similarity
+
+Summer CHD1 raw headers:
+```
+Bar 0: D6 84 46 C5 05 61 51 09 8B 3A 8B C3 22  (init bar)
+Bar 1: 1A 95 41 11 3B 21 34 AB 82 A3 12 42 70  (C major)
+Bar 2: 1A 95 41 25 61 21 34 AB 82 CB 3A 42 70  (E minor)
+Bar 3: 1A 95 41 05 5B 0F D8 3A 95 41 05 53 21  (D major)
+```
+
+Bars 1-2 share **9 of 13 bytes** — only 4 bytes encode the C→Em chord change (bytes 3, 4, 9, 10).
+
+### Unsolved: Chord Transposition Formula
+
+8 combinatorial approaches tested (Session 25c): single field+offset, field pair operations, root extraction, intervals, scale factors, nibble packing, raw byte matching, scale factor search. **ALL FAILED**. No consistent formula maps header fields to GT chord notes across 4 bars.
+
+The QY70 likely uses a runtime voice-leading algorithm with chord table lookup, not a simple arithmetic transposition. See [Open Questions](open-questions.md).
+
 See [Event Fields](event-fields.md) for how the 7-byte events decode, and [Bitstream](bitstream.md) for the rotation scheme.

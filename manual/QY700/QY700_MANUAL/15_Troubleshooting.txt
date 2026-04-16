@@ -1,0 +1,181 @@
+2. Troubleshooting 
+If you experience problems such as "no sound," "incorrect sound," or "sequencer does not operate," please check the following points before deciding that the unit is malfunctioning. In many cases, checking these points will help you solve the problem.
+If this does not solve the problem, contact your nearest Yamaha dealer or the authorized distributor for your country.
+
+Problem 
+No sound 
+Possible causes	Refer to page
+Is the volume raised sufficiently? 	(-> p.13)
+Is the volume of each track raised? 	(-> p.170) 
+Are the effect settings wrong? 	(-> p.190)
+Is Fingered Chord turned on? 	(-> p.76) 
+Are tracks muted?	(-> p.74)
+Is the TO TG channel turned off? 	(-> p.103) 
+Have the speakers been disconnected? 	(-> p.19) 
+Does the playback data contain inappropriate Volume or Expression data? 	(-> p.129)
+Problem
+Sound is distorted 
+Possible causes	Refer to page
+Have unneeded effects been set? 	(-> p.190) 
+
+Problem
+Volume is low 
+Possible causes	Refer to page
+Has MIDI Volume or Expression been lowered? 	(-> p.170)
+
+Problem
+Pitch is different than the keyboard note that was played 	
+Possible causes	Refer to page
+Is the Note Shift setting other than 0? 	(-> p.175)
+Is the Detune setting other than 0? 	(-> p.174)
+Is the Transpose setting other than 0? 	(-> p.175)
+
+Problem
+Notes are intermittently broken (notes sputter or stutter) 
+Possible causes	Refer to page
+Does the number of currently sounding notes exceed the maximum polyphony?	(-> p.44)  
+
+Problem
+Playback does not start when you press [Recording] 
+Possible causes	Refer to page
+Does the selected song, pattern, or phrase contain data? 	(-> p.72, 200, 247)
+Is the MIDI Sync setting other than "Internal"? 	(-> p.291)
+
+Problem
+Can't change the length of a phrase 
+Possible causes	Refer to page
+Are you attempting to change the length of an already-recorded phrase? 	(-> p.249)
+
+Problem
+When a song is played back, it stops in the middle 
+Possible causes	Refer to page
+Does the Pattern track contain style 65 "end"? 	(-> p.126)
+Does the Pattern track contain a Section Connection pattern? 	(-> p.202)
+
+Problem
+Volume does not diminish significantly when a track is muted 
+Possible causes	Refer to page
+Is the Utility mode Sequencer setting Mute Track Level set to 0? 	(-> p.295)
+
+Problem
+No sound when chords are changed in the middle of a measure 
+Possible causes	Refer to page
+Is Retrigger turned Off for that phrase? 	(-> p.210)
+
+Problem
+Rhythm or note timing are played back differently than when recorded 
+Possible causes	Refer to page
+Are Play Effect settings being used? 	(-> p.82, 214)
+
+Problem
+Cannot use the Fingered Chord function 
+Possible causes	Refer to page
+Is Fingered Chord turned off? 	 (-> p.76, 204)
+Are you pressing keys within the Fingered Chord Zone? 	(-> p.299) 
+
+Problem
+Can't load a disk created by the QY300 
+Possible causes	Refer to page
+Are you using an MF2DD type disk? 	(-> p.302) 
+
+Problem
+Can't load phrases or patterns created on the QY300 or QS300 into the QY700 
+Possible causes	Refer to page
+The patterns and phrases of the QY700 are structured differently than the patterns and phrases of the QY300 and QS300, and are not compatible. 
+
+Problem
+Can't hear the click sound 
+Possible causes	Refer to page
+Is the Song Play setting Click turned off? 	(-> p.78) 
+In the Utility mode Click page, is the TG Channel turned off? 	(-> p.297) 
+In the Voice mode Mixer page, has the part that is sounding the click been set to a volume of 0? 	(-> p.170) 
+
+Problem
+When the song starts, the voice or effect settings that you have made disappear 
+Possible causes	Refer to page
+Does the beginning of the song contain data which resets the tone generator? 	 (-> p.129) 
+Has data which was saved with "XG Header" highlighted been loaded and then saved again? 	(-> p.306) 
+(Voice mode and Effect mode settings will be affected by the Control Change or Exclusive data within a song.) 
+Are the voice settings for a part to which a Pattern track is assigned? 	(-> p.47) 
+(For a part to which a Pattern track is assigned, the voice settings will change each time the pattern changes.) 
+Is the Song mode Pattern Setup turned on? 	 (-> p.73) 
+(If Pattern Setup is on, voice and effect settings will change each time the pattern changes.) 
+
+Problem
+The memory is full even though there are still unused songs 
+Possible causes	Refer to page
+Are there songs or phrases containing large amounts of data? 	(-> p.53) 
+(The memory capacity of the QY700 (approximately 110,000 notes) is for the total data of all songs and phrases. This means that if there are songs or phrases which contain large amounts of data, the memory may be full even though there are still unused songs or patterns.) 
+
+
+3. Error messages 
+Monitor 
+Illegal Input 
+This will appear in response to inappropriate operation or input. Check your input method. 
+Preset Phrase 
+This will appear when you attempt to edit a Preset Phrase. If you wish to edit a preset phrase, you must first copy it to a User Phrase. 
+No Data 
+When a job is executed, this will appear if the selected track or area contains no data, making the job invalid. Re-select the area. 
+Time Sig. Mismatch 
+In Pattern mode, this will appear when you attempt to input a phrase whose time signature is different than the time signature of the pattern. 
+Change the time signature of the pattern, and try the operation again. 
+Exceed Pat Meas 
+In Pattern mode, this will appear when you attempt to input a phrase that is longer than the number of measures in the pattern. Specify the number of measures in the pattern, and try the operation again. 
+
+MIDI 
+XG Data Error 
+This indicates that MIDI data sent to the QY700 contained an error. Check MIDI settings and MIDI cables etc., and transmit the data once again. 
+MIDI Buffer Full 
+This indicates that the MIDI reception buffer of the QY700 has filled up, and processing was not possible. Transmit the data once again. 
+XG Adrs Error 
+XG Data Error 
+XG Size Error 
+XG Checksum Error 
+These will appear when the received XG data contains an error. Transmit the data once again. 
+
+Disk 
+No Data 
+When saving data to floppy disk, this will appear if the selected song or style contains no data, and the save operation is invalid. Select a different song or style. 
+No Disk 
+This indicates that the floppy disk is not correctly inserted into the QY700. Insert the floppy disk correctly. 
+Illegal Format 
+This will appear if the floppy disk is of a format which the QY700 is not able to handle. Check the contents of the disk. 
+Unformat 
+This will appear if the floppy disk is not formatted. Format the disk. 
+Bad Disk 
+The floppy disk is faulty. Use a different floppy disk. 
+Bad File 
+This will appear when you attempt to load a defective file. 
+File Not Found 
+When loading, this will appear if the specified file does not exist in the floppy disk. Insert the disk once again, and try the operation again. 
+Write Protected 
+This will appear if the write-protect slider of the floppy disk is in the write prohibit position. Remove the floppy disk, close the write-protect slider, and try the operation once again. 
+Disk Full 
+This will appear if the floppy disk is full and has no room to save the file. Either use a new floppy disk, or delete unneeded files before trying the operation once again. 
+
+Disk Changed 
+This will appear if you have exchanged disks when you should not have. 
+Try the operation once again from the beginning. 
+Illegal File 
+When loading, this will appear if the specified file cannot be handled by the QY700. Check the contents of the file. 
+Can't Change File Name 
+When renaming, this will appear if the floppy disk already contains a file with a name identical to the specified filename. Specify a different filename. 
+
+System 
+Memory Full 
+This will appear when internal memory is full and it is not possible to record, edit, execute a job, receive MIDI, or load from floppy disk. Delete unneeded songs, patterns, or user phrases, and try the operation once again. 
+Battery Low 
+This will appear when the internal backup battery of the QY700 has run down. Contact nearest Yamaha dealer or the authorized distributer for your country to have the battery replaced. 
+
+Messages other than error messages 
+Can't Undo. Ok? (Y/N) 
+If executing a job would fill up the internal memory so that Undo will not be available, this message will appear. If you are sure that you will not need to Undo this job, press [Increment] key. To cancel without executing the job, press [Decrement] key, and delete unneeded songs, patterns, or user phrases before trying the operation once again. 
+Executing... 
+When loading, saving, or formatting, this message will appear while the job is being executed. Please wait. 
+Completed 
+This will appear when the current process has been completed. Press any key and the message will disappear. 
+
+Are you sure? (Y/N) 
+Before an operation is executed, this message will ask you for confirmation. Use [Decrement] key/[Increment] key to either cancel or execute. 
+
+This is the end of the file.

@@ -161,6 +161,86 @@ Purpose: possibly per-beat instrument assignment (which note variant plays on ea
 
 Three blocks of `0x64` (100 decimal = default MIDI velocity). Sizes: 32, 64, 64 bytes. Likely per-event velocity assignments — one value per note event.
 
+## 5120-byte Phrase Event Format — Session 23
+
+5120-byte Q7P files contain inline phrase blocks starting at 0x200. Each phrase has a 28-byte header followed by byte-oriented MIDI event commands. **This format is completely different from the 3072-byte 0x83/0x84 command format.**
+
+### Phrase Block Header (28 bytes)
+
+```
+Offset  Size  Description
+0       12    Name (ASCII, space-padded)
+12      2     Marker: 03 1C (normal) or 07 1C (variant)
+14      4     00 00 00 7F (note range? always same)
+18      2     00 07 (track flags?)
+20      2     90 00 (MIDI channel status?)
+22      2     00 00 (reserved)
+24      2     Tempo × 10, big-endian (e.g., 04 B0 = 120 BPM)
+26      2     F0 00 (MIDI data start marker)
+28+     var   MIDI events (terminated by F2)
+```
+
+### Event Commands (Confidence: High)
+
+Verified from DECAY.Q7P analysis (Session 23). Notes use **standard GM numbering**.
+
+| Command | Size | Format | Description |
+|---------|------|--------|-------------|
+| `D0` | 4 | `D0 [vel] [GM_note] [gate]` | Drum/percussion note |
+| `D1` | 4 | `D1 [vel] [GM_note] [gate]` | Drum note variant (e.g., rim) |
+| `DC`-`DF` | 4 | same as D0 | Drum variants (ghost/accent?) |
+| `E0` | 5 | `E0 [gate] [param] [GM_note] [vel]` | Melody note (chords, bass) |
+| `C1` | 3 | `C1 [note] [vel_or_gate]` | Short note (arpeggios, ticks) |
+| `A0`-`AF` | 2 | `Ax [value]` | Delta time: `(x-0xA0)*128+value` ticks |
+| `BA` | 2 | `BA [value]` | Control/sustain + small delta |
+| `BB` | 2 | `BB [value]` | Release/damper + small delta |
+| `BC` | 2 | `BC [param]` | Control change |
+| `BE` | 2 | `BE [param]` | Note off / all notes off |
+| `F0 00` | 2 | marker | Start of MIDI data |
+| `F2` | 1 | marker | End of phrase |
+| `0x40` | - | padding | Padding to next block boundary |
+
+### Delta Time Formula
+
+**delta_ticks = (cmd - 0xA0) × 128 + value** at **ppqn = 480**
+
+Examples:
+- `A0 78` = 0×128+120 = **120 ticks** (16th note)
+- `A1 70` = 1×128+112 = **240 ticks** (8th note)
+- `A3 60` = 3×128+96 = **480 ticks** (quarter note)
+- `A5 50` = 5×128+80 = **720 ticks** (dotted quarter)
+- `AD 10` = 13×128+16 = **1680 ticks** (3.5 beats)
+
+### Verified Note Mapping (from DECAY.Q7P)
+
+| Phrase | Event | Byte 2 (GM note) | GM Instrument | Confidence |
+|--------|-------|-------------------|---------------|------------|
+| kick | D0 | 0x24 = 36 | Bass Drum 1 | High |
+| hi hats | D0 | 0x2A/0x2E = 42/46 | Closed/Open HH | High |
+| tom | D0 | 0x29/0x30/0x2F = 41/48/47 | Floor/Mid Toms | High |
+| rim | D1 | 0x25 = 37 | Side Stick | High |
+| piano pad | E0 | 0x30/0x34/0x37 = 48/52/55 | C3/E3/G3 (C major) | High |
+| bass | E0 | 0x24/0x29 = 36/41 | C2/F2 | High |
+| dream bells | C1 | 0x5B/0x58/0x54 = 91/88/84 | G6/E6/C6 arpeggio | High |
+
+### Chord Pattern Structure
+
+Phrases without delta events represent chord progressions. Notes are stacked (simultaneous) and groups are separated by `BE 00` (note off). Example from "piano pad":
+
+```
+E0 1E 00 37 7F   → G3 vel=127  ┐
+E0 1E 00 34 7F   → E3 vel=127  ├ C major chord
+E0 1E 00 30 7F   → C3 vel=127  ┘
+BE 00            → release
+E0 1E 00 35 7F   → F3 vel=127  ┐
+E0 1E 00 39 7F   → A3 vel=127  ├ F major chord
+E0 1E 00 30 7F   → C3 vel=127  ┘
+BE 00            → release
+F2               → end
+```
+
+The pattern duration (4 bars) is divided equally among chord groups by the playback engine.
+
 ## T01.Q7P vs TXX.Q7P — Session 18
 
 Both are 3072-byte files. **Phrase data and sequence events are IDENTICAL.** Differences are only in metadata:

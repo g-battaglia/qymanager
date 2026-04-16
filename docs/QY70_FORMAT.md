@@ -136,12 +136,21 @@ The QY70 sequencer (Model ID 0x5F) uses these base addresses:
 
 ### Bulk Dump Request Format (substatus=0x20)
 
+**CRITICAL (Session 22): Requires Init handshake first!**
+
 ```
-F0 43 2n 5F AH AM AL F7
+F0 43 1n 5F 00 00 00 01 F7   ← REQUIRED: Init message (prepares QY70 for bulk dump mode)
+                                Wait 500ms
+F0 43 2n 5F AH AM AL F7      ← Dump Request (now works!)
+                                Wait 1s per request
+F0 43 1n 5F 00 00 00 00 F7   ← Close message (end bulk dump mode)
 ```
 
-To request user pattern 1: `F0 43 20 5F 02 00 00 F7`
-To request all patterns: `F0 43 20 5F 02 7F 00 F7`
+Without the Init message, ALL dump requests are silently ignored (0 responses).
+This was incorrectly documented as "not supported" until Session 22 (2026-04-16).
+
+To request edit buffer track 0: `F0 43 10 5F 00 00 00 01 F7` then `F0 43 20 5F 02 7E 00 F7`
+To request all tracks: loop AL=0x00-0x07, 0x7F with Init+Close envelope
 
 ### AM=0x7E: Edit Buffer Convention
 

@@ -43,13 +43,13 @@ QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Quantize] → [Encode
 | Q7P metadata write | Done | High |
 | Q7P event write (5120) | Needs 5120B template | 40% |
 
-**Session 21 progress**: Built complete quantizer + encoder pipeline. Tested on SGT capture (374 notes, 6 tracks, 6 bars). Produces valid SMF, Q7P metadata, and D0/E0 phrase data. Delta encoding A0-A7 is hypothesized (step×128+value) — needs hardware validation.
+**Session 22 progress**: Full end-to-end pipeline working. Fresh capture: 851 note_on (incl. drums!), 322 notes quantized, 6 tracks, 6 bars. Produces valid SMF (10.1s), Q7P metadata, and D0/E0 phrase data (1746 bytes). Drum output via PATT OUT confirmed working. Delta encoding A0-A7 is hypothesized (step×128+value) — needs hardware validation.
 
 **Advantages**: bypasses all unsolved decoding problems (rotation model, chord transposition, groove templates). Captures the EXACT notes the QY70 produces.
 
 **Requirements**: QY70 hardware must be connected. PATT OUT=9~16, ECHO BACK=Off, MIDI SYNC=External.
 
-**Limitation**: drums don't output via PATT OUT in Pattern mode. May need Style mode for drum capture.
+~~**Limitation**: drums don't output via PATT OUT in Pattern mode.~~ **Session 22: DISPROVEN** — drums DO output via PATT OUT CH 9~16. The Session 17 finding was caused by MIDI clock echo masking real notes (`timing=False` bug). Fresh capture: RHY1=455 note_on, RHY2=114 note_on.
 
 ## Blocking Issues
 
@@ -70,11 +70,9 @@ Two paths exist:
 
 **Recommendation**: Get a 5120-byte Q7P from QY700 hardware. Create a pattern with known notes → save as Q7P → use as template.
 
-### ~~3. Capture Quantization~~ — SOLVED (Session 21)
+### ~~3. Capture Quantization~~ — SOLVED (Session 21-22)
 
-`quantizer.py` quantizes raw MIDI timestamps to a 16th-note grid (480 PPQN). Loop detection via per-channel pattern matching with LCM. Tested on SGT: avg error 1.7ms for drums, 100% events within 10ms. `capture_to_q7p.py` generates SMF + D0/E0 phrase data.
-
-Remaining: drum capture (drums don't output via PATT OUT in Pattern mode).
+`quantizer.py` quantizes raw MIDI timestamps to a 16th-note grid (480 PPQN). Loop detection via per-channel pattern matching + LCM. `capture_to_q7p.py` generates SMF + D0/E0 phrase data. **Drum capture works** (Session 22 disproved Session 17 finding).
 
 ### 4. Chord Transposition (blocks Pipeline A chord tracks)
 
@@ -100,8 +98,8 @@ The metadata converter (`qy70_to_qy700.py`) also works for volume, pan, and chor
 
 ### Pipeline B (capture-based) — highest priority
 1. ~~**Software**: Build capture→quantize pipeline~~ — **DONE** (Session 21)
-2. **Hardware**: Get a 5120-byte Q7P from QY700 (create pattern → save → use as template)
-3. **Hardware**: Fresh capture of SGT with drum output (try Style mode for drum PATT OUT)
+2. ~~**Hardware**: Fresh capture with drum output~~ — **DONE** (Session 22, drums work via PATT OUT)
+3. **Hardware**: Get a 5120-byte Q7P from QY700 (create pattern → save → use as template)
 4. **Software**: Integrate D0/E0 phrase data into 5120-byte Q7P template
 5. **Hardware**: Validate D0/E0 delta encoding (A0-A7) by loading generated Q7P on QY700
 

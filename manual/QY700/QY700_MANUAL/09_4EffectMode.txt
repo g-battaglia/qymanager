@@ -1,0 +1,238 @@
+Chapter 4. EFFECT MODE
+This chapter explains connections, reverb, chorus, and variation.
+In Effect mode, you can select the effects used in a song and modify effect settings.
+
+
+About effect mode 
+
+[EFFECT] Effect mode 
+[F1] Connection 
+[F2] Reverb edit 
+[F3] Chorus edit 
+[F4] Variation edit 
+
+[Explanation]
+In Effect mode, you can select the effects used in a song and modify effect settings. 
+Effect mode does not have a "top" page which always appears first when you press the MODE key. (The previously-selected page will appear.) 
+Effect mode has four sub-mode pages, and these are selected by the [F1] to [F4] function keys.
+Pressing [F1] (Connect) accesses the Connection page. 
+Here you can select the Reverb Type, and make reverb parameter settings. (-> p.193) 
+Pressing [F3] (Chorus) accesses the Chorus Edit page. 
+Here you can select the Chorus Type, and make chorus parameter settings. (-> p.193) 
+Pressing [F4] (Vari.) accesses the Variation Edit page. 
+Here you can select the Variation Type, and make variation parameter settings. (-> p.193) 
+
+[Supplementary comments]
+The structure of the QY700's effects is greatly dependent on the Variation Mode setting of the Connection page. 
+If exclusive messages such as "GM Mode On" or "XG System On" that make effect settings are included in a song, settings made in Effect mode or by control changes will be ignored.  
+If you want the settings of Effect mode to be reflected in the data, highlight XG Header in the Save page of Disk mode Here you can specify the connection mode, the Effect Type when saving the song to a Standard MIDI File etc. (-> p.307) 
+for each effect, and the return levels etc. (-> p.190) . For details on Variation mode and effect structure, refer to Pressing 2 (Reverb) accesses the Reverb Edit page. "Chapter 1. BASIC CONCEPTS" (-> p.47). 
+
+
+When Variation Mode  equal  Insertion 
+(Figure)
+
+When Variation Mode  equal  System 
+(Figure) 
+
+Although this structure gives you more freedom, it is slightly more complex. 
+Chapter 4. EFFECT MODE 
+
+1. Connection 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	display only 	This indicates the parameter setting at the cursor location. 	P.191 
+2 Variation mode 	Insertion, System Specify whether the Variation effect will be used as an Insertion effect or as a System effect. 	P.191 
+3 Reverb type 	11 types 	Select the reverb type. 	P.191 
+4 Reverb return 	000 to 127 	Specify the amount of return from the reverb effect. 	P.191 
+5 Reverb pan 	Left63 to Center to Right63 	Set the stereo location of the sound processed by reverb. 	P.191 
+6 Chorus type 	11 types 	Select the chorus type. 	P.191 
+7 Chorus return 	000 to 127 	Specify the amount of return from the chorus effect. 	P.192 
+8 Chorus pan 	Left63 to Center to Right63 	Set the stereo location of the sound processed by chorus. 	P.192 
+9 Send chorus to reverb 	000 to 127 	Specify the amount sent from chorus to reverb. 	P.192 
+10 Variation type 	43 types 	Select the variation type. 	P.192 
+11 Variation return 	000 to 127 	Specify the amount of return from the variation effect. 	P.192 
+12 Variation pan 	Left63 to Center to Right63 	Set the stereo location of the sound processed by variation. 	P.192 
+13 Send variation to chorus 	000 to 127 	Specify the amount sent from variation to chorus. 	P.192 
+14 Send variation to reverb 	000 to 127 	Specify the amount sent from variation to reverb. 	P.192 
+(Table End)
+*11 to 14 are available only when Variation Mode  equal  "System" 
+
+[Explanation]
+In the Connection page you can make settings such as the Variation Mode, the effect type for each effect, and return levels. 
+For details on how the effects work, refer to "Chapter 1. BASIC CONCEPTS" (-> p.47). 
+
+[Procedure]
+1. Press [EFFECT]. 
+The indicator located above will light, and one of the four sub-modes of Effect mode (the last-selected submode) will appear. 
+2. Press [F1] (Connect) to access the Connection page. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to specify the value. 
+
+[Supplementary comments]
+In Effect mode, keys such as [Play], [Stop], [Top], and [Rewind]/[Forward] will function in the same way as in Song Play. Using these keys, you can modify settings in realtime while you listen to the playback. 
+
+1. Data display 
+[Explanation]
+This displays the settings of the parameter where the cursor is located. 
+2. Variation mode 
+This parameter lets you specify whether the Variation effect will function as an Insertion effect or as a System effect. (-> p.48) 
+If the Variation effect is used as an insertion effect, it can be used only by one specific part. In this case, a modulation wheel or foot controller can be used to control specified parameters. 
+If the Variation effect is used as a system effect, it can be used by all parts in the same way as the Reverb and Chorus effects, with adjustable Send Level and Return Level. In this case, it will not be possible to use controllers to control specific parameters. 
+
+Insertion, System 
+Insertion 	The Variation effect will function as an insertion effect. 
+System 	The Variation effect will function as a system effect.
+
+
+3. Reverb type 
+[Explanation]
+This sets the effect type of the reverb. 
+[Setting values]
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM 3, STAGE 1, STAGE 2, PLATE, WHITE ROOM, TUNNEL, BASEMENT 
+
+4. Reverb return 
+[Explanation]
+This sets the amount that is returned from the reverb, adjusting 
+the overall reverb effect for all parts. 
+[Setting values]
+000 to 127 
+
+5. Reverb pan 
+[Explanation]
+This sets the stereo location of the signal from the reverb effect (the processed sound). 
+[Setting values]
+Left63 to Center to Right63 
+Left settings move the sound toward the left of the stereo image, and Right settings toward the right. A setting of Center places the sound in the center. 
+
+6. Chorus type 
+[Explanation]
+This sets the effect type of the chorus. 
+[Setting values]
+NO EFFECT, CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, CELESTE 2, CELESTE 3, CELESTE 4, FLANGER 1, FLANGER 2, FLANGER 3 
+
+7. Chorus return 
+[Explanation]
+This sets the amount that is returned from the chorus, adjusting the overall chorus effect for all parts.
+[Setting values]
+000 to 127
+
+8. Chorus pan 
+[Explanation]
+This sets the stereo location of the signal from the chorus effect (the processed sound). 
+[Setting values]
+Left63  to Center to Right63 
+Left settings move the sound toward the left of the stereo image, and Right settings toward the right. A setting of Center places the sound in the center. 
+
+9. Send chorus to reverb 
+This sets the amount that is sent on the bus line connecting the chorus effect to the reverb effect.
+[Setting values]
+000 to 127
+
+10. Variation type 
+[Explanation]
+This selects the Variation effect type. 
+[Setting values]
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM 3, STAGE 1, STAGE 2, PLATE, DELAY LCR, DELAY L,R, ECHO, CROSSDELAY, ER1, ER2, GATE REV, REVRS GATE, KARAOKE 1, KARAOKE 2, KARAOKE 3, THRU, CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, the variation CELESTE 2, CELESTE 3, CELESTE 4, FLANGER 1, FLANGER 2, FLANGER 3, SYMPHONIC, ROTARY SP, TREMOLO, AUTO PAN, PHASER 1, PHASER 2, DISTORTION, OVERDRIVE, AMP SIM, 3-BAND EQ, 2-BAND EQ, AUTO WAH 
+
+11. Variation return (Available only if variation mode  equal  System) 
+[Explanation]
+This sets the amount that is returned from the variation, adjusting the overall variation effect for all parts. 
+[Setting values]
+000 to 127 
+
+12. Variation pan 
+[Explanation]
+(Available only if variation mode  equal  System) 
+This sets the stereo location of the signal from the variation effect (the processed sound). 
+[Setting values]
+Left63 to Center to Right63 
+Left settings move the sound toward the left of the stereo image, and Right settings toward the right. A setting of Center places the sound in the center.  
+
+13. Send variation to chorus (Available only if variation mode  equal  System) 
+[Explanation]
+This sets the amount that is sent on the bus line connecting the variation effect to the chorus effect. 
+[Setting values]
+000 to 127 
+
+14. Send variation to reverb (Available only if variation mode  equal  System) 
+[Explanation]
+This sets the amount that is sent on the bus line connecting effect to the reverb effect.
+[Setting values]
+000 to 127
+
+
+2. Reverb edit, Chorus edit, Variation edit 
+[EFFECT] Effect mode 
+[F1] Connection 
+[F2] Reverb edit 
+[F3] Chorus edit 
+[F4] Variation edit 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Effect type 		Specify the effect type for each effect	P.194
+2 Effect parameters 		Make detailed settings for each effect. 	P.195
+3 Dry/Wet (only for Variation edit) 	D63>W to D equal W to D<W63 	When the Variation Type is set to Insertion, set the balance between the sound processed by the Variation effect (the "Wet" sound), and the unprocessed sound (the "Dry" sound). 	P.195
+4 Control (only for Variation edit) 	display only 	A control symbol will be displayed to indicate a parameter that can be controlled by Control Change messages. 	P.195
+5 AC1 control (only for Variation edit) 	minus 64 to plus 0 to plus 63 	Specify the depth with which AC1 can be used to control the parameter indicated by the control symbol. 	P.195 
+(Table End)
+
+[Explanation]
+Here you can make effect parameter settings for reverb, chorus, and variation. 
+By setting effect parameters, you can make detailed adjustments to the sound of each effect. 
+
+[Procedure]
+1. Press [EFFECT]. 
+The indicator located above e will light, and you will enter Effect mode. 
+2. Press [F2] (Reverb) to [F4] (Vari) to access the edit page for the desired effect. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to specify the value. 
+[Supplementary comments]
+In Effect mode, keys such as [Play], [Stop], [Top], and [Rewind]/[Forward] will function in the same way as in Song Play. Using these keys, you can modify settings in realtime while you listen to the playback. 
+
+1. Effect type 
+[Explanation][Explanation]
+This sets the effect type for the reverb, chorus, and variation effects. 
+The settings here are linked to the effect type settings in the Connection page. (-> p.190) 
+
+Reverb 
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM 3, STAGE 1, STAGE 2, PLATE, WHITE ROOM, TUNNEL, BASEMENT 
+Chorus 
+NO EFFECT, CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, CELESTE 2, CELESTE 3, 
+CELESTE 4, FLANGER 1, FLANGER 2, FLANGER 3 
+Variation 
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM 3, STAGE 1, STAGE 2, PLATE, DELAY LCR, DELAY L,R, ECHO, CROSSDELAY, ER1, ER2, GATE REV, REVRS GATE, KARAOKE 1, KARAOKE 2, KARAOKE 3, THRU, CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, CELESTE 2, CELESTE 3, CELESTE 4, FLANGER 1, FLANGER 2, FLANGER 3, SYMPHONIC, ROTARY SP, TREMOLO, AUTO PAN, PHASER 1, PHASER 2, DISTORTION, OVERDRIVE, AMP SIM, 3BAND EQ, 2-BAND EQ, AUTO WAH 
+[Supplementary comments]
+If Variation Mode is set to Insertion, setting the Effect Type of the Variation effect to "No Effect" will mean that the part whose Variation Switch is ON will not sound. 
+
+2. Effect parameters 
+[Explanation]
+Here you can make detailed settings for each effect. 
+Each effect type has different parameters. 
+
+3. Dry/Wet (only for Variation edit) 
+[Explanation]
+This sets the balance between the sound processed by the Variation effect (the "Wet" sound), and the unprocessed sound (the "Dry" sound). 
+This can be set only if Variation Type  equal  Insertion. If Variation Mode  equal  System, this will be fixed at D32>W. 
+[Setting values]
+D63>W to D equal W to D<W63 
+
+4. Control (only for Variation edit) 
+[Explanation]
+A symbol will be displayed to indicate a parameter that can be controlled using control change messages.
+When Variation Type is set to Insertion, this can be used for parts whose Variation switch is ON.
+
+
+5. AC1 control (only for Variation edit) 
+[Explanation]
+This specifies the depth with which AC1 (assignable controller) can be used to control the parameter indicated by the control symbol.
+With a setting of 0, control will not be possible. As this setting is increased, a greater amount of control will be possible. With negative settings, raising the controller will lower the parameter value. 
+ Assignable controllers are controllers whose control number can be set freely. The QY700 provides two assignable controllers: AC1 and AC2. Assignable controller settings are made using Exclusive messages. 
+This can be set only when Variation Type  equal  Insertion. This parameter will not be displayed when Variation Mode  equal  System. 
+[Setting values]
+minus 64 to plus 0 to plus 63 
+
+
+This is the end of the file.

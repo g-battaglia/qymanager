@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Request a bulk dump from the QY70 and save the response.
 
-Sends a Bulk Dump Request via rtmidi (NOT mido — mido drops SysEx on macOS)
-and captures the response.
+CRITICAL: The QY70 requires an Init handshake message before it will
+respond to Bulk Dump Requests. Without Init, all requests are silently ignored.
 
-From List Book p.55, section 3-6-3-4:
-  F0 43 20 5F AH AM AL F7
+Protocol (discovered Session 22, 2026-04-16):
+  1. Send Init:    F0 43 10 5F 00 00 00 01 F7
+  2. Wait 500ms
+  3. Send Request: F0 43 20 5F AH AM AL F7
+  4. Receive data
+  5. Send Close:   F0 43 10 5F 00 00 00 00 F7
 
-Uses rtmidi directly for both sending and receiving.
+Uses rtmidi directly for both sending and receiving (NOT mido — mido drops SysEx on macOS).
 """
 
 import sys
@@ -84,10 +88,13 @@ def request_dump(ah, am, al, port_name=None, timeout=10):
         print(f"ERROR: Port '{out_port}' not found")
         return None
 
-    # Build request: F0 43 20 5F AH AM AL F7
+    # CRITICAL: Send Init handshake first! (Session 22 discovery)
+    # Without Init, QY70 silently ignores ALL dump requests.
+    init_msg = [0xF0, 0x43, 0x10, 0x5F, 0x00, 0x00, 0x00, 0x01, 0xF7]
     request = [0xF0, 0x43, 0x20, 0x5F, ah, am, al, 0xF7]
 
     print(f"Port: {out_port}")
+    print(f"Init:    {' '.join(f'{b:02X}' for b in init_msg)}")
     print(f"Request: {' '.join(f'{b:02X}' for b in request)}")
     print(f"  AH=0x{ah:02X} AM=0x{am:02X} AL=0x{al:02X}")
     print(f"Waiting {timeout}s for response...")
@@ -101,8 +108,10 @@ def request_dump(ah, am, al, port_name=None, timeout=10):
     capture_thread.start()
     time.sleep(0.3)  # Let capture settle
 
-    # Send request
+    # Send Init handshake, then request
     mo.open_port(port_idx)
+    mo.send_message(init_msg)
+    time.sleep(0.5)
     mo.send_message(request)
     mo.close_port()
 

@@ -1,0 +1,124 @@
+Table of contents.
+Some lists, the score, and the index are not available.
+ 
+Introduction 
+Features of the QY700 	4
+How to use the manuals 	6
+Printing conventions in this manual 	6
+Finding the information that you need 	8
+SETUP 
+1. Front and rear panels 	12
+Top panel 	 12
+Rear panel 	 16
+Floppy disk drive 	17
+2. Connections 	18
+Power supply connections 	18
+Audio equipment connections 	19
+Connecting a foot switch 	 20
+Connecting external MIDI devices 	20
+Connecting an MTR (multi-track recorder) 	21
+Connecting two or more devices 	21
+3. Using the Style and Demonstration disk 	 22
+Contents of the disk 	22
+Listening to the demo playback 	22
+Restoring the factory settings 	 23
+Chapter 1. BASIC CONCEPTS 
+1. Mode structure 	26
+2. Function tree 	34
+3. How the QY700 is organized 	36
+4. Sequencer block 	37
+5. The tone generator block 	43
+6. Controller block 	46
+7. Effect block 	47
+8. Basic operation 	51
+9. Song creation procedure 	56
+Create patterns 	57
+Editing a pattern 	59
+Pattern track recording 	60
+Chord track recording 	61
+Voice settings 	62
+Realtime record of track 2 	62
+Step recording of track 1 	63
+Editing tracks 1 and 2 	65
+Modifying the voice of track 1 	 66
+Save to floppy disk 	 67
+Chapter 2. SONG MODE 
+SONG MODE Overview 	70
+1. SONG PLAY 	72
+2. Play Effects 	80
+Groove Quantizing 	82
+Clock Shift, Gate Time, and Velocity 	90
+Transposition 	94
+Drum Table Edit 	97
+3. Track View 	100
+4. Output Channels 	 103
+5. Song Recording 	 106
+Recording Standby 	 108
+Realtime Recording: Sequence Tracks (TR1 to TR32)	 112
+Realtime Recording: PATTERN Track 	113
+Realtime Recording: CHORD Track 	115
+Realtime Recording: TEMPO Track 	117
+Punch Recording 	118
+Step Recording: Sequence Tracks (TR1 to TR32)	120
+Step Recording: PATTERN track 	125
+Step Recording: CHORD track 	127
+6. Song Editing 	129
+1 (Graphic) Graphic screen 	135
+7. Song Jobs	138
+Chapter 3. VOICE MODE 
+About voice mode 	168
+1. Mixer 	170
+2. Tune 	174
+3. Voice edit 	176
+4. Drum Setup Edit 	182
+Chapter 4. EFFECT MODE 
+About effect mode	188
+1. Connection 	190
+2. Reverb edit, Chorus edit, Variation edit 	193
+Chapter 5. PATTERN MODE 
+PATTERN MODE Overview 	198
+1. PATCH 	200
+Phrase Table 	209
+2. Play Effects 	212
+Groove Quantizing 	214
+Clock Shift, Gate Time, and Velocity 	217
+Transposition 	 219
+Drum Table Edit 	222
+3. Pattern Voice submode 	225
+Mixer 	227
+Voice Edit 	232
+Drum-Setup Edit 	235
+4. Pattern Effects 	239
+Connection 	241
+Reverb Edit, Chorus Edit, and Variation Edit 	244
+5. Phrase Recording 	 247
+Recording Standby 	248
+Realtime Recording 	252
+Step Recording 	253
+6. Phrase Editing 	254
+7. Pattern Jobs 	256
+Chapter 6. UTILITY MODE 
+About Utility mode 	288
+1. System 	289
+2. MIDI 	291
+3. MIDI filter 	293
+4. Sequencer 	295
+5. Click 	297
+6. Fingered chord zone 	 299
+
+Chapter 7. DISK MODE 
+About floppy disks	302
+About Disk mode 	304
+1. Save 	307
+2. Load 	310
+3. Rename 	312
+4. Delete 	314
+5. Format 	316
+APPENDIX 
+1. Specifications 	318
+2. Troubleshooting 	 320
+3. Error messages 	322
+4. Glossary 	324
+5. Index 	328
+
+This is the end of the file.

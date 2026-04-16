@@ -280,6 +280,126 @@ The XG Standard Kit maps notes **13-87** only:
 
 Remaining invalid events are primarily [control events](#event-types) (F0=0x078 at R=9). Only 3/52 note events (~6%) remain unexplained after filtering control events.
 
+## Instrument Lane Model — Dense Patterns (Session 25b-25d)
+
+Dense user patterns (like Summer) use a DIFFERENT encoding from sparse patterns. Instead of one event per note, each bar has **4 events encoding instrument lanes** — one event per instrument, covering all beats in the bar.
+
+### Evidence from Summer RHY1
+
+Summer has 3 instruments (HH, Snare, Kick) but 4 events per bar. GT shows 12 notes per bar (8 HH + 2 Snare + 2 Kick), but only 4 bitstream events. Each event encodes a PATTERN of hits across the bar.
+
+### Fixed Per-Position R Values
+
+| Position | R | Instrument (Summer) | Match Rate | Confidence |
+|----------|---|---------------------|------------|------------|
+| e0 | 9 | HH closed (42) | 4/6 bars | Medium |
+| e1 | 22 | Snare (38) | 3/6 bars | **LOW** |
+| e2 | 12 | HH2 (42) | 4/6 bars | Medium |
+| e3 | 53 | Kick (36) | 3/6 bars | **LOW** |
+
+Note: These are NOT derived from cumulative R=9×(i+1) (which gives 9,18,27,36). The lane R values have no known formula.
+
+### Session 25d: Comprehensive Model Elimination
+
+**ALL rotation-based models exhaustively tested and FAILED** on dense encoding:
+
+| Model | Description | Best Score | Status |
+|-------|-------------|------------|--------|
+| Cumulative global | R=mult*(global_i+1) | 4/20 (20%) | **ELIMINATED** |
+| Per-bar cumulative | R=mult*(bar_i+1) | 5/20 (25%) | **ELIMINATED** |
+| Cumulative+offset | R=9*(global_i+offset) | 4/20 (20%) | **ELIMINATED** |
+| Header-derived | R=f(header_field[k], i) | 0 perfect bars | **ELIMINATED** |
+| XOR correction | Seg1⊕Seg4 applied to Seg2 | Still no note 38 | **ELIMINATED** |
+| 8×7-bit beat velocity | 56 bits = 8 velocity slots | corr<0.98 | **ELIMINATED** |
+| Free R + free instrument | Any R, any instrument | 0.87 max corr | Inconclusive |
+
+### Structural Impossibility (Session 25d — CRITICAL)
+
+**Note 38 (snare) is structurally unreachable** from MOST events at ANY rotation:
+- Seg 2: ALL 4 events CANNOT produce note 38 → only {36, 42, 46} reachable
+- Seg 3 e0: NO target drum note at ANY R → reachable targets = {}
+- Even in "working" bars (Seg 1, 4), events e2/e3 cannot produce 38
+
+This proves the barrel rotation model is **fundamentally wrong** for dense encoding. The failure is not about finding the right R — the 56-bit values simply don't contain the right bit pattern for note 38 in the F0 field.
+
+### Stable Core Byte Discovery (Session 25d)
+
+Events across bars share "stable core" bytes (bytes 1-3 of the 7-byte event):
+
+```
+e1 (snare slot):
+  Segs 1,2,4,5: core=ae8d81  (G/C/D chord contexts)
+  Segs 3,6:     core=86b2d3  (Em chord context — DIFFERENT)
+
+e0 (HH slot):
+  Segs 1,2,4,5: core=x49706  (prefix byte varies)
+  Segs 3,6:     core=5a8401/7a8309  (different)
+
+e3 (kick slot):
+  Segs 1,2,4,5: core=4xyd8x  (similar pattern)
+  Seg 3 e3:     core=ae8d81  ← SAME as e1 snare core!
+```
+
+**KEY FINDING**: Seg 3 (Em bar) e3 has the snare core `ae8d81` while Seg 3 e1 has the different core `86b2d3`. This means **instruments are REORDERED between bars** — the event position does NOT determine the instrument. But even knowing this, the rotated values still can't produce the correct notes.
+
+### Segment Structure (Summer RHY1: 384 bytes)
+
+```
+Init segment: 14B (13B header + 1B trailing 0xF4)
+Seg 0-4: 41-43B each (13B header + 4×7B events + 0-2B trailing)
+Seg 5: 127B (13B header + 16×7B events + 2B trailing)
+  └── events e7-e14 are padding: bfdfeff7fbfdfe (×8)
+```
+
+Trailing bytes: `1e20`, `1e40` in normal bars; `bfc0` in fill.
+
+### Cross-Bar Event Similarity
+
+Events at the same position across bars differ by few bits, confirming instrument lanes:
+
+| Position | Typical Δ (bits) | Interpretation |
+|----------|-------------------|----------------|
+| e0 | 2-7 | HH pattern (stable) |
+| e2 | 2-5 | HH2 pattern (very stable) |
+| e1 | 5-12 | Snare pattern (moderate variation) |
+| e3 | 13-23 | Kick pattern (high variation) |
+
+Bars form pairs: segs 0≈3, 1≈4 (similar data), segs 2≈5 (different type).
+
+### Sparse vs Dense Classification (updated Session 25d)
+
+| Property | Sparse (known_pattern) | Dense (Summer) |
+|----------|----------------------|----------------|
+| Events/bar | 7 (one per note hit) | 4 (pattern per instrument) |
+| R model | R=9×(i+1) cumulative | **UNKNOWN** (all models fail) |
+| Zero bytes | ~33% | ~0% |
+| Velocity | Exact (vel_code × 8) | Groove template applied |
+| Proven | 7/7 (100%) | **0% reliable** |
+| Track size | 634B (10 segs, 2-10 evts) | 384B (6 segs, 4 evts) |
+| Note in F0 | Direct MIDI note ✓ | **Structurally impossible** for some notes |
+
+**Dense encoding is a separate, unsolved problem.** The barrel rotation + 6×9-bit field model works ONLY for sparse patterns where each event encodes one hit.
+
+## Groove Template (Session 25b)
+
+**CRITICAL DISCOVERY**: Per-beat velocities are NOT stored in the bitstream.
+
+The GT HH velocity sequence [122,116,122,117,118,112,121,114] does NOT appear anywhere in the 384-byte track data, even with ±2 tolerance. All 56-bit decompositions (8×7-bit, inverted, shifted, header fields, derotated bytes) fail to correlate with GT velocities.
+
+### Evidence
+
+- **known_pattern**: velocities are EXACT multiples of vel_code×8 (127, 119, 95) → no groove
+- **Summer**: velocities cluster 112-127 (deviation ±5-15 from quantized levels) → groove active
+- Bitstream stores: note number, beat pattern, **coarse velocity** (4-bit), gate time
+- Fine velocity variation = **runtime groove quantization** by QY70 playback engine
+
+### Implications
+
+1. The bitstream decoder can recover INSTRUMENT, BEAT PATTERN, and COARSE VELOCITY
+2. EXACT per-beat velocities cannot be recovered from the bitstream
+3. Groove parameters may be stored in the header track (AL=0x7F) or pattern-level settings
+4. For conversion (QY70→QY700), coarse velocity + default groove is sufficient
+
 ## Analysis Scripts
 
 - `midi_tools/analyze_2543.py` — Field distribution and cross-correlation analysis

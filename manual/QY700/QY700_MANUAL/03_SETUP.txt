@@ -1,0 +1,299 @@
+SETUP
+1. Front and rear panels 
+Top panel 
+(Figure)
+
+
+1. PITCH wheel 
+This controller is used to continuously modify the pitch or tone etc. while you play. The controller will return to the center position when you 
+release it. (-> p.290) 
+2. ASSIGNABLE wheel 
+This controller is used to continuously modify the tone etc. while you play. You can specify how this controller will affect the sound. (-> p.290) 
+3. Mode keys 
+Use these buttons to switch between modes. 
+[SONG] key 
+Switch to Song mode. (-> p.70)
+[PATTERN] key
+Switch to Pattern mode. (-> p.198)
+[UTILITY] key
+Switch to Utility mode. (-> p.288)
+[VOICE] key 
+Switch to Voice mode. (-> p.168)
+[EFFECT] key
+Switch to Effect mode. (-> p.188)
+[DISK] key
+Switch to Disk mode. (-> p.302)
+
+4. VOLUME control 
+Use this to adjust the volume of the output jacks and the headphone jack. 
+
+5. CONTRAST control 
+Use this to adjust the contrast of the display. 
+
+6. REC (recording) indicator 
+This indicator will light when the [REC] key is pressed, indicating that you are in recording mode. 
+
+7. PLAY indicator 
+During playback, this indicator will blink in time with the tempo. 
+
+8. LCD display 
+Various types of information are displayed in this 320 x 240 pixel backlit liquid crystal display. The time after which the backlight will 
+automatically turn off can be set in Utility mode. (-> p.289) 
+
+9. [SHIFT] key 
+This button works in conjunction with other keys to perform various functions. 
+
+10. [F1] to [F6] function keys 
+Use these keys to select from the menu that appears in the bottom line of the screen. 
+
+11. [EXIT] key 
+This key moves from a sub mode or page display to the next higher level in the command hierarchy. 
+
+12. [D1] to [D5] direct keys 
+Use these keys to move the cursor to the setting items that are shown in the right side of the display. 
+
+13. MIDI Data monitors 
+The corresponding indicator will blink when MIDI data is transmitted or received at the four MIDI connectors (IN-A, IN-B, OUT-A, OUT-B).
+This provides a way to confirm MIDI communications.
+(Note) Since MIDI Clock messages are normally being transmitted, the MIDI OUT-A/B indicators will be blinking lightly.
+
+14. Shuttle dial 
+Use this to fast-forward or rewind songs or patterns. Depending on the angle to which you rotate the dial, the speed of fast-forward or rewind will change in four steps. 
+
+15. Data dial 
+Use this to select voices or to continuously increase or decrease a numerical value. 
+
+16. Sequencer keys 
+Use these keys to playback or record songs, patterns, and phrases. The layout of the buttons is similar to that of a conventional tape recorder. 
+(Top) Return to the first measure of a song or pattern.
+(Rewind) Rewind the playback measure.
+(Forward) Advance the playback measure.
+(Recording) Enter recording standby mode.
+(Stop) Stop playback/recording.
+(Play) Begin playback/recording.
+
+17. [EDIT] key 
+Switch to Song Edit (-> p.129) or Phrase Edit (-> p.254). 
+
+18. [JOB] key 
+Access the Song jobs (-> p.138) or Pattern jobs (-> p.256). 
+
+19. [LOC 1] (Locate 1) key [LOC 2] (Locate 2) key
+In Song mode, these keys are used to move to a previously specified measure. Use s plus  1/2 to store the current measure in the corresponding locate key.
+
+20. Track keys 
+Use these keys to change the currently selected track, or to mute or solo specific tracks. 
+
+[TRACK DOWN] key These keys switch the currently selected track. 
+[TRACK UP] key 
+[MUTE] key This mutes the playback of the currently selected track. Press the key once again to unmute the track. 
+[SOLO] key This mutes the playback of all tracks other than the selected track. Press the key once again to restore playback of the other tracks. Use this button when you want to hear only the selected track. 
+
+21. Cursor keys 
+Use these keys to move the cursor location within the display. 
+
+22. [minus 1/NO](Decrement) key [plus 1/YES] (Increment) key 
+In various setting displays you can use these buttons to increase (increment) / decrease (decrement) values, or switch settings on/off. These keys are also used to reply YES or NO to an "Are you sure?" prompt. 
+
+23. Numeric keypad 
+Use these to enter numerical values or note values. 
+
+24. (Enter) key 
+Use this key to finalize a number entered by the numeric keypad, to enter the job selected by the cursor, or to execute a job etc. 
+
+25. Octave keys 
+These keys modify the pitch of the microkeyboard in steps of an octave.
+In addition, the left octave button sets On Bass or Original Bass for a chord, and the right octave button sets chord Syncopation.
+
+[OCT DOWN] (Octave Down) key Lowers the pitch of the keyboard buttons in one-octave steps.
+[OCT UP] (Octave Up) key Raises the pitch of the keyboard buttons in one-octave steps.
+
+26. Microkeyboard 
+These function as a keyboard for entering your performance. They are not sensitive to velocity or aftertouch. The microkeyboard are also used to specify chords and pattern sections, and to input characters. 
+
+
+Rear panel 
+(Figure)
+
+1. MIDI connectors 
+These connectors are used to connect external MIDI devices via a MIDI cable. There are four MIDI connectors: IN-A, IN-B, OUT-A, and OUT-B. IN-A and IN-B are inputs, and OUT-A and OUT-B are outputs. (-> p.20) 
+
+2. FOOT SW (Foot switch) jack 
+A foot switch (FC4, FC5: option) can be connected to this jack. A connected foot switch can be used during performance as a sustain pedal or as a start/stop switch. (-> p.290) 
+
+3. OUTPUT jacks 
+These jacks are for line connections to powered speakers or a mixer. When playing in stereo, connect both jacks. When playing in mono, connect the L/MONO jack. (-> p.19) 
+
+4. PHONES (Headphones) jack 
+A set of headphones with a stereo phone plug can be connected to this jack. (HPE-170 or other Yamaha recommended headphones: impedance 8 to 150 ohms.) The headphone volume is adjusted by the Volume control. (-> p.19) 
+
+5. DC IN (Power supply) jack 
+Connect the included PA-5B AC adaptor to this jack. (-> p.18) 
+
+[Caution]
+Before connecting the AC adaptor, make sure that the power switch of the QY700 is turned off. First connect the AC adaptor to the power supply jack, and then plug it into an AC outlet. 
+Use only the included PA-5B AC adaptor. Using other AC adaptors will cause malfunctions. Also, be sure to unplug the AC adaptor from the AC outlet if you will not be using the unit for an extended period of time. 
+
+6. Cable clip 
+Wrap the AC adaptor power cable around this clip as shown in the diagram. This will decrease the possibility of the power cable being pulled out accidentally. 
+
+7. POWER switch 
+This switch turns the power on/off. The power is on when the switch is pressed in. (-> p.18) 
+
+
+Floppy disk drive 
+1. Floppy disk slot 
+This is where floppy disks are inserted for loading or saving data. 3.5 inch 2HD (MF2HD) or 2DD (MF2DD) floppy disks can be used. (-> p.302) 
+
+2. Disk-in-use indicator 
+This indicator will light while data is being read from or written to the floppy disk. Never attempt to remove the disk while this indicator is lit. 
+
+3. Eject button 
+Press this button to remove the floppy disk. Disks must be inserted or removed gently and firmly, and only while the access indicator is dark. 
+
+(Figure)
+
+[Supplementary comments] 
+The back of a floppy disk contains a write protect tab as shown in the following illustration. When this tab is in the downward position (with the window open), it will not be possible to modify, add, or delete data. When you wish to protect important data, you should leave the tab in this position. 
+(Figure)
+Write protect tab 
+Write permit 
+Write prohibit 
+
+[Caution]
+Be aware that Yamaha can make no guarantee regarding data damage that results from improper use. 
+
+
+2. Connections 
+In order to use the QY700, the included AC adaptor and an amp system etc. must be connected. If you use external MIDI devices or controllers, these must also be connected.
+This sections explains how to make these connections.
+
+[Caution]
+Be sure to turn off the power before making any connections. If you make connections while the power is on, you risk damaging external equipment such as the amp or speakers. 
+
+Power supply connections 
+1. Make sure that the power switch of the QY700 is turned off, and connect the included AC adaptor (PA-5B) to the power supply jack. 
+2. Plug the AC adaptor into an AC outlet, and turn on the QY700 power switch. 
+
+[Caution]
+Use only the included PA-5B AC adaptor. Using other AC adaptors will cause malfunctions. Also, be sure to unplug the AC adaptor from the AC outlet if you will not be using the unit for an extended period of time. 
+
+Audio equipment connections
+To output the sound of the QY700, connect an amp or mixer to the output jacks.
+
+Connection to powered speakers
+Connect two powered speakers (left and right) to the output jacks (L/MONO, R).
+If you are connecting only one powered speaker, use the L/MONO jack.
+
+Connection to a mixer
+Connect the output jacks (L/MONO, R) to two channels of the mixer. The channel connected to the L/MONO jack should be panned left, and the channel connected to the -> jack should be panned right.
+Make the same type of connections if you are connecting the QY700 to an MTR or cassette deck.
+
+Using headphones
+If you are using headphones, connect them to the rear panel PHONES (headphones) jack.
+When using headphones, adjust the volume to an appropriate level that will not harm your hearing.
+
+[Caution]
+Do not connect the output jacks of the QY700 to the mic input jacks of an amp or cassette deck etc. If they are connected to mic inputs, the sound quality may be impaired, and the device may be damaged. Also, when connecting the QY700 to a mixer or similar device, set the mixer channels to the Line Input position.
+
+Connecting a foot switch 
+When using a separately sold FC4 or FC5 foot switch, insert the foot switch plug into the foot switch jack located on the rear panel. 
+
+Connecting external MIDI devices 
+Connecting a MIDI keyboard 
+Realtime recording or fingered chord input will be easier if you use a MIDI keyboard.
+Use a MIDI cable to connect the MIDI OUT of the external MIDI keyboard to the MIDI IN-A or IN-B connector on the rear panel.
+
+Connecting a tone generator module 
+QY700 song and pattern playback data can be used to play an external tone generator module.
+Use a MIDI cable to connect the MIDI OUT-A or OUT-B connector on the rear panel to the MIDI IN connector of the external MIDI device.
+
+Connecting an MTR (multi-track recorder)
+Since the QY700 implements MTC (MIDI Time Code) and MMC (MIDI Machine Control), you can produce music while synchronized to an MTC- or MMC-compatible multi-track recorder.
+Since the QY700 does not output MTC, you will need a device that is able to output MTC (such as the Yamaha MD4) if you wish to use MTC for synchronization. In this case, use a MIDI cable to connect the MIDI IN-A or IN-B connector of the QY700 to the MIDI OUT connector of the external device. MTC messages will be transmitted from the external device to the QY700, and the QY700 will synchronize to the clock of the external device.
+If you wish to remotely control operations such as start/stop and fast-forward/rewind on an external MMC-compatible device, use a MIDI cable to connect the MIDI OUT-A or OUT-B connector of the QY700 to the MIDI IN connector of the external device. MMC messages will be transmitted from the QY700 to the external device, and the QY700 will remotely control the external device.
+In this case, set MIDI Sync to "MTC:MIDI-A" or "MTC:MIDI-B" in the MIDI page of Utility mode. (-> p.291)
+
+Connecting two or more devices
+Since the QY700 provides two sets of MIDI connectors, you can connect two or more MIDI devices.
+In the example below, the rear panel MIDI IN-A is connected to a MIDI keyboard, the MIDI OUT-A to a tone generator module, and MIDI IN-B and OUT-B are connected to an MTR.
+If you use MTC or MMC to control an MTR, set the Utility mode MIDI page MIDI Sync setting to "MTC:MIDI-B." (-> p.291)
+If you wish to use the MIDI keyboard to record parts which use the tone generator module, set the Utility mode MIDI page Echo Back setting to "RecMonitor." (-> p.292)
+
+
+3. Using the Style and Demonstration disk 
+Here's how to use the included "STYLE & DEMONSTRATION" disk. 
+
+Contents of the disk 
+[Explanation]
+The included disk contains "STYLE," "DEMO 1" and "DEMO 2." 
+"DEMO 1" and "DEMO 2" allow you to enjoy demo playback, and to playback songs while adjusting the Play Effects or Multi to experience the possibilities of the QY700. 
+"STYLE" allows you to restore the factory settings of the QY700. 
+
+Listening to the demo playback 
+Here's how to load a demo song file from disk and enjoy the demo playback. 
+
+[Caution]
+When "DEMO 1" or "DEMO 2" is loaded from disk, all internal memory will be rewritten by the demo playback data. If internal memory contains any important data that you wish to keep, save the data before loading the demo. 
+
+[Procedure]
+1. With the label facing upward, insert the disk into the floppy disk slot. 
+Insert the disk all the way until it clicks into place. 
+
+2. Press the [DISK] key. 
+You will enter Disk mode. 
+
+3. Press the [F2] (Load). 
+You will enter Load sub-mode, and the top line of the display will indicate "DISK -- LOAD --". 
+
+4. press the  [D1] (All Data). 
+The Load All Data page will appear, and the filenames will be displayed. 
+
+5. Use the cursor keys / data dial to move the cursor to "DEMO 1" or "DEMO 2" and press the  [ENTER]. 
+A message of "Are You Sure? (Y/N)" will appear, asking whether it is OK to erase the data in internal memory and load the data from disk. 
+
+If you do not wish to erase the data currently in memory, press the [Decrement] key to halt loading. Then save the data in memory to a disk, and perform the loading procedure once again. (-> p.307) 
+
+6. Press the [Increment] key. 
+The display will indicate "Executing..." and the data will be loaded. 
+
+7. Press the [SONG] key. 
+You will return to the Song mode display. 
+
+8. Use the cursor keys to move the cursor to the song number, and use the data dial, the [(Increment) key/(Decrement) key] or the numeric keypad -> [ENTER] to set the song number to 01. 
+
+9. press the  [Play] to playback the demo song. 
+Playback will begin, so use the volume control to adjust the volume to a suitable level. 
+Pressing [Stop] will stop playback. 
+
+[Supplementary comments] 
+By changing the song number in step 8 you can playback other songs. 
+
+Restoring the factory settings 
+Here's how to restore the QY700 to the factory settings. 
+
+[Caution]
+When you load "STYLE" from the disk, all internal memory will be rewritten to the factory settings. If internal memory contains any data that you wish to keep, save the data before loading the "STYLE" data. 
+
+[Procedure]
+1. With the label facing upward, insert the disk into the floppy disk slot. 
+Insert the disk all the way until it clicks into place. 
+
+2. Press the [DISK] key.
+You will enter Disk mode. 
+
+3. press the  [F2] (Load). 
+You will enter Load sub-mode, and the top line of the display will indicate "DISK -- LOAD --". 
+
+4. press the  [D1] (All Data). 
+The Load All Data page will appear, and the filenames will be displayed. 
+
+5. Use the cursor keys / data dial to move the cursor to "STYLE" and press the  [ENTER]. 
+A message of "Are You Sure? (Y/N)" will appear, asking whether it is OK to erase the data in internal memory and load the data from disk. 
+If you do not wish to erase the data currently in memory, press the [Decrement] key to halt loading. Then save the data in memory to a disk, and perform the loading procedure once again. (-> p.307) 
+
+6. Press the [Increment] key. 
+The display will indicate "Executing..." and the data will be loaded. 
+
+ 
+This is the end of the file.

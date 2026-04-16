@@ -1,0 +1,671 @@
+Chapter 3. VOICE MODE
+This chapter explains mixer, tune, and voice edit settings.
+Voice mode is where you will select the voices used by a song, and edit voices.
+
+
+About voice mode 
+
+[VOICE] Voice Mode
+[F1] Mixer
+[F2] Tune
+[F3] Voice Edit
+[F4] Drum Setup 1 Edit
+[F5] Drum Setup 2 Edit
+
+
+[Explanation]
+ Voice mode is the mode in which you can select and edit the voices that are used in a song. 
+Voice mode does not have a single fixed "top" display which will always appear when you press the MODE key.(The last-selected display will appear.)
+In the QY700, the tracks of the sequencer block and the parts of the tone generator block are connected according to the Song mode Out Channel TO TG settings, as shown in the following diagram. Before you make voice settings, check the Song mode Out Channel TO TG settings, and understand the relation between tracks and parts. (-> p.105) 
+The settings of the part which is connected to the pattern track by the Out Channel TO TG setting will automatically be overwritten whenever the pattern is switched by the Pattern Voice settings (-> p.225).
+
+If the Recording Mode (-> p.106) is set either to Realtime Recording or to Punch Recording, you will also be able to record from this mode. 
+Voice mode has five sub-mode pages, and these are selected using function keys [F1] to [f5]. 
+Pressing [F1] (Mixer) accesses the Mixer page. Here you can set voice, pan and volume etc. for each part. (-> p.170) Pressing [F2] (Tune) accesses the Tune page. Here you  can make transposition and tuning settings for each part. (-> p.174) 
+Pressing [F3] (VoicEdit) accesses the Voice Edit page. Here you can make settings to modify the voice. (-> p.176) Pressing [F4](DrS1Edit) accesses the Drum Setup 1 Edit page. Here you can make settings to modify a drum set voice.  (-> p.182) This sub-mode can be selected only if Drum Setup 1 is selected as the voice category for the part where the cursor is located. 
+Pressing [F5](DrS2Edit) accesses the Drum Setup 2 Edit page. Here you can make settings to modify a drum set voice. (-> p.182) This submode can be selected only if Drum Setup 2 is selected as the voice category for the part where the cursor is located. 
+
+[Supplementary comments] 
+If the song contains "GM Mode On", "XG System On", or control change or exclusive messages which set program changes, the settings of Voice mode will be ignored. 
+If you want your Voice mode settings to be reflected in the data, highlight the XG Header item in the Save page of Disk mode when saving the song to a Standard MIDI File etc. (-> p.307) 
+
+
+1. Mixer 
+
+[VOICE] Voice Mode 
+[F1] Mixer 
+[F2] Tune
+[F3] Voice Edit
+[F4] Drum Setup 1 Edit
+[F5] Drum Setup 2 Edit
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	display only 	Displays the data selected by the cursor. 	P.171 
+2 Location 	001 to 999 	Indicates the playback location of the song in measures and beats. 	P.171 
+3 Part number 	1 to 32 	The part number for which settings are being made is highlighted. 	P.171 
+4 Velocity meter 	[ ], [_ underline], [M], [S] 	Graphically indicates the velocity value of the note data sent from the song. 	P.171 
+5 Voice category 	[Normal Voice], [SFX Voice], [SFX Kit], [Drum Voice], [Drum Setup 1], [Drum Setup 2], Off	Specify the general category of the voice for each part. This indicates the Bank Select MSB value. 	P.172 
+6 Program number 	001 to 128 	Select the voice for each part. 	P.172 
+7 Bank number 	000 to 101 	Specify the voice bank for each part. This indicates the Bank Select LSB value. 	P.173 
+8 Reverb send 	000 to 127 	Adjust the level sent to the Reverb effect from each part. 	P.173 
+9 Chorus send 	000 to 127 	Adjust the level sent to the Chorus effect from each part. 	P.173 
+10 Variation switch 	on, off 	Specify the part that will use the Variation effect. 	P.173 
+Variation send 	000 to 127 	Adjust the level sent to the Variation effect from each part. 
+11 Pan 	Random, Left63 to Center to Right63 	Specify the position of the sound when stereo playback is used. 	P.173 
+12 Volume 	000 to 127 	Adjust the volume setting of each part. 	P.173 
+13 Expression 	000 to 127 	Adjust the expression setting of each part. 	P.173 
+(Table End)
+
+[Explanation]
+Here you can make settings such as voice, effect, pan and volume for each part, that will apply when playing back or recording a song. 
+It is also possible to make settings while playing back a song, and you can also solo or mute tracks just as in Song mode.
+
+[Procedure]
+1. Press the [VOICE].
+The indicator above [VOICE] will light, and you will enter Voice mode. 
+2. Press [F1] (Mixer) to access the mixer. 
+3. Use [TRACK DOWN]/[TRACK UP] or cursor [left]/[right] to select a part. You can switch between the screens for parts 1 to 16 and parts 17 to 32 by pressing [F6]. 
+4. Move the cursor to the parameter that you wish to set. 
+5. Use [Decrement] key/[Increment] key, the data dial, or the numeric keypad -> [ENTER] to set the value. 
+
+[Supplementary comments] 
+In Voice mode, keys such as cursor the [Play],[Recording],[Stop],[Top] and [Rewind]/[Forward] will function in the same way as in Song Play mode. You can use these keys to listen to the playback while you modify the settings in realtime. If the Recording Mode for song recording (-> p.106) is set either to Realtime Recording Replace or Overdub, or to Punch Recording, song recording can also be performed in Voice mode. 
+[SHIFT]  plus data dial or [SHIFT] plus  [Decrement] key/[Increment] key will increase or decrease the setting of all parts by the same value. 
+[SHIFT] plus numeric keypad -> [ENTER] will set all parts to the same value. 
+
+1. Data display 
+[Explanation]
+The upper line shows the Voice Category / Program Number / Bank Number / Voice Name for the part where the cursor is located. 
+The lower line shows the name and value of the parameter where the cursor is located. 
+ 
+2. Location 
+[Explanation] 
+Location indicates the playback location of the song in measures and beats. 
+. To change the playback location of the song, press [D1] to move the cursor to Location, and use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to specify the desired measure. 
+
+3. Part number 
+This indicates the part number of the QY700's tone generator block. 
+On the QY700, the Track of the sequencer block and the Part of the tone generator block are connected according to the Song mode Out Channel setting TO TG. Before making voice settings, check the Song mode Out Channel TO TG setting, and be sure that you understand the relation between tracks and parts. (-> p.105) 
+The settings of the part which is connected to the pattern track by the Out Channel TO TG setting will automatically be overwritten whenever the pattern is switched by the Pattern Voice settings (-> p.225). 
+Highlight the part number (1.32) for which you wish to make settings. 
+
+[Setting values]
+1 to 32 
+
+
+4. Velocity meter 
+[Explanation]
+When you start playback, the velocity meter will appear. 
+The velocity meter graphically indicates the velocity values of the musical notes that are transmitted from the song. 
+Mute or solo settings can be made independently for each track. Mute temporarily silences a track. Solo mutes the other tracks, allowing you to hear only the playback of a certain track. 
+
+[Procedure]
+1. Use [TRACK DOWN]/[TRACK UP] or the cursor keys to move the cursor to the desired track. 
+2. Press [MUTE], and the display will indicate [M] and the track will be muted. 
+If you press [MUTE] once again for a muted track, it will be un-muted. 
+3. Press [SOLO], and the display will indicate [S] and all other tracks will be displayed as dashed lines, and only the sound of the track located at the cursor will be heard. 
+When a track is being soloed, moving the cursor to another track and pressing [SOLO] will switch the soloed track. In this way, you can successively audition the playback of each track. 
+When a track is being soloed, moving the cursor to another track and pressing [SHIFT] plus [SOLO] swill add the selected track to the playback, allowing you to solo two or more tracks. 
+4. When you press [SOLO] on a soloed track, all solo settings will be canceled simultaneously. 
+When you press [SOLO]  plus  son a soloed track, solo will be canceled only for that track. 
+
+
+5. Voice category 
+[Explanation]
+Voice Category allows you to change the Bank Select MSB value to specify the general category of the voice. 
+Normal Voice is the voice category that specifies normal voices (instrumental sounds). Specify a Bank Select MSB of 000. 
+SFX Voice is a voice category that specifies sound effects. 
+Sounds effects in this category change their pitch when played from different notes of the keyboard. Specify a Bank Select MSB of 064. 
+SFX Kit is a voice category that specifies sound effects. 
+Sounds effects in this category produce a different type of sound effect for each note of the keyboard, similarly to a drum voice. Specify a Bank Select MSB of 126. 
+Drum Voice is the voice category that specifies drum voices. 
+In this category, you can specify Drum Voice for two or more parts, and select a different drum set voice for each part. However it is not possible to modify the drum sounds. 
+Specify a Bank Select MSB of 127. 
+Drum S1 and Drum S2 are voice categories that specify Drum Setups. The drum voices in this category can be modified using Drum Setup Edit. However if Drum S1 is specified for two or more parts, selecting a drum set voice or modifying the sound for one of the parts will automatically change the settings for the other parts as well. 
+[Setting values]
+Normal Voice 
+SFX Voice 
+SFX Kit 
+Drum Voice 
+Drum Setup 1 
+Drum Setup 2 
+Off Part off 
+
+
+6. Program number 
+[Explanation]
+Program Number specifies the voice number that will be used by each part. 
+Voices are selected by three values: Voice Category, Bank Number (see following item) and Program Number. 
+A voice icon will be displayed at the cursor location. The data display location will show the specified program number and the name of the selected voice. 
+The available program numbers will depend on the Voice Category. 
+During playback, this setting will change according to the Program Change data that was recorded into each track of the sequencer block. 
+[Setting values]
+001 to 128 
+[Supplementary comments] 
+For details on voice selection, refer to "Chapter 1. BASIC CONCEPTS". (-> p.43) 
+For voice names and numbers, refer to the separate "QY700 Reference Listings". 
+
+7. Bank number 
+[Explanation]
+Bank Number specifies the Bank Select LSB of the voice that will be used by each part. 
+Voices are selected by three values: Voice Category, Bank Number and Program Number. 
+If the Voice Category is other than (Normal Voice), the Bank Number will be fixed at 000. 
+[Setting values]
+000 to 101 (discontinuous) 
+[Supplementary comments] 
+For details on bank selection, refer to "Chapter 1. BASIC CONCEPTS". (-> p.43) 
+For bank numbers, refer to the separate "QY700 Reference Listings". 
+
+8. Reverb send 
+This specifies the amount that will be sent from each part to the Reverb effect, adjusting the reverb depth. 
+When making this setting, take into consideration the Effect mode Reverb Return setting (-> p.191). 
+000.127 
+
+9. Chorus send 
+[Explanation]
+This specifies the amount that will be sent from each part to the Chorus effect, adjusting the chorus depth. 
+When making this setting, take into consideration the Effect mode Chorus Return setting (-> p.192). 
+[Setting values][Setting values]
+000 to 127 
+
+
+10. Variation switch / Variation send 
+[Explanation]
+If the Effect mode Variation Mode (-> p.190) is set to Insertion, this setting functions as the Variation Switch, specifying the part which will use the Variation effect. 
+Only one selected part can be turned on. 
+If the Effect mode Variation Mode (-> p.190) is set to System, this setting functions as the Variation Send Level, setting the amount that will be sent from each part to the Variation effect, and thus adjusting the depth of the effect. 
+When making this setting, take into consideration the Effect mode Variation Return setting. 
+[Setting values]
+Variation Switch 
+Off, On (Insertion)
+Variation Send Level
+000 to 127 (System)
+
+11. Pan 
+[Explanation]
+This sets the pan position (stereo location) for stereo playback. 
+During playback, this value will follow the Pan data contained in the track. 
+If a Drum Voice is selected, the pan setting specified here will function as an offset relative to the pan setting specified for each drum instrument. 
+Settings of Left63.Center.Right63 will place the sound toward the left, in the center, or toward the right. 
+A setting of Random will produce a special effect in which the sound be move between left and right randomly for each note. 
+[Setting values]
+Random (0), Left63(1).Center(64).Right63(127) 
+
+12. Volume 
+[Explanation]
+This sets the volume for each part. 
+The slider located at the left edge of the display is the master volume. 
+During playback, this value will follow the Volume data contained in the track. 
+[Setting values]
+000 to 127 
+
+13. Expression 
+[Explanation]
+This sets the expression level for each part. 
+During playback, this value will follow the Expression data contained in the track. 
+[Setting values]
+000 to 127 
+
+
+2. Tune 
+
+[VOICE] Voice Mode 
+[F1] Mixer 
+[F2] Tune 
+[F3] Voice Edit
+[F4] Drum Setup 1 Edit
+[F5] Drum Setup 2 Edit
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	display only 	Displays the data selected by the cursor. 	P.175 
+2 Location 	001 to 999 	Indicates the playback location of the song in measures and beats. 	P.175 
+3 Part number 	1 to 32 	The part number for which settings are being made is highlighted. 	P.175 
+4 Velocity meter 	[ ], [_ underline], [M , [S] 	Graphically indicates the velocity value of the note data sent from the song. 	P.175 
+5 Voice category 	 [Normal Voice], [SFX Voice], [SFX Kit], [Drum Voice], [Drum Setup 1], [Drum Setup 2], Off 	Specify the general category of the voice for each part. This indicates the Bank Select MSB value. 	P.175 
+6 Program number 	001 to 128 	Select the voice for each part. 	P.175 
+7 Bank number 	000 to 101 	Specify the voice bank for each part. This indicates the Bank Select LSB value. 	P.175 
+8 Detune 	minus 12.8 to  plus 00.0 to plus 12.7 	Detune the tuning relative to standard pitch (440 Hz). 	P.175 
+9 Note shift 	minus 24 to plus 00 to plus 24 	Modify the pitch of each part in semitone steps. 	P.175 
+10 Transpose 	minus 24 to plus 00 to plus 24 	Modify the pitch of all parts in semitone steps. 	P.175 
+(Table End)
+
+[Explanation]
+Here you can make detune and note shift settings for each part that will apply during song playback or recording. 
+These settings can be made while the song is playing back, and tracks can also be muted or soloed, just as in Song mode. 
+
+[Procedure]
+1. Press [VOICE]. 
+The indicator above v will light, and you will enter Voice mode. 
+2. Press [F2] (Tune) to access the Tune page. 
+3. Use [TRACK UP]/[TRACK DOWN] or cursor [left]/[right] to select a part. You can switch between the screens for parts 1 to 16 and parts 17 to 32 by pressing [F6].
+4. Move the cursor to the parameter that you wish to set. 
+5. Use [Decrement] key/[Increment] key, the data dial, or the numeric keypad -> [ENTER] to set the value.
+[Supplementary comments] 
+In Voice mode, keys such as the [Play], [Stop], [Top] and [Rewind]/[Forward] will function in the same way as in Song Play mode. You can use these keys to listen to the playback while you modify the settings in realtime.
+[SHIFT] plus data dial or [SHIFT] plus [Decrement] key/[Increment] key will increase or decrease the setting of all parts by the same value.
+[SHIFT] plus  numeric keypad -> [ENTER] will set all parts to the same value.
+
+Operations for "1. Data display" . "7. Bank number" are the same as in the Mixer page. For details on these parameters, refer to the explanations for the Mixer page (-> p.170). 
+
+8. Detune 
+[Explanation]
+This detunes the tuning relative to the standard pitch (440 Hz). 
+This lets you make fine changes in the pitch of each part. 
+Setting the melody part slightly sharp will make the melody stand out, and setting the bass part slightly flat will give it additional weight. 
+[Setting values]
+minus 12.8. plus 00.0. plus 12.7
+
+
+9. Note shift 
+[Explanation]
+This adjusts the pitch of each part in semitone steps. 
+[Setting values]
+minus 24. plus 00. plus 24 
+
+
+10. Transpose 
+[Explanation]
+This adjusts the pitch of all parts in semitone steps. 
+[Setting values]
+minus 24. plus 00. plus 24
+
+
+3. Voice edit 
+
+[VOICE] Voice Mode 
+[F1] Mixer 
+[F2] Tune 
+[F3] Voice Edit 
+[F4] Drum Setup 1 Edit 
+[F5] Drum Setup 2 Edit 
+
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	display only 	Displays the data selected by the cursor. 	P.177 
+2 Location 	001 to. 999 	Indicates the playback location of the song in measures and beats. 	P.177 
+3 Part number 	1 to 32 	The part number for which settings are being made is highlighted. 	P.177 
+4 Mono/Poly 	MONO/POLY 	Select the Play mode for each part. 	P.177 
+5 Element reserve 	00 to 32 	Specify the number of elements that must be reserved for each 	P.177 
+part so that the sound does not disappear when the maximum polyphony is exceeded. 
+6 Velocity sensitivity depth 	000 to 127 	Specify how velocity will affect the volume. 	P.178 
+Velocity sensitivity offset 	000 to 127 	Increase or decrease the overall effect of velocity on the volume. 
+7 Portamento switch 	OFF/ON 	Specify whether or not portamento will be applied to each part. 	P.179 
+Portamento time 	000 to 127 	Specify how portamento will be applied to each part. 
+8 MW LFO depth pitch modulation 	000 to127 	Specify for each part how deeply the LFO effect controlled by the 	P.179 
+MW LFO filter modulation 	000 to 127 	modulation wheel will affect pitch, filter, and amplitude. 
+MW LFO amplitude modulation 	000 to 127 
+9 Filter cutoff 	minus 64 to plus 00 to plus 63 	Adjust the frequency at which the filter will take effect, to modify the tone of each part. 	P.179 
+Filter cutoff resonance 	minus 64 to plus 00 to plus 63 	Adjust the filter resonance to modify the tone of each part. 
+10 EG attack	 minus 64 to plus 00 to plus 63 	Adjust the time from when a note is played until the maximum volume is reached. 	P.180 
+EG decay 	minus 64 to plus 00 to plus 63 	Adjust the time over which the volume falls from the maximum level to the sustain level. 	
+EG release 	minus 64 to plus 00 .  plus 63 Adjust the time over which the volume diminishes to silence after the note is released. 
+11 Vibrato rate 	minus 64 to plus 00 to plus 63 	Adjust the speed at which vibrato will modulate the pitch. 	P.180 
+Vibrato depth 	minus 64 to plus 00 to plus 63 	Adjust the depth with which vibrato will modulate the pitch. 
+Vibrato delay 	minus 64 to plus 00 to plus 63 	Adjust the time from when a note is played to when vibrato begins to take effect. 
+12 Pitch bend control 	minus 24 to plus 00 to plus 24 	Specify the range of the pitch change controlled by the PITCH wheel in semitone units, for each part. 	P.181 
+13 Dry level (Only when the Effect parameter 	000 to 127 Specify for each part the amount that is sent to the Dry line of the effect. 	P.181 
+Variation Mode equal System.) 
+(Table End)
+
+[Explanation]
+The Voice Edit page lets you freely modify the voice of each part. 
+Voice Edit parameters are made for the Part, not for individual voices. When a different voice is selected, the voice edit settings will still apply to the newly selected voice. 
+ Of the voice edit parameters, the filter, EG, and vibrato parameters are adjustments relative to the parameters of the voice. Voice edit parameters other than these modify the voice by overwriting the parameters of the voice. 
+
+[Procedure]
+1. Press [VOICE]. 
+The indicator above [VOICE] will light, and you will enter Voice mode. 
+2. Press [F3] (VoicEdit) to access the Voice Edit page. 
+3. Use [TRACK DOWN]/[TRACK UP] or cursor [left]/[right] to select a part. 
+You can switch between the screens for parts 1 to 16 and parts 17.32 by pressing [F6]. 
+4. Move the cursor to the parameter that you wish to set. 
+5. Use [Decrement] key/[Increment] key, the data dial, or the numeric keypad -> [ENTER] to set the value. 
+[Supplementary comments] 
+In Voice mode, keys such as the [Play],[Recording],[Stop],[TOP] and [Rewind]/[Forward] will function in the same way as in Song Play mode. 
+You can use these keys to listen to the playback while you modify the settings in realtime. If the Recording Mode for song recording (-> p.106) is set either to Realtime Recording Replace or Overdub, or to Punch Recording, song recording can also be performed in Voice mode. 
+
+Operation of "1. Data display" to "3. Part number" is the same as in the Mixer page. For details on these parameters, refer to the explanation for the Mixer page. (-> p.170) 
+
+
+4. Mono/Poly 
+[Explanation]
+This selects either Mono mode or Poly mode for each part. 
+In Mono mode, only one note can be sounded at a time, and chords cannot be played. In Poly mode, chords may be played. 
+This setting is ignored for parts for which a Drum Set voice is selected. 
+[Setting values]
+MONO, POLY 
+
+5. Element reserve 
+[Explanation]
+On the QY700, when the total number of voice elements sounding for each part would exceed the maximum polyphony of 32 notes, currently-sounding notes will be turned off, starting with the first-played voice (i.e., last-note priority). 
+Element Reserve allows you to specify a minimum number of elements that will be reserved for each part, so that even if the maximum polyphony is exceeded, the sound of that part will not disappear. 
+For example if Element Reserve is set to 10 for a part, no notes will be turned off for that part as long as it uses 10 or fewer elements, even if a total of more than 32 notes are being requested by all parts. 
+[Setting values]
+00 to 32 
+
+
+6. Velocity sensitivity depth, Velocity sensitivity offset 
+[Explanation]
+By adjusting the sensitivity of the voice to note velocity (keyboard playing strength), this setting modifies the way in which note velocity affects the tone generator. 
+Velocity Sensitivity Depth controls the depth (slope) of the change that occurs in the tone generator relative to the actual velocity value that is received. Higher settings of Depth will cause the tone generator to respond more greatly to changes in the received velocity values. Lowering the Depth setting will cause the tone generator to respond less to changes in the received velocity values. With a Depth setting of 0, the tone generator will not respond at all to differences in the received velocity values. 
+
+(Figure)
+How Depth affects the velocity curve
+(when Offset is fixed at 64)
+
+Velocity Sensitivity Offset creates a fixed increase or decrease in the velocity that is applied by the tone generator. 
+With an Offset value of 64, the received velocity value will be applied by the tone generator without change. An Offset value greater than 64 will produce an overall increase in the velocity values applied by the tone generator, meaning that even if the received velocity value is low, a high velocity value will be applied by the tone generator. Playing the keyboard with more than a given force will produce velocity values that are fixed at the maximum (127). 
+
+An Offset value less than 64 will produce an overall decrease in the velocity values applied by the tone generator, meaning that until the received velocity exceeds a certain level, the minimum velocity value (1) will be applied by the tone generator, and that even if the received velocity value is high, a low velocity value will be applied by the tone generator. 
+
+(Figure)
+How Depth affects the velocity curve
+(when Depth is fixed at 64)
+
+[Setting values]
+Velocity Sensitivity Depth 	000 to 127
+Velocity Sensitivity Offset 	000 to 127
+
+[Supplementary comments] 
+Some settings of these parameters can cause the volume to be lowered. If this occurs, set both Velocity Sensitivity Depth and Velocity Sensitivity Offset to 64. This will, of course, restore the normal velocity response. 
+Velocity Sensitivity Depth and Velocity Sensitivity Offset settings allow you widely vary the way in which the tone generator responds to keyboard playing dynamics. 
+Here are several examples of possible settings which you can refer to as you make your own settings. 
+(Figure)
+ Velocity Sensitivity Depth  equal  64 
+ Velocity Sensitivity Offset  equal  64 
+ This is the standard keyboard setting. 
+(Figure)
+ Velocity Sensitivity Depth  equal  127 
+ Velocity Sensitivity Offset  equal  32 
+ This setting allows small variations in playing strength to produce large variations in the sound. 
+
+(Figure)
+ Velocity Sensitivity Depth  equal  0 
+ Velocity Sensitivity Offset  equal  112
+ This setting causes the tone generator to apply a fixed velocity, regardless of the keyboard playing strength.
+ This setting is convenient for organ-type voices.
+ By raising or lowering the Velocity Sensitivity Offset, you can vary the velocity that is applied by the tone generator. A setting of 64 produces a velocity of 1. A setting of 127 produces the maximum velocity.
+
+(Figure)
+ Velocity Sensitivity Depth  equal  32 
+ Velocity Sensitivity Offset  equal  96 
+ This setting is suitable when you want velocity to change in response to keyboard playing dynamics, but you don't want the velocity value to drop too low.
+ This setting is useful for brass riffs or for solo instruments. 
+
+7. Portamento switch, Portamento time 
+[Explanation]
+Portamento is a function that smoothly changes the pitch between two notes of different pitch. 
+Portamento Switch specifies whether or not portamento will be applied to each part. 
+Portamento Time specifies the way in which portamento is applied to each part. Higher values will cause the pitch to change more slowly. Lower values will produce a faster change.
+Portamento will not apply to drum voices or SFX kit voices. 
+
+[Setting values]
+Portamento Switch 	Off, On 
+Portamento Time 	000.127 
+
+8. Modulation Wheel LFO depth pitch modulation,  Modulation Wheel LFO depth filter modulation,  Modulation Wheel LFO depth amplitude modulation
+[Explanation]
+For each part, these parameters specify the depth of the LFO effect on pitch, filter, and amplitude that is controlled by the modulation wheel. 
+Pitch modulation is vibrato, filter modulation is wah, amplitude modulation is tremolo. 
+Higher values will produce a deeper effect. 
+[Setting values]
+000 to 127 
+
+
+9. Filter cutoff, Filter cutoff resonance 
+[Explanation]
+For each part, these parameters adjust the cutoff frequency of the filter, modifying the tone. 
+Since the filters of the QY700 are low pass filters, the portion of the sound above the cutoff frequency will be cut. 
+A low cutoff frequency will remove many of the overtones, causing the sound to be darker and mellower.A high cutoff frequency will cut few or none of the overtones, allowing the original bright sound of the waveform to be output.
+
+The filter resonance can be specified for each part to modify the sound. 
+Resonance boosts the volume in the area of the cutoff frequency, emphasizing the overtones in that area. By appropriate settings of Resonance, you can simulate the body resonance of stringed instruments etc., or produce sounds typical of analog synthesizers. 
+[Setting values]
+Filter Cutoff	minus 64. plus 00. plus 63
+Filter Resonance 	minus 64. plus 00. plus 63
+
+
+10. EG attack time, EG decay time, EG release time 
+[Explanation] 
+These parameters adjust the time-based changes that occur between the moment that a note is played to when the sound disappears. 
+Attack Time adjusts the time over which the volume rises from zero (when the note is played) to reach the maximum level. 
+Smaller values will produce a faster attack. 
+Decay Time adjusts the time over which the volume falls from the maximum to reach the sustain level. 
+Smaller values will produce a more sharply defined sound. 
+Release Time adjusts the time over which the volume falls from the sustain level (when the note is released) to reach a level of 0. 
+Smaller values will cause the sound to reach silence more quickly. 
+[Setting values] 
+EG Attack Time 	minus 64. plus 00. plus 63 
+EG Decay Time 	minus 64. plus 00. plus 63 
+EG Release Time 	minus 64. plus 00. plus 63 
+
+11. Vibrato rate, Vibrato depth, Vibrato delay 
+[Explanation]
+These parameters are the vibrato settings. 
+Rate adjusts the speed at which pitch is modulated, Depth adjust the depth of modulation, and Delay adjusts the time from when the note is played until vibrato begins to occur. 
+[Setting values]
+Rate 	minus 64. plus 00. plus 63 
+Depth 	minsu 64. plus 00. plus 63 
+Delay 	minus 64. plus 00. plus 63 
+
+
+12. Pitch bend control 
+[Explanation]
+For each part, this sets the width of the pitch change that can be controlled by pitch bend. 
+With a setting of  plus 12, the pitch will change one octave when pitch bend is fully raised or lowered. 
+With negative settings, the direction of pitch change will be inverted. 
+[Setting values]
+minus 24. plus 00. plus 24 
+
+
+13. Dry level 
+[Procedure]
+This parameter can be set only if the Effect mode Variation Mode is set to System. If Variation Mode is set to Insertion, this parameter will not be displayed. 
+For each part, this sets the amount that will be sent to the dry line of the effect. 
+Increasing the Dry Level will decrease the effect. 
+Decreasing the Dry Level will cause the stereo position of sounds which pass through that effect to gather in one location. 
+[Setting values]
+000 to 127
+
+
+4. Drum Setup Edit 
+
+[VOICE] Voice Mode 
+[F1] Mixer 
+[F2] Tune 
+[F3] Voice Edit 
+[F4] Drum Setup 1 Edit 
+[F5] Drum Setup 2 Edit 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	display only 	Displays the data specified for the currently selected part. 	P.183 
+2 Location 	001 to. 999 	Displays the playback location of the song in measures and beats. 	P.183 
+3 Note name 	C sharp to 1 to C5 	Specify the note to select the instrument that you wish to edit. 	P.184 
+4 Drum kit 	001 StandKit, 002 Stnd2Kit, 009 Room Kit, 017 Rock Kit, 025 ElectKit, 026 AnalgKit, 033 Jazz Kit, 041 BrushKit, 049 ClascKit, 001 SFX1 Kit, 002 SFX2 Kit 	Select the drum kit that will be the basis for setup editing. 	P.184 
+5 Reverb send 	000 to 127 	Specify the amount sent from each instrument to the Reverb effect. 	P.184 
+6 Chorus send 	000 to 127 	Specify the amount sent from each instrument to the Chorus effect. 	P.184 
+7 Variation send 	000 to 127 	Specify the amount sent from each instrument to the Variation effect. 	P.184 
+8Pan Random, 	Left63 to Center to Right63 	Specify the stereo location of each instrument. 	P.184 
+9Level 	000 to 127 	Specify the volume of each instrument. 	P.184 
+10 Pitch fine 	minus 64 to plus 00 to plus 63 	Make fine adjustments to the pitch of each instrument. 	P.184 
+11 Pitch coarse 	minus 64 to plus 00 to plus 63 	Adjust the pitch of each instrument in semitone steps. 	P.185 
+12 Alternate group 	000 to 127 	Prevent instruments which should not sound simultaneously from sounding simultaneously. 	P.185 
+13 Key assign 	SINGLE, MULTI 	Specify how multiple MIDI Note On messages of the same note which are received while a note is sounding will be handled by each instrument.	P.185 
+14 Receive note off 	OFF, ON 	Specify whether or not MIDI Note Off messages will be received by each instrument. 	P.185 
+15 Filter cutoff 	minus 64 to plus 00 to plus 63 	Adjust the filter cutoff frequency for each instrument to modify the tone. 	P.185 
+Filter resonance 	minus 64 to plus 00 to plus 63 	Adjust the filter resonance for each instrument to modify the tone. 
+16 EG attack 	minus 64 to plus 00 to plus 63 	Adjust the time from when the note is played until the maximum volume is reached. 	P.185 
+EG decay 1 	minus 64 to plus 00 to plus 63 	Adjust the time from when the maximum volume is reached to when the volume reaches the decay level. 	
+EG decay 2 	minus 64 to plus 00 to plus 63 	Adjust the time from when the decay level is reached to when the volume reaches zero. 
+(Table End)
+
+[Explanation]
+By editing a drum setup, you can indirectly modify the drum voice. 
+The Drum Setup Edit menu will appear in the [F4] and [F5] positions in the bottom line, only if Drum Setup (Drum S1, Drum S2) is selected as the Voice Category. 
+If the same drum setup is selected for two or more parts, editing one drum setup will cause the other to be modified simultaneously. 
+Unlike normal voices, drum voices have a special structure in which different waves are assigned to each note C sharp-1 to  C5. Also, each note to which a wave form is assigned is referred to as an instrument, and various parameters can be set for each instrument. 
+The types of instrument which are assigned to each note will depend on the drum kit. For the arrangements of each drum kit, refer to the separate "QY700 Reference Listings". 
+When you change drum kits, all instrument settings will be initialized. When editing a drum setup, you must first select the drum kit, and then select an instrument and set its parameters. 
+Of these parameters, the filter and EG parameters are relative adjustments to the voice which function by adding the specified value to the original value of the voice. Parameters other than these modify the voice by overwriting the original values of the voice. 
+[Procedure]
+1. Press [VOICE]. 
+The indicator located above will light, and you will enter Voice mode. 
+2. In the Mixer page, select either Drum Setup 1 or Drum Setup 2 as the Voice Category. 
+Either (DrsS1Edit) or (DrsS2Edit) will be displayed above [F4] or [F5]
+3. Press either [F4](DrsS1Edit) or [F5](DrsS2Edit) to access the Drum Setup Edit page.  
+4. Move the cursor to Drum Kit and select the drum kit that will be the basis for your editing. 
+5. Use the microkeyboard to select the drum instrument that you wish to edit. 
+6. Move the cursor to the parameter that you wish to modify. 
+7. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to specify the value. 
+
+
+
+[Supplementary comments]
+In Voice mode, keys such as the [Play],[Recording],[Stop],[Top] and [Rewind]/[Forward] will function in the same way as in Song Play mode. You can use these keys to listen to the playback while you modify the settings in realtime. If the Recording Mode for song recording (-> p.109) is set either to Realtime Recording Replace or Overdub, or to Punch Recording, song recording can also be performed in Voice mode. 
+
+
+1. Data display 
+[Explanation]
+The upper line shows the drum setup and the currently selected instrument. 
+The lower line shows the program number of the currently selected drum voice.
+
+2. Location
+[Explanation]
+This indicates the playback location of the song in measures and beats. 
+To change the playback location of the song, press [D1] to move the cursor to Location, and use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to specify the measure. 
+
+
+3. Note name 
+[Explanation]
+Specify the note to select the instrument that you wish to edit. 
+The types of instrument which are assigned to each note will depend on the drum kit. For the arrangements of each drum kit, refer to the separate "QY700 Reference Listings". 
+[Setting values]
+C sharp -1 to C5 
+
+4. Drum kit 
+[Explanation]
+Select the drum kit that will be the basis of your setup editing. When you change drum kits, the instruments which are assigned to each note will also change. 
+When you change drum kits, all Drum Setup Edit parameters will be initialized. Select a drum kit first, and then modify the parameters. 
+[Setting values]
+001 StandKit, 002 Stnd2Kit, 009 Room Kit, 017 Rock Kit, 025 ElectKit, 026 AnalgKit, 033 Jazz Kit, 041 BrushKit, 049 ClascKit, 001 SFX1 Kit, 002 SFX2 Kit
+
+5. Reverb send 
+Specify the amount that will be sent to the Reverb effect from each instrument. 
+The actual depth of the reverb will also be affected by the mixer setting Reverb Send (-> p.170) and by the Effect mode setting Reverb Return (-> p.191). As you adjust this parameter, keep in mind the relationship to these other parameters. 
+[Setting values]
+000 to 127 
+
+6. Chorus send 
+[Procedure]
+Specify the amount that will be sent to the Chorus effect from each instrument. 
+The actual depth of the chorus will also be affected by the mixer setting Chorus Send (-> p.170) and by the Effect mode setting Chorus Return (-> p.192). As you adjust this parameter, keep in mind the relationship to these other parameters. 
+[Setting values]
+000 to 127 
+
+7. Variation send 
+[Procedure]
+When the Effect mode parameter Variation Mode (-> p.191) 
+is set to System, this parameter functions as the Variation Send Level. 
+This specifies the amount that will be sent to the Variation effect from each instrument, adjusting the depth of the effect. 
+As you adjust this parameter, you should also keep in mind the setting of the Effect mode parameter Variation Return. 
+When the Effect mode parameter Variation Mode (-> p.191) 
+is set to Insertion, setting this parameter to 000 will turn Variation equal Off, and setting it to 1.127 will turn Variation equal On. 
+[Setting values]
+Variation Send Level 
+000 to 127 
+
+8. Pan 
+[Explanation][Explanation]
+This specifies the stereo location of each instrument. 
+Arranging the instruments in the same stereo locations as a real drum set will produce the most natural result. 
+[Setting values]
+Random, Left63 to Center to Right63 
+Random produces a special effect in which the stereo location of the sound varies randomly for each note. 
+Left63 (far left) to Center (center) to Right63 (far right) 
+
+9. Level 
+[Explanation]
+Set the volume of each instrument. 
+[Setting values]
+000 to 127 
+
+10. Pitch fine 
+[Explanation]
+Make fine adjustments to the pitch of each instrument. 
+This setting is made in steps of 1 cent (1 cent is 1/100th of a semitone). 
+[Setting values]
+minus 64 to plus 00 to plus 63 
+
+11. Pitch coarse 
+[Explanation]
+Adjust the pitch of each instrument in semitone steps. 
+With a value of  plus 00, the instrument will sound at the same pitch at which it was sampled. 
+By modifying the pitch, you can make an instrument sound heavier, or create melodic toms, etc. 
+For fine tuning, use 10. Pitch fine. 
+[Setting values]
+minus 64 to plus 00 to plus 63 
+
+12. Alternate group 
+[Explanation]
+This setting lets you prevent instruments which should not sound simultaneously from sounding simultaneously. 
+Instruments which are set to the same Alternate Group number will not sound simultaneously. 
+Instruments which would never sound simultaneously in real life (such as closed and open hi-hat sounds) should be set to the same number. 
+Instruments for which an Alternate Group is specified will always have a Key Assign Mode setting of Single. 
+[Setting values]
+Off, 001 to 127 
+
+13. Key assign 
+[Explanation]
+Specify how multiple MIDI Note On messages of the same note which are received while a note is sounding will be handled by each instrument.
+With a Key Assign setting of Single, the currently-sounding note will be damped (will stop sounding) before the note is re-triggered.
+With a Key Assign setting of Multi, the currently-sounding note will continue sounding, and the next note will be played together with the currently-sounding note. 
+This effect is particularly noticeable for sounds with a slow decay, such as cymbals. In general, a Key Assign setting of Multi will sound more natural. 
+[Setting values]
+Single, Multi 
+
+
+14. Receive note off 
+[Explanation]
+Specify whether or not MIDI Note Off messages will be received by each instrument. 
+If this is on, MIDI Note Off messages will be received to damp (turn off) the currently-sounding note. 
+If this is off, MIDI Note Off messages will be ignored, and the note will continue sounding until it ends naturally. Normally you will use a setting of "off." 
+Use a setting of "on" if you wish to damp cymbals while they are still sounding, etc. 
+[Setting values]
+Off, On 
+
+15. Filter cutoff, Filter resonance 
+[Explanation]
+Cutoff adjusts the filter cutoff frequency of each instrument. 
+By modifying the cutoff, you can brighten or darken the tone. 
+Resonance adjusts the filter resonance for each instrument. 
+By modifying the resonance, you can adjust the emphasis of the overtones in the region of the cutoff frequency, creating a more distinctive tone. 
+[Setting values]
+Filter Cutoff 	minus 64 to plus 00 to plus 63
+Filter Resonance 	minus 64 to plus 00 to plus 63
+
+16. EG attack, EG decay 1, EG decay 2 
+[Explanation]
+These parameters adjust the way in which the volume of each instrument changes over time.
+
+Attack 
+Adjust the time over which the volume rises from 0 (when the note is played) until it reaches the maximum volume. 
+Excessively high settings may mean that the wave will finish playing before the maximum volume is reached, producing an unnatural effect. 
+Decay 1 
+Adjust the time from when the maximum volume is reached until it falls to the decay level. 
+Decay 2 
+Adjust the time from when the decay level is reached until the volume falls to zero. 
+Increasing the value will result in slower change, and decreasing the value will result in faster change. 
+Level is fixed for each instrument, and cannot be adjusted. 
+For some voices, these settings may have no effect. 
+SFX-type voices will not be affected by any of these parameters. 
+[Setting values]
+EG Attack 	minus 64 to plus 00 to plus 63 
+EG Decay 1 	minus 64 to plus 00 to plus 63 
+EG Decay 2 	minus 64 to plus 00 to plus 63 
+
+
+This is the end of the file.

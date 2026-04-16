@@ -37,11 +37,21 @@ This means:
 - Different field layout for dense events (not 6x9-bit + 2-bit remainder)
 - The 13-byte bar header participates in decoding (not just metadata)
 
+**Session 25d: ALL rotation models exhaustively eliminated for dense encoding**:
+- **Structural impossibility**: note 38 (snare) UNREACHABLE from Seg 2 events at ANY rotation
+- **Instrument reordering**: "stable core" bytes (e.g., `ae8d81`=snare) move between event slots per bar
+- **7 models tested**: cumulative (global/per-bar/offset), header-derived, XOR, 8×7-bit beat, free R
+- **Best score**: 5/20 events (25%) — no better than chance
+- **8×7-bit velocity model**: shape correlation up to r=0.979 but wrong absolute values
+- **Barrel rotation model is WRONG for dense patterns** — not a matter of finding correct R
+- **Next step**: create SIMPLE hardware test patterns to isolate the encoding from scratch
+
 **Evidence**:
-- User patterns: sparse data (33% zero bytes), R=9×(i+1) gives 100% (7/7)
-- SGT: dense data (0-2% zeros), ALL rotation models give random-chance results
-- Sections are NOT identical (corrected from Session 19)
-- Brute-force R search unreliable (P(random hit) ≈ 93% for 6-target drum set)
+- User sparse: known_pattern (33% zeros), R=9×(i+1) gives 100% (7/7)
+- User dense: Summer (0% zeros), **ALL rotation models give ≤25%** (max 5/20 events)
+- Factory: SGT (0-2% zeros), ALL models give random-chance results
+- Three distinct encoding regimes: sparse user (solved) → dense user (unsolved) → factory style (unsolved)
+- Dense and factory may use the **same** encoding (both show structural impossibility)
 
 **Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.
 
@@ -56,7 +66,7 @@ This means:
 
 **Previous hardware dumps are consistent**: Feb 26 and Apr 14 header captures differ by only 6/640 bytes, confirming faithful reproduction.
 
-## Priority 1b: Ground Truth Capture (still needed for Pipeline B validation)
+## Priority 1b: Ground Truth Capture (critical for dense encoding)
 
 Program simple patterns on the QY70 with known content and capture via bulk dump.
 
@@ -64,10 +74,24 @@ Program simple patterns on the QY70 with known content and capture via bulk dump
 |---------|---------|---------|
 | A | Solo CHD2, C major chord, 4 bars, 120 BPM | Validate [bar header](bar-structure.md) chord encoding |
 | B | Same as A but Am chord | Which bytes change for different root/type |
-| C | Solo RHY1, kick (note 36) on beat 1 | Decode drum encoding |
-| D | Main A: C major, Main B: G major on CHD2 | Cross-section chord changes |
+| C | Solo RHY1, kick (note 36) on beat 1 ONLY | Isolate single-instrument dense encoding |
+| D | Solo RHY1, HH on beats 1+3 only | Isolate beat pattern encoding |
+| E | Solo RHY1, HH all 8 eighth notes, no groove | Test whether no-groove gives exact vel_code |
+| F | Main A: C major, Main B: G major on CHD2 | Cross-section chord changes |
+
+Patterns C-E are CRITICAL for understanding the [instrument lane model](2543-encoding.md#instrument-lane-model--dense-patterns-session-25b) and [groove template](2543-encoding.md#groove-template-session-25b).
 
 This validates or invalidates all hypotheses about [event fields](event-fields.md) and [bar headers](bar-structure.md).
+
+## Priority 1c: Groove Template Location
+
+**Session 25b**: Per-beat velocity humanization is applied by the QY70 playback engine. The groove parameters are NOT in the track-level data (384 bytes for RHY1). Possible locations:
+
+1. **Header track (AL=0x7F)**: 640 decoded bytes, contains global pattern settings
+2. **Pattern-level setting**: a global "groove type" parameter (like "16Beat" or "Shuffle")
+3. **Hardcoded per-style**: the groove is baked into the QY70 firmware for each style template
+
+**Test**: capture a pattern with groove OFF (if possible) and compare velocities with groove ON. If velocities become exact vel_code multiples (127, 119, 95...) with groove off, the groove is a separable parameter.
 
 ## Priority 2: Bar Header 9-Bit Fields > 127
 
@@ -167,7 +191,10 @@ F1 top 2 bits = beat (confirmed), lower F1 + F2 top bits = clock (59% monotonici
 - **Trailing bytes cross-encoding**: 54% of segments across ALL encoding types have trailing bytes. BASS/CHD2/PHR1 share identical patterns. Format-level feature, not encoding-specific. Purpose still unknown.
 - **Drum PATT OUT in Pattern mode** (Session 17): RHY1/RHY2 drum tracks produce ZERO MIDI output via PATT OUT CH in Pattern mode + External sync. Chord tracks (CHD1) work correctly. Is this a QY70 firmware limitation? Does Style mode handle drums differently? Does a specific MIDI setting enable drum output?
 - **PATT OUT 1~8 + ECHO BACK=Thru** (Session 18): This combination produces ZERO output on ALL channels. ECHO BACK=Thru monopolizes MIDI OUT for pass-through. Must use PATT OUT 9~16 + ECHO BACK=Off.
-- **Chord transposition formula** (Session 18): Bar headers store chord-relative templates, not absolute MIDI notes. Fields 1 and 5 are constant across bars, fields 2-4 change. Need multi-chord capture comparison (CM vs Dm vs G7) to derive the transformation formula.
+- **Chord transposition formula** (Session 18/25b/25c): **8 combinatorial approaches all FAILED** (single field+offset, field pairs, root extraction, intervals, scale factors, nibbles, raw bytes). Header lo7 notes do NOT map to GT notes by any simple formula. **Session 25c discovery**: F0 and F5 are ALWAYS shared between CHD1 and PHR1 (same bar), likely encoding chord info. But F0 is CONSTANT (=53) for bars 1-3 despite different chords (C/Em/D). Raw headers: bars 1-2 share 9/13 bytes, only 4 bytes encode C→Em difference. The QY70 likely uses a runtime voice-leading algorithm with chord table lookup, not a simple transposition formula.
+- ~~**Tempo encoding**~~: SOLVED (Session 25c) — `BPM = raw_data[0] × 95 - 133 + raw_data[1]` from first header SysEx message. Summer=155 BPM (not 110 as assumed), MR. Vain=133 BPM ✓.
+- **Auto-generated bass** (Session 25b): BASS track (AL=0x02) absent from Summer SysEx, yet GT ch12 plays 100 notes (chord roots: G1,C2,E1,D1 matching G-C-Em-D). QY70 auto-generates bass voice from chord progression. Where is the bass pattern template stored? Header track (AL=0x7F)? Built-in style engine?
+- **Groove template scope** (Session 25b): Groove velocity humanization applies ONLY to drum tracks (RHY1 vel=112-127 varies). Chord/phrase tracks play at fixed vel=127. Groove parameters likely in header track or pattern-level settings.
 
 ## External Resources
 

@@ -1,0 +1,82 @@
+APPENDIX
+
+1. Specifications 
+Sequencer block 
+Data capacity 	approximately 110,000 notes 
+Note resolution 	480 clocks per quarter note 
+Polyphony 	64 notes 
+Tempo 	25.0 to. 300.0 
+Record modes 	Realtime Recording, Punch Recording, Step Recording 
+Tracks 	Song: 35 tracks (TR1 to TR32, Pattern, Chord, Tempo) 	Pattern: 16 tracks (TR1 to TR16) 
+Songs 	20 songs 
+Patterns 	64 user styles times 8 sections (512 user styles) 
+Phrases 	3,876 preset phrases up to 99 user phrases for each style 
+Chord Presets 	12 times 28 types (including Thru) 
+Edit 	Voice edit 
+	Drum Setup edit 
+	Song edit 
+	Phrase edit 
+Jobs 	Song jobs: 	25 
+	Pattern jobs: 	30 
+Play effects 	Groove Quantize, Clock Shift / Gate Time / Velocity, Transpose 
+Fingered 	Chord functions Chord Root, Chord Type, On Bass, Original Bass 
+Sequence file formats 	QY700 native sequence format, ESEQ, SMF formats 0/1 
+
+Tone generator block 
+Type 	AWM2 tone generator 
+Maximum polyphony 	32 notes 
+Multi-timbral capability 	32 timbres (with DVA) 
+Preset voices 	Normal voices 480 
+	Drum voices 11 
+Effects 3 	systems (Reverb effect, Chorus effect, Variation effect) 
+Reverb 11 	types 
+Chorus 11 	types 
+Variation 	43 types 
+
+Controls 
+Power switch (POWER ON/OFF) 
+Volume control (VOLUME) 
+Pitch wheel 
+Assignable wheel 
+Shuttle dial 
+Data dial 
+Mode keys ([SONG],[PATTERN],[UTILITY],[VOICE], [EFFECT], [DISK]) 
+Sub-mode keys ([EDIT], [JOB]) 
+Function keys ([F1] to [F6]) 
+Direct keys ( D1 to D5) 
+SHIFT x 2, EXIT x 1 
+CONTRAST control 
+
+Sequencer keys ([Recording],[Stop],[Play],[Top], [Rewind], [Forward]) 
+Locate keys ([LOC 1], [LOC 2]) 
+Track keys ([TRACK DOWN],[TRACK UP],[MUTE],[SOLO]) 
+Data entry keys ([Decrement] , [Increment] ) 
+Cursor keys ([up],[down],[left],[right]) 
+Numeric keypad (0 to 9, -), Enter key ([ENTER]) 
+Octave keys (OCT DOWN x 2, OCT UP x 2) 
+Microkeyboard (E2 to F4) 
+Floppy disk drive 
+
+Display (LCD) 	320 times 240 dot graphic LCD (with CFL backlight, adjustable contrast) 
+LED indicators 	MODE times 6 (green) 
+	REC times 1 (red) 
+	PLAY times 1 (green) 
+	MIDI IN-A (red), MIDI IN-B x 1 (red), MIDI OUT-A x 1 (green), MIDI OUT-B x 1 (green) 
+
+Connectors 	PHONES (stereo phone jack) 
+	Nominal output:  plus 7.0 plus minus 2 dBm (output impedance 33 ohms) 
+OUTPUT (phone jack) times 2 (L/MONO, R) 
+Nominal output:  plus 6.5 plus minus 2 dBm (output impedance 1 k-ohm) 
+	FOOT SWITCH 
+	DC IN 
+	MIDI x 4 (IN-A, IN-B, OUT-A, OUT-B) 
+Floppy disk drive 	3.5 inch 2HD (MF2HD) and 2DD (MF2DD) types 
+Power supply 	AC adaptor (PA-5B) 
+Dimensions 	353 (W) x 305 (D) x 90 (H) (mm) 
+Weight 3.5 kg 
+Included items 	STYLE & DEMONSTRATION (floppy disk) Power adaptor (PA-5B) Owner's manual set: Reference  plus  QY700 Reference Listings 
+
+* Specifications and appearance are subject to change without notice for improvement of the product. 
+
+
+This is the end of the file.

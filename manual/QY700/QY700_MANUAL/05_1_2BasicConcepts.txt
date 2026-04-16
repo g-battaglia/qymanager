@@ -1,0 +1,662 @@
+6. Controller block
+About the controller block 
+The controller block lets you use the microkeyboard, pitch wheel, assignable wheel, foot switch etc. to play music and control the tone generator block via the sequencer block, or to directly control the tone generator block or effect block. 
+In addition to transmitting note data to the tone generator block and to the sequencer block, the microkeyboard are also used to specify chord roots or chord types, and to input fingered chords. 
+Utility mode System settings allow you to specify the control numbers that the pitch wheel and the assignable wheel will output. 
+
+Relationship to other blocks 
+In Song mode and Pattern mode, the controller block is connected to the various parts of the tone generator and to the MIDI OUT connectors via the keyboard track (recording track) of the sequencer block. 
+Data from the controller block passes from the keyboard track to the parts of the tone generator block and to external MIDI devices in accordance with the Out Channel settings "TO TG," "MIDI OUT-A" and "MIDI OUT-B." 
+From the controller block, you can record sequence tracks or user phrases, or play the tone generator block or external MIDI devices. 
+
+[Supplementary comments] 
+When Fingered Chord is ON (FINGRD), musical data will not be output from the keyboard range below the specified Fingered Zone (-> p.299) area.
+The "keyboard track" is the track which is highlighted in the Song Play and Pattern Play pages. 
+The grecording trackh is the track selected by the cursor in the Recording Standby page. If the cursor is in a location other than the track display, the track number will be high lighted.
+
+
+7. Effect block 
+About the effect block 
+This block processes the audio signals from the tone generator block, adding reverberation or ambiance etc. 
+The QY700 has three types of effect: the reverb effect, the chorus effect, and the variation effect. 
+Effect settings for Song mode can be made in Effect mode and in Voice mode. 
+In Effect mode, you can store the effect type and other detailed settings of the three effects for each song, allowing you to create the ideal acoustical ambiance for the song. 
+In Voice mode, you can store the effect send level settings of the three effects for each part of the song. 
+Effect settings for Pattern mode can be made in Pattern Effect and Pattern Voice. 
+In Pattern Effect, you can store the effect type and other detailed settings of the three effects for each pattern, allowing you to create the ideal acoustical ambiance for the pattern. 
+In Pattern Voice, you can store the effect send level settings of the three effects for each part of the pattern. 
+
+Pattern setup 
+When a song that uses patterns is played back in Song mode, you must choose in Pattern Setup the group of settings which will be used: Effect mode or Pattern Effect. 
+Pattern Setup settings are made in the Song Play page (-> p.73). 
+When Pattern Setup  equal  OFF, the Effect mode settings will be used, and the Pattern Effect settings will be ignored. This means that the pattern playback may sound different than when in Pattern mode. 
+However, you can make Voice mode settings so that the effects specified in Effect mode are applied to a pattern. 
+When Pattern Setup  equal  ON, the Pattern Effect settings will be used, and the Effect mode settings will be ignored. Also, the effect settings will change each time the pattern is switched. 
+In this case, the Pattern Effect settings will be transmitted as MIDI data to the effect block and to the MIDI OUT connectors each time the pattern is switched. When using effects on a sequence track, you will need to check the Pattern Effect settings of the pattern that you are using, and set the Effect Send levels of Voice mode. 
+
+Reverb effect 
+The reverb effect is dedicated to reverb. It adds reverberation to the sound. 
+In Effect mode, you can select one of 11 Effect Types, and modify parameter values to adjust the character of the reverb. 
+Effect mode settings are remembered independently for each song. 
+In Pattern mode, you can use Pattern Effect settings to select one of 11 Effect Types for each pattern, and modify parameter values to adjust the character of the reverb. 
+ 
+Chorus effect 
+The chorus effect is dedicated to chorus. It adds spaciousness and depth to the sound. 
+In Effect mode, you can select one of 11 Effect Types, and modify parameter values to adjust the character of the chorus. 
+Effect mode settings are remembered independently for each song. 
+In Pattern mode, you can use Pattern Effect settings to select one of 11 Effect Types for each pattern, and modify parameter values to adjust the character of the chorus. 
+
+Variation effect 
+The variation effect provides 43 types of effect including reverb and chorus, and also distortion and overdrive etc. 
+In Effect mode, you can select one of 43 Effect Types, and modify parameter values to adjust the character of the effect. 
+Effect mode settings are remembered independently for each song. 
+In Pattern mode, you can use Pattern Effect settings to select one of 43 Effect Types for each pattern, and modify parameter values to adjust the character of the effect. 
+
+System Effects and Insertion Effects 
+The effects of the effect block are divided into two types of effect which function in completely different ways: system effects and insertion effects. 
+On the QY700, the reverb effect and the chorus effect are system effects, and the variation effect can be set either as a system effect or an insertion effect. 
+In the case of a system effect, effect processing is performed by using the mixer Send and Return controls to send signals from each tone generator Part to the effect and then return the processed signal to the mixer. 
+In the case of an insertion effect, the effect is connected in series between the instrument and the mixer, and adjusted using the Dry/Wet Balance. On the QY700, an insertion effect can be used on any one specified Part. 
+ System effects and insertion effects are defined within "XG." This means that if you use a tone generator bearing the XG logo, you can use effects not only in a "minimal" way by simply applying chorus and reverb, but also in a more aggressive way to create the fundamental character of the 
+sounds. 
+
+How the effects work 
+Variation mode  equal  Insertion 
+When Variation mode is set to Insertion, the three effects will be connected as shown in the diagram below. 
+Of the 32 parts of the tone generator block, the signals of the part specified by the Voice mode Variation Switch 1 will be input to the variation effect, and the variation effect will be applied here. 
+The signals of all tone generator parts including the above-mentioned part will be sent to the reverb effect and the chorus effect according to the Voice mode settings Reverb Send Level 2 and Chorus Send Level 3. Here you can adjust the depth of the effect for each part. 
+To adjust the overall depth of each effect, use the Effect mode settings Reverb Return Level 4 and Chorus Return Level 5. Here you can adjust the amount of the signal returned from each effect, determining the overall depth of each effect. 
+The stereo location of the effect output is determined by the Effect mode settings Reverb Pan 6 and Chorus Pan 7. 
+A bus line called Send Chorus To Reverb 8 connects the chorus effect to the reverb effect. By using this bus line you can connect the chorus effect and reverb effect in series. 
+
+Variation mode  equal  System 
+When Variation mode is set to System, the three effects will be connected as shown in the diagram below. 
+The signals from all tone generator parts will be sent to the reverb effect, chorus effect, and variation effect according to the Voice mode settings Reverb Send Level 1, Chorus Send Level 2, and Variation Send Level 3. Here you can adjust the effect depth for each part. 
+The overall depth of each effect can be adjusted by the Effect mode settings Reverb Return Level 4, Chorus Return Level 5, and Variation Return Level 6. Here you can set the amount of the signal that is returned from each effect, to adjust the overall depth of the effect. 
+The stereo location of the effect output is determined by the Effect mode settings Reverb Pan 7, Chorus Pan 8, and Variation Pan 9. 
+If Variation Mode  equal  System, three bus lines will be connected.
+Send Chorus To Reverb 10 is a bus line that connects the Chorus Effect to the Reverb Effect. 
+Send Variation To Chorus 11 is a bus line that connects the Variation Effect to the Chorus Effect.
+Send Variation To Reverb 12 is a bus line that connects the Variation Effect to the Reverb Effect.
+By using these three bus lines, you can use the effects in a variety of ways, such as connecting the three effects in series, or dividing them. 
+
+Effect blocks diagram in Song mode (Variation mode  equal  SYS)
+(Figure)
+
+
+8. Basic operation 
+1. Moving the cursor 
+[Explanation]
+You will notice a black, highlighted location in the display. This is referred to as the cursor, and the location of the cursor will be the currently-selected command or data. 
+ Use the cursor keys to move the cursor. 
+[Supplementary comments] 
+ The direction(s) in which the cursor will move is fixed for each screen, and the cursor will not move to locations other than this. 
+If the cursor does not move as you expect, try moving it in a different direction. 
+The cursor will not move to commands or data which cannot be set. 
+
+2. Moving to modes, submodes, and pages 
+[Explanation]
+Selecting modes 
+This refers to switching between Song mode, Pattern mode, Utility mode, Voice mode, Effect mode, and Disk mode. 
+To switch modes, use the following 6 keys. 
+
+[SONG] Move to Song mode.
+[PATTERN] Move to Pattern mode.
+[UTILITY] Move to Utility mode.
+[VOICE] Move to Voice mode.
+[EFFECT] Move to Effect mode.
+[DISK] Move to Disk mode.
+
+[Supplementary comments] 
+When you press a mode key, the mode indicator above that key will light. 
+It is not possible to switch modes during recording. 
+[Explanation]
+Selecting sub-modes 
+This refers to moving within a mode to a sub-mode. 
+To select sub-modes, use the following keys. 
+
+[F1] to [F6] 
+These keys will select the sub-modes which are displayed in the key line of each mode. For details refer to the Function Tree (-> p.34). 
+[EDIT] 
+In Song mode this key selects Song Edit. In Pattern mode this key selects Phrase Edit. 
+[JOB] 
+In Song mode this key selects Song Jobs. In Pattern mode this key selects Pattern Jobs. 
+[Recording] 
+In Song mode this key selects Song Recording. In Pattern mode this key selects Phrase Recording. 
+
+[Explanation]
+Selecting pages 
+This refers to changing pages within the sub-mode. 
+To select pages, use the function keys that correspond to the tab menu. 
+
+This example is of selecting pages within Song (mode) Play Effect (sub-mode). 
+In this display, [F1] to [F3] are assigned to pages, [F4] is assigned to a sub-page, and [F6] is assigned to a special page. The sub-pages and special pages will differ depending on the page. 
+The page will change when you press the function key that corresponds to the desired page. 
+
+[F1]	Move to the Groove page. 
+[F2] 	Move to the Clock Shift / Gate Time / Velocity page. 
+[F3]	Move to the Transpose page. 
+[F4]	Move to the Groove View sub-page. 
+[F6]	Switch the displayed tracks to tracks 17 to 32. 
+
+[Explanation]
+Selecting parameters 
+To select parameters, move the cursor in the page. 
+The parameter name and setting value of the selected parameter will be shown in the top line of the display. 
+
+
+3. Menu selections 
+[Explanation]
+In the Song Job and Pattern Job screens, a menu of the available jobs will appear. 
+This example is of selecting a job from the Song Job list. 
+Jobs can be selected in the following four ways. 
+
+[Cursor Up]/[Cursor Down] -> [ENTER] 
+Use the cursor keys to move the cursor up or down to select the desired job, and press the [ENTER]. 
+
+Data dial -> [ENTER] 
+Rotate the data dial to move the cursor to the desired job, and press the [ENTER]. 
+Rotating the data dial clockwise will move the cursor in the order of 00 -> 01 -> 02 etc. Rotating it counterclockwise will move in the opposite order. 
+
+[Decrement] key/[Increment] key -> [ENTER] 
+Use [Decrement] key/[Increment] key to move the cursor to the desired job, and press [ENTER] . 
+Pressing [Increment] key will move the cursor in the order of 00 -> 01 -> 02 etc. Pressing [Decrement] key will move in the opposite order. 
+
+Numeric keypad -> [ENTER] 
+Use the numeric keypad to directly enter the number of the desired job, and press [ENTER]. 
+When you use the numeric keypad to enter a number, the number will be shown in the upper right of the display. 
+This method is convenient when you already know the desired job number. 
+For example in order to enter the "01 Quantize" page, press numeric key [1] and then [ENTER]. 
+
+[Supplementary comments] 
+Pressing [EXIT] will return to the Job menu, and pressing [EXIT] once again will return to the previous mode. 
+
+
+4. Inputting numbers 
+[Explanation]
+Here's how to enter a number for an item you wish to specify. 
+A number can be specified in the following three ways. 
+
+Data dial 
+You can input a number by rotating the data dial. 
+Rotating the data dial clockwise will increase the number, and rotating it counterclockwise will decrease the number. 
+
+[Decrement] key/[Increment] key 
+You can input a number by pressing [Decrement] key/[Increment] key. 
+Pressing the [Increment] key will increase the number in steps of 1, and pressing the [Decrement] key will decrease the number in steps of 1. 
+
+Numeric keypad -> [ENTER] 
+You can input a number by using the numeric keypad and then pressing [ENTER]. 
+Use the numeric keypad to input a number, and while the number you input is blinking, press [ENTER] to finalize the number. 
+
+5. On/off selections 
+[Explanation]
+Some items have an on/off setting. 
+On/off settings can be made in the following two ways. 
+
+Data dial 
+You can make an on/off setting by rotating the data dial. 
+Rotating the data dial clockwise will turn the setting on, and rotating it counterclockwise will turn the setting off. 
+
+[Decrement] key/[Increment] key 
+You can make an on/off setting by using the [Decrement] key/[Increment] key. 
+Press the [Increment] key to turn the setting on, or press the [Decrement] key to turn it off. 
+
+6. Inputting characters 
+[Explanation]
+Some items such as song name, voice name, track name, style name, pattern name, and file name require you to enter characters. 
+Characters are always entered using the same procedure. 
+[Procedure]
+When you press a microkeyboard, the character printed at the left side of the microkeyboard will be input as a lowercase character. 
+If you hold down the left d [OCT DOWN] (CAPS) key as you press the microkeyboard, the character will be input as an uppercase character. 
+If you hold down the left u [OCT UP] (SHIFT) key as you press the microkeyboard, the symbol printed at the left of the microkeyboard will be input. 
+You can use the numeric keypad to enter numerals. 
+The right d [OCT DOWN] (SPACE) key will enter a blank space. 
+The right u [OCT UP] (DEL) key will delete the character at the cursor location, and the characters to the right of the deleted character will be shifted to the left to close up the gap. 
+Use the cursor keys to move the cursor. 
+[Explanation]
+The number of characters in the character input area will depend on the situation. 
+When entering a filename in Disk mode Save, there are restrictions on the types of characters which can be entered. 
+Also, entering all spaces in the character input area will cause an error. You must use characters other than spaces. 
+
+7. Used Memory display 
+Here's how to check the amount of currently used memory, so that you can see about how much more recording can be done. 
+[Procedure]
+Simultaneously press the right [OCT DOWN] and [OCT UP]. 
+The Used Memory display will appear as long as you continue holding these keys. 
+
+8. Drum Map display 
+[Explanation]
+Here's how to view the drum instruments that are assigned to the microkeyboard. 
+The keyboard will be displayed vertically, and the instrument names will be shown to the right and left of the notes. 
+The bottom of the display is the lowest note, and the top of the display is the highest note. 
+The note names will be shown inside the C notes. This lets you see the octave relationships. 
+By using the d [OCT DOWN] and u [OCT UP] keys to change the octave of the microkeyboard, you can shift the range of the keyboard that is displayed. 
+[Procedure]
+Simultaneously press the left [OCT DOWN] and [OCT UP] keys. 
+The drum map will be displayed as long as you continue pressing the keys. 
+
+
+9. Undo/Redo 
+[Explanation]
+Undo is a function that cancels the last-executed recording, edit, or job operation, and restores the data to its previous condition. 
+Redo is a function that cancels the Undo operation, and re-executes the operation. 
+These jobs are very convenient when important data has been damaged because of recording, editing, or a job. 
+These jobs can be used for recording, editing, and job (except Name) operations in Song and Pattern mode, and for Patch operations in Pattern mode. 
+[Procedure]
+Hold down s and press [JOB]. 
+After a recording, editing, or job operation has been performed, it will always be possible to execute Undo. Likewise, it will always be possible to execute Redo after Undo has been executed, and Undo and Redo will alternate. 
+[Supplementary comments] 
+This procedure does the same thing as the Undo/Redo job in Song Job (-> p.141) and Pattern Job (-> p.259). 
+
+
+10. Initialization 
+[Explanation]
+If you wish to reset the QY700's settings to the factory condition, you can perform the Initialization operation. 
+[Procedure]
+While holding down the left [OCT DOWN] and [OCT UP] keys and the [F sharp /G flat] key located at their right, turn on the power switch. 
+[Supplementary comments] 
+When initialization has been performed and "QY700" appears in the display, release the keys. If you continue holding the three buttons, the drum map display accessed by [OCT DOWN] plus [OCT UP] will appear. 
+When the QY700 was shipped, the contents of the included demonstration disk were loaded into memory, but these contents will disappear when initialization is performed. If you want the contents of the demonstration disk to be in memory, re-load it from the disk. 
+CAUTION.
+When initialization is performed, all the data you created will be erased. If you wish to keep any of your data, you must save it to floppy disk before initializing.
+
+
+11. Other key operations 
+Here are some convenient key operations that you should know. 
+[Explanation]
+Auto Repeat function 
+The cursor keys, [Decrement] key/[Increment] key, and [Rewind]/[Forward] will Auto Repeat. 
+If you continue holding them, the value or item being controlled by the key will change continuously. 
+[Explanation]
+[Rewind]/[Forward] 
+In Song mode or Pattern mode, these keys will rewind/fast-forward measures regardless of the cursor location. 
+[Explanation]
+[SHIFT] 
+[SHIFT] plus data dial or [SHIFT] plus  [Decrement] key/[Increment] key will increase/de-crease common parameters in the display by the same value. 
+[SHIFT] plus numeric keypad -> [ENTER] will specify the same value for common parameters in the display. 
+ 
+
+9. Song creation procedure 
+This section will take you through the steps of actually creating a song, providing a practical demonstration of the relation between phrases, patterns and songs, the procedure for using Auto-Accompaniment to create a song, and recording procedure in Song mode. 
+Before you create the song, use the procedure given in "8. Basic operation" (-> p.51) to initialize the data. 
+In this example, we will use the following procedure to create a song. 
+Create patterns -> Edit patterns -> Input the pattern track -> Input the chord track -> Specify voices -> Realtime recording of track 2 -> Step recording of track 1 -> Edit tracks 1 and 2 -> Edit voices -> Save to disk 
+
+(The score is not available.)
+
+
+Create patterns 
+Patterns to be created 
+(Figure)
+Style 01, Section A "intro" 
+Style 01, Section B "normal 1"
+Style 01, Section C "normal 2" 
+Style 01, Section D "fill 1"
+Style 01, Section E "fill 2"
+Style 01, Section F "ending"
+   
+Pattern creation procedure 
+The procedure for creating a pattern will be explained as we create the Style 01 Section A "intro" pattern. 
+(Figure)
+1. Enter Pattern mode. 
+Press [PATTERN] to enter Pattern mode. 
+2. Select a pattern. 
+(1) Move the cursor to the Style number or Section (-> p.202). 
+(2) Use the data dial, the [Decrement] key/[Increment] key or the numeric keypad -> [ENTER] to select Style 01 and Section A. 
+
+3. Specify the number of measures in the pattern. 
+(1) Press [D1] twice to move the cursor to the number of measures. 
+(2) Use the data dial, the [Decrement] key/[Increment] key, or numeric keypad -> [ENTER] to set the number of measures to 02. 
+
+4. Set the Section Connection (-> p.202). 
+(1) Move the cursor to Section Connection. 
+(2) Use the jog dial or the [Decrement] key/[Increment] key to set the Section Connection to C. 
+
+5. Move the cursor to the location where the phrase or rest will be entered. 
+Refer to the diagram for the pattern you are creating, to check the location where the phrase will be placed. 
+First, move the cursor to M002 of track 1. 
+
+6. Enter the phrase. 
+(1) Use the data dial or the [Decrement] key/[Increment] key to display the phrase. 
+(2) Move the cursor to the phrase Instrument Category, Beat, and Number (-> p.38), and use the data dial, the [Decrement] key/[Increment] key, or numeric keypad -> [ENTER] to select the phrase. 
+(3) For track 1 M002, specify Instrument Category Fa, Beat 16, and Number 004.  
+
+
+7. Enter a rest. 
+(1) Move the cursor to track 1 M001. 
+(2) Press the [F5] (Rest) and a rest will be entered. 
+Refer to "Patterns to be created" (-> p.57), and enter all phrases and rests for Style 01 Sections A to F. 
+
+
+8. Specify the style name and pattern names 
+(1) Press the [JOB] to enter the Pattern Jobs. 
+(2) Use the data dial, the [Decrement] key/[Increment] key or the numeric keypad to move the cursor to "29 Pattern Name." 
+(3) Press the [ENTER] to access the Pattern Name display. 
+(4) Move the cursor to the Style Name, and enter "FunkDeGo". 
+Use the microkeyboard to enter characters. For details refer to "8. Basic operation" (-> p.53). 
+(5) Move the cursor between the Section and Pattern Name, and enter the pattern names for each section A . F. Refer to "Patterns to be created," and input the appropriate pattern names "intro" to "ending." 
+(6) Press the [EXIT] twice to return to the Patch display. 
+
+[Supplementary comments] 
+To erase a phrase or rest that you have input by mistake, use the following procedure. 
+(1) Move the cursor to the phrase or rest that you wish to delete. 
+(2) Press the [F6] (Clear) to erase the phrase or rest. 
+If you wish to modify the phrase, there is no need to erase it.
+
+Now let's playback. 
+Press the sequencer key [Play] to playback the pattern. 
+To create an original pattern, you can layer phrases while Instrument category Beat Number playing back. 
+
+
+Editing a pattern 
+Pattern voice mixer settings 
+. The pattern voice mixer lets you adjust effect send levels, pan, and volume etc. for each track.
+
+1. Select the pattern voice mixer. 
+(1) In Pattern mode Patch, press the [F2](Voice) to enter Pattern Voice. 
+(2) In Pattern Voice, press the [F1] (Mixer) to access the mixer display. 
+
+2. Move the cursor. 
+Move the cursor to the parameter that you wish to set. 
+As an example, let's move the cursor to the track 1 volume setting. 
+
+3. Use the numeric keypad to enter the value, and press [ENTER]. 
+For track 1 volume, enter 115 from the numeric keypad, and press [ENTER]. 
+The value that you input will appear in the data display field. 
+
+Enter all the parameters from the above table. 
+
+4. After you have finished entering all the values, press [ENTER] to return to the Patch display. 
+
+Play Effect Groove Quantize settings 
+Groove Quantize is a function that allows you to apply certain rules to the timing, velocity, and gate time of the note data, producing subtle feelings of rhythmic nuance or "groove" in the playback data. 
+
+1. Access the Play Effect Groove Quantize display. 
+(1) In Pattern mode Patch, press the [F1](PlayFx) to access Play Effect. 
+(2) In Play Effect, press the [F1] (Groove) to access the Groove Quantize display. 
+
+2. Move the cursor. 
+Move the cursor to the parameter that you wish to set. 
+As an example, let's move the cursor to the track 1 template setting. 
+
+3. Use the numeric keypad to enter the value, and press [ENTER]. 
+Here we will set Template  equal  4 and Strength  equal  65 for all tracks. 
+To specify the same value for all tracks, hold down [SHIFT], and use the numeric keypad to enter the value and then press [ENTER] . 
+
+4. After you have finished entering the values, press [EXIT] to return to the Patch display. 
+
+[Supplementary comments] 
+Now let's playback. 
+Press sequencer key [Play] and the pattern will playback. 
+To create an original pattern, you can modify the Pattern Voice or Play Effect settings while playing back. 
+
+
+Pattern track recording 
+Recording the Song mode Pattern track 
+You will record styles and sections on the Pattern track of Song mode. 
+If Styles and Sections have been entered into the Pattern track, patterns will change automatically when the song is played back. 
+Here we will use Step Recording to record Styles and Sections on the Pattern track. 
+
+1. Enter Song mode. 
+Press [SONG] to enter Song mode. 
+
+2. Select the song number. 
+Move the cursor to the song number, and use the data dial, [Decrement] key/[Increment] key or numeric keypad -> [ENTER] to enter 01. 
+
+3. Press the [TRACK DOWN]/[TRACK UP] to move the cursor to the Pattern track. 
+
+4. Press the [Recording] to enter Recording Standby condition. 
+
+5. Press the [F6] (STEP) to select Step Recording as the recording mode. 
+
+6. Press the [Play] to start step recording on the Pattern track. 
+
+7. Move the cursor. 
+Move the cursor to the locations for entering Style and Section. 
+First move the cursor to the Section for measure 001. 
+
+8. Enter the styles and sections. 
+Use the data dial or the [Decrement] key/[Increment] key to enter the styles and sections. 
+Styles can also be enter using numeric keypad -> [ENTER]. 
+Sections can also be enter using the E2 to E3 microkeyboard. 
+For locations which are blank, the pattern that was specified for the previous measure will be repeated. 
+For the measure 001 Section, specify [A]intro. 
+Repeat steps 7 to 8 to input all the items from the above table. 
+
+9. When all record has been completed, press [STOP] to stop recording. 
+
+
+Chord track recording 
+Recording the Song mode Chord track
+1.Press [TRACK DOWN]/[TRACK UP] to move the cursor to the Chord track.
+
+2. Press the [Recording] to enter Recording Standby condition.
+
+3. Press the [F6] (STEP) to select Step Recording as the recording mode. recording. 
+
+4. Press the [Play] to start step recording on the Chord track. 
+
+5. Move the cursor. 
+Move the cursor to the location where you wish to enter the chord. 
+In this example, move the cursor to the first beat of measure 001. 
+
+6. Enter the chord. 
+Use the microkeyboard E2 to D sharp 3 to enter the Chord Root. 
+Use the microkeyboard E3 to F4 to enter the Chord Type. 
+
+As an example, select a Chord Root of D and a Chord Type of m7(9) to specify a Dm7(9) chord. Select the m7(9) Chord Type by pressing the C4 microkeyboard twice in succession. 
+For beats which are left blank, the previously-specified pattern will be repeated. 
+
+Repeat steps 5 . 6 to enter all of the items in the following table of chords. 
+
+7. When all enter has been completed, press the [STOP] to stop recording.
+
+[Supplementary comments] 
+Now let's playback. 
+Press the sequencer key the [Play] and the song will playback. 
+After you have finished entering the Pattern track and Chord track, return to Song Play and playback. 
+Voice settings 
+In Voice mode you will specify the voices that tracks 1 and 2 will use. 
+1. Press [VOICE] to enter Voice mode. 
+2. Press [F1] (Mixer) to select the mixer. 
+3. Move the cursor. 
+Move the cursor to the program number and bank number of parts 1 and 2. 
+4. Select voices. 
+Uses the data dial, [Decrement] key/[Increment] key or the numeric keypad -> [ENTER] to specify the program number and bank number. 
+For part 1, specify 
+Program number  equal  81 
+Bank number  equal  18 
+"Hollow" 
+For part 2, specify 
+Program number  equal  18 
+Bank number  equal  33 
+"LiteOrg" 
+
+
+Realtime record of track 2 
+Here we will record the track 2 organ part in realtime from the musical score on page 56. 
+Before you begin record , press [SONG] to return to Song Play. 
+1. Press [SONG] to enter Song mode. 
+2. Press [TRACK DOWN]/[TRACK UP] to move the cursor to track 2. 
+3. Press the [Recording] to enter Recording Standby condition. 
+4. Press the [F3] (REPLACE) or [F4] (OVERDUB) to select either Replace or Overdub realtime recording.
+For the difference between Replace and Overdub recording, refer to "Chapter 2. SONG MODE" (-> p.109).In this example, press 3 (REPLACE) to select Replace recording, so that you will be able to re-do the recording repeatedly as desired. 
+5. Press the [Play] to start realtime recording of track 2. 
+The play indicator will blink in time to the tempo, and after a count of several measures, recording will begin. With the default settings, there will be one measure of quarter-note clicks. 
+While listening to the previously-record patterns, record your performance. 
+Before you start recording, press [Top] to set the measure to 001:1. 
+6. Press the [Stop] to end recording. 
+. Press the [Play] to playback. 
+
+[Supplementary comments] 
+Changing the tempo 
+Here's how to change the tempo so that it will be comfort-able for you to play. 
+(1) Press d [D3] to move the cursor to Tempo. 
+(2) Use the data dial, [Decrement] key/[Increment] key or numeric keypad -> [ENTER] to set the desired tempo.
+
+Changing the Click Beat, Click Mode, and Count
+Here's how to change the click or count. 
+(1) Press [D4] several times to move the cursor to Click Beat, Click Mode, or Count. 
+(2) Use the data dial, [Decrement] key/[Increment] key or numeric keypad -> [ENTER] to set the desired values. 
+
+Now let's playback. 
+. Press the sequencer key p to playback the song. 
+. Listen to the performance of track 2. 
+ 
+Step recording of track 1 
+Here we will use step recording to record the melody part for track 1 from the musical score printed on page 56.
+
+1. Press [TRACK DOWN]/[TRACK UP] to move the cursor to track 1.
+2. Press the [Recording] to enter Recording Standby. 
+3. Press [F6] (STEP) to select Step Recording. 
+4. Press the [Play] to start step recording on track 1. 
+5. Move the song position pointer to the location where you wish to enter a note. 
+. Use the data dial or [Decrement] key/[Increment] key to move the song position pointer. 
+. If the cursor is located elsewhere than the song position pointer , you must first press the Cursor [left] to move the cursor to the song position pointer.
+. You can move in steps of 1 measure by pressing the [Rewind]/[Forward]. 
+. Since the first note of track 2 is in the first beat of measure 3, press the [Forward] twice.
+
+6. Select the note length. 
+(1) Press [D2] to move the cursor to the note value. 
+(2) Use the numeric keypad to select the type of note that you wish to enter. 
+Since the first note in track 2 is a dotted 8th note, press numeric keypad [4] and then [0]. 
+(Figure)
+[0]	dot 
+[1]	whole note (384 clocks) 
+[2]	half note (192 clocks) 
+[3]	quarter note (96 clocks) 
+[4]	8th note (48 clocks) 
+[5]	16th note (24 clocks) 
+[6]	32nd note (12 clocks)
+[7]	quarter note triplet (64 clocks) 
+[8]	8th note triplet (32 clocks) 
+[9]	16th note triplet (16 clocks) 
+
+7. Check the octave setting of the microkeyboard. 
+. Use the [OCT DOWN]/[OCT UP] to change the octave. 
+. The middle "C" of the keyboard graphic shown in the left edge of the display is the lowest "C" of the microkeyboard. 
+. In this case since the first-entered note is D3, use the [OCT DOWN]/[OCT UP] to set middle "C" to C3.
+
+8. Enter notes. 
+Press microkeyboard to enter notes. 
+A line of a length corresponding to the length of the specified note will appear, and the song position pointer will move to the right. 
+In this example, press the middle "D" microkeyboard (D3). 
+
+9. Enter a tie. 
+The note to be entered next is connected to the following note by a tie. 
+(1) Set the note value to a 16th note, and enter an "E" (E3). 
+(2) Set the note value to an 8th note, and press [SOLO](TIE). 
+The note length will be extended by an 8th note, and the song position pointer will move. 
+
+Repeat steps 6 through 9, and enter all the notes of track 1. 
+
+10. Press [Stop] to stop recording. 
+Press the [Play] to playback. 
+
+[Supplementary comments] 
+Deleting a mistakenly-entered note 
+To delete the note that was entered immediately before, press [F5] (BkDelete). The note that was entered will disappear, and the song position pointer will move back, allowing you to re-enter the note. 
+To delete any undesired note, move the cursor to the note that you wish to delete, and press 6 (Delete). All notes located at the same timing will be deleted. 
+
+Using Jobs 
+In track 1, measures 3 to 10 are identical to measures 23 to 30. In such cases, you can use the Song job Copy Event for more efficient data entry. 
+(1) Press the [Stop] to stop Step Recording. 
+(2) Press the [JOB]j to access the Job menu. 
+(3) Use the data dial, [Decrement] key/[Increment] key, the cursor keys, or the numeric keypad to select "11 Copy Event" and press e to access the Copy Event job. 
+(4) Set the upper line to Song 01, TR equal 01, M003:1 . 010:4, the lower line to Song 01, TR equal 01, M 023 x 1, and press [ENTER]. 
+
+Now let's playback. 
+Press the sequencer key p to playback the song. 
+Make sure that the performance of track 1 is correct. 
+
+
+Editing tracks 1 and 2 
+Quantize 
+Quantize is a job that corrects the timing of notes. Let's quantize to track 2, which was recorded using realtime recording. 
+1. Press the [JOB] to access the Job menu. 
+2. Select the Quantize job. 
+(1) Use the data dial, [Decrement] key/[Increment] key, or the cursor keys to move the cursor to "01 Quantize." 
+(2) Press the [ENTER] to access the Quantize job. 
+
+3. Specify the track which will be Quantized, and the note value that will be the basis for quantization. 
+(Figure)
+Note value that will be the basis for quantization. 
+Track to be quantized. 
+
+(1) Move the cursor. 
+(2) Use the data dial, [Decrement] key/[Increment] key, or the numeric keypad to set the values. If you wish to set other values, move the cursor without pressing the [ENTER]. If you press the [ENTER] the job will be executed. 
+(3) When you have made all settings, press the [ENTER] to execute the job. 
+For track 2, set TR equal 02 and Quantize equal  
+
+Play Effect Groove Quantize settings 
+The same type of Groove Quantization that you used on the pattern can also be applied to song tracks 1 and 2. 
+
+1. Access the Play Effect Groove Quantize display. 
+(1) From Song Play, press [F1] (PlayFx) to access Play Effect. 
+(2) In Play Effect, press [F1] (Groove) to access the Groove Quantize display. 
+
+2. Move the cursor. 
+Move the cursor to set. 
+For this example, set Template and Strength. 
+
+3. Use the numeric keypad to enter the values, and press [ENTER] . 
+Set both tracks 1 and 2 to a Template of 4. 
+Set Strength to 50 for track 1, and 18 for track 2. 
+
+4. When you finish entering the values, press [ENTER] to return to Song Play. 
+
+Now let's playback. 
+Press the sequencer key [Play] to playback the song. 
+Listen to the changes in the performance that are produced by Quantization and Play Effect. 
+
+Modifying the voice of track 1 
+Let's modify the voice that is being used by the track 1 melody. 
+1. Press [VOICE] to enter Voice mode. 
+2. Press the [F3] (VoicEdit) to enter Voice Edit. 
+3. Press the [TRACK DOWN] to set Part to 1. 
+4. Move the cursor. 
+Move the cursor to the parameter that you wish to modify. 
+5. Modify the value. 
+Use the data dial, [Decrement] key/[Increment] key, or the numeric keypad -> [ENTER] to modify the value. 
+Use the following table as a guideline for modifying the values. 
+(Table)
+	PORTAMENT 	FILTER 	EG 
+MONO/POLY 	SW 	TIME 	CUTOFF 	RESNANCE 	ATTACK 
+MONO 	ON 	07  	plus 16  	plus 	43 	minus 64 
+(Table End)
+
+Now let's playback. 
+Press the sequencer key [Play] to playback the song. 
+Playback the song while you modify the voice, and notice how the voice changes. 
+
+
+Save to floppy disk 
+Let's save the patterns and song that you created to a floppy disk. 
+
+1. Prepare a new disk. 
+The QY700 can use 3.5 inch floppy disks of either 2HD or 2DD types. 
+For details on types of disk, refer to "Chapter 7. DISK MODE" (-> p.302). 
+
+2. Insert the floppy disk into the floppy disk drive. 
+For details on inserting floppy disks, refer to "Chapter 7. DISK MODE" (-> p.302). 
+
+3. Format the floppy disk. 
+Press the enter Disk mode. 
+For the formatting procedure, refer to "Chapter 7. DISK MODE" (-> p.306). 
+
+4. Save the data. 
+(1) Press [F1] (Save), and then press d[D1] (All Data) to access the Save All Data page. 
+ 
+(2) Use the microkeyboard to input the filename. 
+Pressing 6 will enter "ALL-DATA" as the filename. 
+
+(3) Press [ENTER]. 
+
+The display will indicate "Executing..." and the data will be saved. 
+
+With this procedure, all data of the song that you created has been saved to floppy disk. 
+
+The song data will remain in memory even if the power is turned off, but even if it is erased when you create a different song etc., you will always be able to recall it by loading the file "ALL-DATA" from the floppy disk. 
+
+This is the end of the file.

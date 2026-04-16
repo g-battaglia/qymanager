@@ -6,6 +6,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 
 - [QY70](qy70-device.md) — Yamaha QY70 portable sequencer/style player
 - [QY700](qy700-device.md) — Yamaha QY700 workstation sequencer
+- [QY700 MIDI Protocol](qy700-midi-protocol.md) — XG SysEx protocol, dump request, parameter tables
 - [Identity Reply Codes](identity-reply.md) — MIDI Identity Reply device identification
 
 ## File Formats

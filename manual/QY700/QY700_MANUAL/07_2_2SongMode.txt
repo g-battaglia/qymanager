@@ -1,0 +1,2074 @@
+3. Track View 
+
+[SONG] SONG PLAY 
+[F2] Track View 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.101 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	1 to 32 	Selects the track that can be played by the keyboard. 
+2 Track status (data, SOLO, MUTE) [ ] : no data [| ] : data exists [M]: MUTE [S]: SOLO 	Indicates whether track contains data. Also indicates/selects SOLO or MUTE operation.	P.101 
+3 Voice program 	View only 	Shows the voice program, as selected under VOICE mode. 	P.102 
+4 Measure 	001 to 999 	Sets playback start position, and indicates current playback location. P.102 
+5 Tempo 	25.0 to 300.0 	Sets tempo for song play. 	P.102 
+6 Meter 	View only 	Shows meter for each measure. 	P.102 
+(Table End)
+
+[Explanation]
+The Track View feature lets you see which measures of which tracks contain recorded data. This makes it easy to check the general sound structure of each track, or of the entire song. 
+A gray rectangle indicates that the measure contains between 1 and 4 recorded events. A black rectangle means that the measure contains more than 4 events. 
+If you press the [EXIT], the QY700 will display a list of the 
+events in the currently selected track and measure. 
+
+[Procedure]
+1. At the SONG PLAY screen, press [F2] (TrView). 
+The QY700 displays the Track view screen. 
+2. Press the [Play] to begin song playback. 
+The PLAY indicator begins flashing, and the QY700 starts playback. 
+3. If you like, you can press the [Stop] to stop playback and freeze the screen. You can then press the [Play] to resume playback. 
+4. When you are finished viewing the tracks, press the [EXIT] to return to the SONG PLAY screen. 
+
+
+1. Track numbers, track name, and keyboard track 
+[Explanation]
+The numbers running down the left of the screen identify the different sequence tracks (tracks 1 to 32). Each track is identified by its track number. (You can scroll the display using the up/down cursor keys.) 
+The highlighted track number identifies the keyboard track. 
+The keyboard track is internally connected to the QY700 controller section. 
+[Setting values]
+1 to 32 
+[Procedure]
+You can set the keyboard track using the up/down cursor key, or the [TRACK UP] or [TRACK DOWN] key. 
+The keyboard track is indicated by highlight. 
+
+
+2. Track status (data, SOLO, MUTE) 
+[Explanation]
+The space to the immediate right of the track number shows you the track's status. If there is no entry, then the track is empty. A [| ] mark indicates that the track contains data. An [M] means that the track is muted, while an [S] means that it is set to SOLO. 
+You can use the [MUTE] key to mute one or more tracks. (See the procedure below.) 
+You can use the [SOLO] key to select a track for solo play, so that playback from all other tracks is switched off. An [S] symbol appears to indicate that the track is selected for solo play, and all [| ] markers change appearance to indicate that these other tracks are temporarily switched off. 
+
+[Procedure]
+1. First select a track using the up or down cursor key or the [TRACK UP] or [TRACK DOWN] key. 
+2. To mute the track: Press the [MUTE] key once, so that the [M] appears.
+To release a mute: Press [MUTE] once again.
+3.To select the track for SOLO play : Press [SOLO], so that the [S] appears.
+To deselect SOLO play, press [SOLO] once again.
+
+You can easily use this feature to listen to your tracks one by one. Begin by playing one of the tracks solo, then move the cursor to another track and press s again. Note that each time you press s, any previous SOLO selection is automatically canceled. 
+
+4. You can also use the solo feature to select multiple "solo" tracks, so that only the selected tracks are produced (with all other tracks silent). Begin by setting one of the tracks to SOLO as described above. Then move the cursor to another track and press [SHIFT] plus [SOLO] 
+To cancel all of these solo selections at once : Move the cursor to any one of these tracks and press [SOLO]. 
+To switch off only one of the solo selections : Move to the corresponding track, and then press [SHIFT] plus [SOLO]. 
+
+3. Voice program 
+[Explanation]
+Each icon indicates the voice program assigned to the corresponding track. (-> p.172) 
+You can make the voice settings from VOICE mode.(-> p.167)
+
+4. Measure
+[Explanation]
+. The measure value selects the start point for song playback. 
+. The measure and beat values increment during playback to indicate the current song location.
+[Setting values]
+001 to 999 
+[Procedure]
+1. Press [D1] to move the cursor to the measure setting area.
+2. Set the measure value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad -> [ENTER].
+[Supplementary comments] 
+You can change the measure value while song playback is in progress. Playback will immediately jump to the new location.
+There are three ways to change the measure during play back, as follows.
+Press d [D1] to move the cursor to the measure display area, and then change the value as described
+above.
+Rotate the shuttle dial, or press [Rewind] or [Forward]. 
+Press [TOP] to return to the top of the song. 
+
+5. Tempo 
+[Explanation]
+The tempo value sets the tempo for recording or playback of the song. 
+The tempo setting applies to all tracks of the song. 
+[Setting values]
+25.0, to 300.0 ( equal Quarter note ) 
+[Procedure]
+1. Press [D1] to move the cursor to the tempo area. 
+2. Set the appropriate value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+6. Meter 
+[Explanation]
+This value shows the time signature set for each measure. 
+[Supplementary comments] 
+You can set these values from the Recording Standby page (-> p.108) or during step recording of the PATTERN track (-> p.125).
+
+
+4. Output Channels 
+[SONG] SONG PLAY 
+[F3] Output Channels 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.104 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	[Seq] 1 to ,32, [Pat] 1 to 16 	Selects track for channel-assignment editing. 
+2. Measure 	001 to 999 	Sets location (measure) for start of song playback, and monitors 	P.104 
+Beat 	View only 	current playback location. 
+3 TO TG Channel setup 	Off,1 to 32 	Sets up channel transmission to the tone generator block. 	P.105 
+4 MIDI OUT-A Channel setup 	Off,1 to 16 	Sets up channel transmission to the MIDI OUT-A connector. 	P.105 
+MIDI OUT-B Channel setup 	Off,1 to 16 	Sets up channel transmission to the MIDI OUT-B connector. 
+(Table End)
+
+[Explanation]
+You use these two pages to select the output locations for each track. The SEQ OUT CH. page sets up channel output for the sequence tracks. The PATTERN OUT CH. page sets up the output for the pattern tracks. 
+You use the TO TG setting to set the track's output channel to the tone generator block. 
+You use the MIDI OUT-A and MIDI OUT-B settings to assign each track to a MIDI OUT channel. 
+The QY700 stores separate channel arrangements for each song. The assignments automatically change each time you switch to a different song. 
+[Procedure]
+1. At the SONG PLAY screen, press [F3] (OutCh). 
+The Output Channel setup screen appears. 
+2. Press [TRACK UP]or [TRACK DOWN] as necessary to select the track you want to work on. 
+
+Note that the sequence-track settings and pattern-track settings are shown on different pages. You can toggle between the pages by pressing [F6]. 
+
+3. Move the cursor to the appropriate channel-setting entry. 
+4. Change the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+5. When you have finished making changes, presse to return to the SONG PLAY screen. 
+
+1. Track numbers, track name, and keyboard track 
+[Explanation]
+Each track is identified by a track number. 
+The highlighted track number identifies the keyboard track. 
+The keyboard track is internally connected to the QY700 controller section. 
+[Setting values]
+Sequence track: 1 to 32
+Pattern track: 1 to 16
+[Procedure]
+Press [TRACK UP] or [TRACK DOWN] until the track number for the desired track is highlighted. 
+Use [F0]6 as necessary to switch between the sequence-track page and the pattern-track page. 
+The keyboard track is indicated by highlight. 
+
+
+2. Measure and beat 
+[Explanation]
+The measure value sets the start point for song playback. 
+The measure and beat values increment during playback to indicate the current song location 
+[Setting values]
+Measure: 001 to 999 
+[Procedure]
+1. Press [D1] to move the cursor to the measure setting area. 
+2. Set the measure value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad.
+[Supplementary comments]  
+You can change the measure value while song playback is in progress. Playback will immediately jump to the new location. 
+There are three ways to change the measure during playback, as follows. 
+Press d [D1] to move the cursor to the measure display area, and then change the value as described 
+above. 
+Rotate the shuttle dial, or press [Rewind] or [Forward]. 
+Press [TOP] to return to the top of the song. 
+
+
+3. TO TG channel setup 
+You use this parameter to set the channel over which each track transmits to the tone-generator block.
+The figure below shows the relationship between the sequencer block (sequence and pattern tracks) and the tone generator block.
+It is permissible to assign multiple tracks to the same TG part (the same channel number).
+If you want to direct a track's data to an external MIDI device only (and not to the tone generator block), set this value to Off.
+. All output-channel settings are stored separately for each song.
+
+[Setting values]
+Off 	Track data not sent to TG block.
+1 to 32 	Track data sent to corresponding TG part.
+[Procedure]
+1. Move the cursor to the TO TG area for the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+4. MIDI OUT-A and MIDI OUT-B channel  setup
+[Explanation]
+You use these settings to assign tracks to MIDI channels. 
+During playback, the QY700 adds corresponding MIDI OUT channel identification data to each track's performance data, and sends the result to the corresponding MIDI OUT connector (A or B). Refer to the illustration below. 
+If you do not want to transmit the track data to the MIDI OUT connectors, set both MIDI-OUT values (MIDI OUT-A and MIDI OUT-B) to Off. Note that you can still produce the track data through the tone generator block, by setting an appropriate value on the TO TG line. 
+All output-channel settings are stored separately for each Sequencer block Tone generator (TG) block song. 
+[Setting values]
+Off 	QY700 does not send data to MIDI OUT. 
+1 to 16 	QY700 sends data out over corresponding MIDI channel, via corresponding MIDI OUT connector (A or B) 
+[Procedure]
+1. Move the cursor to the MIDI OUT-A or MIDI OUT-B area for the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key , or the numeric keypad -> [ENTER]. 
+
+
+5. Song Recording
+
+[SONG] SONG PLAY 
+[Recording] Recording Standby 
+[F3] Replace 
+[F4] Overdub 
+[F5] Punch 
+[F6] Step Recording 
+
+Recording Songs on the QY700 
+The QY700 offers two general methods for recording songs: realtime recording and step recording. 
+With realtime recording, the QY700 operates as a multitrack recorder, recording the performance data as it is played. This allows you to catch all the nuances of an actual performance. 
+With step recording, you input your music one note at a time, almost as if you were writing the notes down on a music sheet. This allows you to create complex phrases without having to play them in real time at the keyboard. 
+The general procedure that you use to make the recording will vary according to whether or not you are using the QY700's auto-accompaniment feature. 
+If you are using auto-accompaniment, you begin by entering the required accompaniment settings. You can then listen to the accompaniment while recording the other parts onto the sequence tracks. 
+If you are not using auto-accompaniment, you can skip the accompaniment setup steps, so that the procedure is shorter. 
+Both of these procedures are outlined below. 
+
+If using auto-accompaniment: 
+1. At the SONG PLAY screen, select the destination song for the recording. (-> p.73) 
+2. Press e to enter Recording Standby. Select the appropriate recording values. (-> p.109) 
+3. Record the styles and sections for the PATTERN track. Use either the realtime method (-> p.112) or the step method (-> p.120). 
+4. Record the chords into the CHORD track, using either the realtime method (-> p.112) or the step method (-> p.120). 
+5. Enter VOICE mode and make provisional mixer settings for all of the parts that will be used to reproduce your recorded tracks. (-> p.170) 
+6. Record on track 1, again using either the realtime (-> p.112) or step (-> p.120) approach. If you are using the realtime method, you can listen to auto-accompaniment while making the recording. 
+7. Now record track 2. (If using the realtime method, you can listen to track 1 together with auto-accompaniment as you record.) Then proceed to record the subsequent tracks in the same way. 
+8. Go to SONG mode's Play Effects submode, and adjust the play-effect settings to get the right rhythms and nuances. You can listen to the recording as you make the adjustments. (-> p.80) 
+9. Go to SONG EDIT mode, and edit the sequence tracks as necessary. (-> p.129) 
+10.If necessary, use appropriate song jobs to make other types of editing changes. (-> p.138) 
+11.Return to VOICE mode, and adjust the tone-generator settings as necessary. Listen to the recording as you make these adjustments. 
+12.When you are satisfied with the results, save the song to disk. 
+
+
+If not using auto-accompaniment: 
+1. At the SONG PLAY screen, select the destination song for the recording. (-> p.73) 
+2. Enter VOICE mode and make provisional mixer settings for all of the parts that will be used to reproduce your recorded tracks. (-> p.170) 
+3. Press e to enter Recording Standby. Set the appropriate recording values. (-> p.109) 
+4. Record on track 1, using either the realtime (-> p.112) or step (-> p.120) approach. 
+5. Now record track 2. (If using the realtime method, you can listen to track 1 as you record.) Then proceed to record the subsequent tracks in the same way. 
+6. Go to SONG mode's Play Effects submode, and adjust the play-effect settings to get the right rhythms and nuances. You can listen to the recording as you make the adjustments. (-> p.80) 
+7. Go to SONG EDIT mode, and edit the sequence tracks as necessary. (-> p.129) 
+8. If necessary, use appropriate song jobs to make other types of editing changes. (-> p.138) 
+9. Return to VOICE mode, and adjust the tone-generator settings as necessary. Listen to the recording as you make these adjustments. 
+10.When you are satisfied with the results, save the song to disk. 
+
+
+Recording Standby 
+
+Parameter 	Values 	Function 	See page 
+1 Recording mode 	[F3](REPLACE), [F4](OVERDUB), [F5](PUNCH), [F6](STEP) 	Selects the recording method. 	P.109 
+2 Multitrack switch 	[F1](MULTI) 	Allows you to record onto all sequence tracks (1 to 16) at the same time. 	P.110 
+3 Song number 	01 to 20 	Selects song for recording. 	P.109 
+Song name 	View only 	Shows name of selected song. 
+4 Pattern setup 	OFF, ON 	Selects whether the pattern's effect is used during song replay. 	P.109 
+5 Recording track 	1 to 32, PATTERN, CHORD, TEMPO 	Selects the track to be recorded. 	P.109 
+6 Track status (data, SOLO, MUTE)	[ ] : no data [ _ ] : data exists [M]: MUTE [S]: SOLO	Indicates whether track contains data. 		P.109 
+  Also indicates/selects SOLO or MUTE operation. 
+7 Style no. 	00 to 65 (where 00 equal off; 65 equal end) 	Sets initial style for backing. 	P.109
+Style name 	View only 	Shows name of selected style. 
+Section 	A to H 	Selects one of the style's 8 sections. 
+8 Chord root 	C, C sharp, D, E flat, E, F, F shrap, G, A flat, A, B flat, B 	Sets the chord root for pattern play. 
+Chord type	M, M7, 6, 7, m, m7, m6, mM7, m7(b5), dim, aug, sus4, add9, M7(9), 6(9), 7(9), madd9, m7(9), m7(11), 7(b5), 7(#5), 7(b9), 7(#9), 7(13), 7(b13), 7sus4, 7(#11),--- ( equal THRU) 	Sets the chord type.		P.109 
+9 Fingered-chord switch 	OFF, FINGRD 	Selects use or nonuse of fingered-chord input. 	P.109 
+10 Measure 	001 to 999 	Sets location for start of recording, and indicates current recording/playback location.	P.109
+Beat 1 to 16  
+11 Tempo 	25.0 to 300.0 	Sets tempo for recording. 	P.111 
+Meter 	1/16 to 16/16; 1/8 to 16/8; 1/4 to 8/4 Sets meter for selected song. 
+12 Click mode Off, Rec, Ply, All Selects use of acoustic click. P.109 
+Click beat 16th note, Eighth note triplet, Quarter note triplet, half note, whole note 	Sets the click interval. 
+Count Off, 1 to 8Ms 	Sets number of lead-in measures to recording start. 
+13 Transposition 	24 to plus 00 to plus 24 	Sets transposition for song playback, in semitones. 	P.109 
+
+
+[Explanation]
+You use SONG RECORDING mode to record your songs. 
+You start a recording session from the SONG PLAY screen by pressing the e key. This puts you into Recording Standby. You can then select the recording method and set the relevant parameters, before beginning the actual recording. 
+If you are using realtime recording, you can use the MULTITRACK feature to simultaneously record all incoming MIDI channels (1 to 16) onto the corresponding sequence tracks. This is useful when you want to record a multipart recording from a computer or another sequencer in real time. (-> p.110) 
+[Procedure]
+1. At the SONG PLAY screen, select the destination song (by song number). Also set up the voice and the effects. 
+2. Again at the SONG PLAY screen, press e to enter Recording Standby. 
+3. Set the recording mode, and the relevant recording parameters. Parameters include: track, meter, starting point (by measure), tempo, click beat, click mode, count, and transposition. 
+4. Press p to start recording. 
+The PLAY indicator comes on (either solid or blinking). 
+You can now record on any track. Tracks that are already recorded can be played back while you record on some other track. 
+If you want to use patterns, you should begin by recording the PATTERN and CHORD tracks. 
+
+5. When you are ready, press s to terminate recording and return to the SONG PLAY screen. 
+6. You can now edit or manipulate your recorded data using SONG EDIT mode (-> p.129) and any of the 
+song jobs (-> p.138). 
+7. When you are satisfied with the results, save your recorded song to disk. (-> p.307) 
+[Supplementary comments] 
+If you press e while in Recording Standby, the QY700 returns to SONG PLAY screen. 
+
+Most of the parameters listed in the table above are described in the explanations for the SONG PLAY screen (-> p.72). Below are described only those parameters that have not yet been explained: the recording mode, the multitrack switch, the recording track, and the meter. 
+
+1. Recording mode 
+[Explanation]
+The QY700 offers four different recording modes. The first three modes (REPLACE, OVERDUB, and PUNCH) are realtime modes, while the STEP mode is used for step recording. 
+With realtime recording, the QY700 operates as a multitrack recorder, recording the performance data as it is played. With step recording, you input the music one note at a time (-> p.120). 
+You use REPLACE mode when you want to overwrite an already recorded track with new data. The first recording is lost, and the new one takes its place. You use this mode, for example, when you are unsatisfied with the results of the first recording and want to redo it. 
+You use OVERDUB when you want to add more data to a track that already contains data. This feature lets you build up a complex phrase out of a series of realtime recordings. 
+You use PUNCH mode when you want to record (in real time) over a specific area of the track only. In this case, you must set the start and end points before you begin the recording. This feature allows you to redo segments that you don't like, while retaining the segments that you do like. Note that PUNCH mode always replaces (destroys) the original data over the specified area. (-> p.118) 
+
+[Setting values]
+[F3] (REPLACE) Record in real time, overwriting already recorded data.
+[F4] (OVERDUB) Record in real time, retaining already recorded data.
+[F5] (PUNCH) Record in real time over specified segment of the track, overwriting any data already recorded in that area.
+[F6] (STEP) Step recording 
+
+[Procedure]
+Press the corresponding function key: [F3] (RE-PLACE), [F4] (OVERDUB), [F5] (PUNCH), or [F6] (STEP).
+[Supplementary comments] 
+The multitrack recording feature is available with all realtime recording modes. If you are using step recording, the MULTI option will not appear on the screen. (-> p.110) 
+
+2. Multitrack switch 
+[Explanation]
+This feature is available with all realtime recording modes (REPLACE, OVERDUB, and PUNCH). It is not available with STEP recording. 
+If you select this feature, the QY700 will simultaneously record data received over MIDI channels 1 to 16 onto the corresponding sequence tracks (tracks 1 to 16). This is useful when you want to record (copy) a multipart recording from a computer or another sequencer in real time, or when you want to record from a MIDI instrument (such as a MIDI guitar) that outputs over multiple channels. 
+
+[Explanation]
+[MULTI] (Black letter) The Multitrack function is OFF. The QY700 records to one selected track only. 
+[MULTI] (White letter) The Multitrack function is ON. 
+
+[Procedure]
+1. At the Recording Standby page, select one of the realtime recording modes (REPLACE, OVERDUB, or 
+PUNCH). 
+2. Press [F1] (MULTI) to set the Multitrack feature ON. The [F1] indicator appears highlighted (MULTI) to indicate that multitrack recording is selected. 
+3. You can switch the function off by pressing [F1] (MULTI) once again.
+[Supplementary comments] 
+Before starting a realtime recording from an external sequencer or computer, be sure that MIDI SYNC, MIDI  CONTROL, and other relevant MIDI parameters are set correctly. (-> p.291) 
+
+5. Recording Track 
+[Explanation]
+ This parameter selects the track to be recorded. 
+The track number of the selected track is highlighted on the screen. 
+
+[Setting values]
+TR1 to TR32 	Sequence track 1 to 32 
+PATTERN 	Pattern track 
+CHORD 	Chord track 
+TEMPO 	Tempo track 
+
+[Procedure]
+Press [TRACK UP] or [TRACK DOWN] until the track number of the desired track is highlighted. 
+
+[Supplementary comments]
+For TEMPO recording, you can use only realtime (REPLACE or PUNCH) recording modes. But you can use the SONG EDIT mode to apply step changes to the track. 
+To record pattern data into the 16 pattern tracks, use PATTERN mode. (-> p.197) 
+
+11. Meter 
+[Explanation]
+This parameter sets the meter for each measure of the song. 
+The selected meter applies to all tracks. 
+Although you will generally set these values before starting to record, you are also free to set or change them after recording is completed. If your song will include time changes, you can record the whole song in a standard meter such 4/4 and then make the required adjustments later. 
+You can use step recording of the PATTERN track (-> p.125) to adjust each measure's meter value. 
+[Setting values]
+1/16 to 16/16, 1/8 to 16/8, 1/4 to 8/4 
+[Procedure]
+1. Press [D3] to move the cursor to the meter setting area. 
+2. Set the value using the data dial or the [Decrement] key or [Increment] key. 
+[Supplementary comments] 
+To change the meter at some internal point within the song: 
+First select the measure at which you want to make the change, and then set the meter value. 
+
+
+Realtime Recording: Sequence Tracks (TR1 to TR32) 
+[Explanation]
+You use this function to record a performance in real time. 
+You can input the performance using the QY700 microkeyboard, a remote MIDI keyboard, or some other 
+type of remote MIDI device 
+This section describes the [F3] (REPLACE ) and [F4] (OVERDUB) realtime recording methods. The [F5] (PUNCH) method, which is also realtime, is described on a later page. 
+You use the 3 (REPLACE) method when you want to overwrite any data already existing on the track -- for example, when you want to redo a phrase that you are not satisfied with. 
+You use 4 (OVERDUB) when you want to add your new performance data to the data already contained in the track. This allows you to build up a complex phrase by recording it as a combination of several parts. 
+[Procedure]
+1. At the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F3] (REPLACE) or [F4] (OVERDUB) to select the recording method. 
+3. Press the [TRACK UP] or [TRACK DOWN] as necessary to select the track you want to record. 
+4. Press the [Play]. 
+The PLAY indicator begins flashing. The QY700 counts out the specified number of lead-in measures (as set by the COUNT parameter; see page 78), and then begins the recording. 
+5. Input the performance data from the microkeyboard or your remote MIDI instrument. 
+
+6. When you are ready to stop recording, press the [Stop]. 
+The QY700 returns to the SONG PLAY screen. 
+You can use song job 00 (UNDO/REDO) to cancel a recording that you have just made. This allows you to recover data that you have inadvertently over-recorded. (-> p.141) 
+Remember to set the appropriate parameters (such as measure, tempo, meter, click beat, click mode, count, and transposition) before beginning the recording. (-> p.109) 
+If you have selected a style number and section, the QY700 will start pattern replay at the same time that it starts to record. If you don't want to hear a pattern, set the style number to 00. 
+If you have selected a pattern whose section connection is set to End, the QY700 will automatically stop recording when the pattern playback reaches its end. If you do not want this to happen, select a different pattern or else change the section connection setting. (-> p.202) 
+You can use the 1 (MULTI) function to make a simultaneous recording of multiple MIDI channels. (-> p.110) 
+Sequence tracks can record system-exclusive data, subject to memory constraints. (You can use your QY700 as a MIDI data filer.) 
+If you input your recording using the QY700 keyboard keys, the velocity for each note is set to 88( f ). If you want true recording of velocity values, use a remote MIDI keyboard for the input. 
+Before recording onto the QY700 from a remote keyboard, go to UTILITY mode and set the MIDI "echoback" setting to "RecMonitor". (-> p.292) 
+
+
+Realtime Recording: PATTERN Track 
+
+[SONG] SONG PLAY 
+[Stop] Song Recording 
+[F3] Replace 
+[F4] Overdub 
+	TR1 to TR32 
+	PATTERN 
+	CHORD 
+	TEMPO 
+[Explanation]
+You use this function to select patterns (styles and sections) in real time. 
+This section describes the 3 (REPLACE) realtime method. When you record with this method, you overwrite any data already existing on the track. This is useful when you want to redo an arrangement that you are not satisfied with. 
+Note that it is not possible to select the [F4] (OVERDUB) method for PATTERN-track recording. 
+The "section connection" setting may cause automatic section switching or automatic termination of the song. (-> p.202) 
+[Setting values]
+Style number: 00 ( equal off), 01 to 64, 65 ( equal end) 
+. Section: A to H 
+1. At the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F3] (REPLACE). 
+
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to set 
+the recording track to PATTERN. 
+4. Move the cursor to the style number entry on the screen. Use [Decrement] key, [Increment] key, or the numeric keypad to select the style number for the first measure. Then set the section by pressing a key from E2(A) to E3(H) on the microkeyboard. 
+5. Press the [Play]. 
+The PLAY indicator begins flashing. The QY700 counts out the specified number of lead-in measures (as set by the COUNT parameter; see page 78), and then begins the recording. 
+6. Leave the cursor positioned at the style-number area as the recording proceeds.To switch the style number, use [Decrement] key, [Increment] key, or the numeric keypad. To switch the section, press a key from E2(A) to E3(H). 
+
+The changes that you make become effective starting from the next measure. (The QY700 does not change patterns in the middle of a measure.) In other words, the screen always indicates the style and section to be recorded into the upcoming measure. 
+
+7. When you are ready to stop recording, press [Stop]. 
+The QY700 returns to the SONG PLAY screen. 
+
+[Supplementary comments] 
+You can use song job 00 (UNDO/REDO) to cancel a recording that you have just made. This allows you to recover data that you have inadvertently over-recorded. (-> p.141) 
+Remember to set the appropriate parameters (such as measure, tempo, meter, click beat, click mode, count, and transposition) before beginning the recording. (-> p.109) 
+It is a good idea to select a slow tempo. This will make it easier to enter the style and section values at the right time. 
+Set the style number at the end of the song to 65 ( equal end). If you set a different value, the song will not end. (-> p.113) 
+You can use step recording of the PATTERN track to review or modify the recorded style and section values. (-> p.125) 
+
+
+Realtime Recording: CHORD Track 
+[Explanation]
+You use this function to record chord values (root, type, on-bass, and original bass) onto the CHORD track in real time. 
+This section describes the [F3] (REPLACE) realtime recording method. When you record with this method, you overwrite any data already existing on the track. This is useful when you want to redo a phrase that you are not satisfied with. 
+Note that it is not possible to select the [F4](OVERDUB) method for CHORD-track recording. 
+[Setting values]
+Chord root:C, C sharp, D, E flat, E, F, F sharp, G, A flat, A, B flat, B 
+Chord type: M, M7, 6, 7, m, m7, m6, mM7, m7 (5), dim, aug, sus4, add9, m7 (9), 6 (9), 7 (9), madd9, m7 (9), m7 (11), 7 (5), 7 (5), 7 (9), 7 (9), 7 (13), 7 (13), 7sus4, 7 (11), --- ( equal THRU) 
+
+Note that you can set an "on-bass" or "original bass" value for each chord. 
+[Procedure]
+1. Starting from the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F3] (REPLACE). 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to set the recording track to CHORD. 
+4. If necessary, move the cursor to the fingered-chord switch area, and use the data dial or [Decrement] key/[Increment] key to select whether to use the fingered chording. 
+5. Press the [Play]. 
+The PLAY indicator begins flashing. The QY700 counts out the specified number of lead-in measures (as set by the COUNT parameter; see page 78), and then begins the recording. 
+6. Record the chords. 
+
+If you are not using fingered chords, enter chords as follows. 
+To select the chord root: 
+Press a microkeyboard between E2 and D sharp 3. 
+To select the chord type: 
+Press a microkeyboard between E3 and F4. 
+To set the "on-bass": 
+Hold down the left-side d [OCT DOWN] and press a microkeyboard key between E2 and D sharp 3. 
+To set the "original bass": 
+Hold down the left-side u [OCT UP] and press a microkeyboard key between E2 and D sharp 3, followed by a key between E3 to F4. 
+
+Press the [ENTER] at the precise time that you want to record the chord onto the track. (The chord is recorded at the instant that this is pressed.) 
+
+If you are using fingered chords, enter as follows. 
+1) Be sure that the cursor is at the fingered-chord ON/OFF area, and that the setting is FNGRD. Leave the cursor in this area. 
+2) Play the desired chord within the "fingered-chord zone" on your external MIDI keyboard (-> p.299). The QY700 will automatically set the chord root and type. 
+3) While continuing to hold down the chord in the keyboard zone, press a single note to the left of the zone to set the "on-bass," or play a chord to the left of the zone to set the "original bass." 
+4) Release the notes to record the chord. (The chord is recorded at the instant that the notes are released.) 
+
+7. When you are ready to stop recording, press [Stop]. 
+The QY700 returns to the SONG PLAY screen. 
+
+Entering the syncopation 
+Although chords generally cover a single full beat, it is possible to time the recording so that you get an eighth- or sixteenth-note syncopated lead-in. To get an eighth-note lead in, enter the chord at least one eighth-note ahead of the beat. To get the 16th-note syncopation, enter the chord one 16thnote ahead of the beat. 
+
+[Supplementary comments]  
+You can use song job 00 (UNDO/REDO) to cancel a recording that you have just made. This allows you to recover data that you have inadvertently over-recorded. (-> p.141) 
+Remember to set the appropriate parameters (such as measure, tempo, meter, click beat, click mode, count, and transposition) before beginning the recording. (-> p.109) 
+It is a good idea to select a slow tempo. This will make it easier to enter the chord values at the right time. 
+You can use step recording of the PATTERN track to review or modify the recorded chords. (-> p.127) 
+
+[Explanation]
+You use this function to record tempo changes for the song. 
+This section describes the 3 (REPLACE ) realtime recording method. When you record with this method, you overwrite any data already existing on the track. 
+Note that it is not possible to select the [F4] (OVERDUB) method for TEMPO-track recording. 
+[Setting values]
+Tempo: 	Quarter note  equal  25.0 to 300.0 
+[Procedure]
+1. Starting from the SONG PLAY page, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F3] (REPLACE). 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to set the recording track to TEMPO. 
+4. Press the [Play]. 
+The PLAY indicator begins flashing. The QY700 counts out the specified number of lead-in measures (as set by the COUNT parameter; see page 78), and then begins the recording. 
+The cursor automatically moves to the tempo entry area. 
+
+5. Make the required tempo changes using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+The tempo changes are recorded as you make them. 
+
+6. When you are finished recording the tempo changes, press [Stop]. 
+The QY700 returns to the SONG PLAY screen. 
+
+
+Punch Recording 
+[Explanation]
+With punch recording, you record over (replace) a specific area in an already recorded track. You begin by setting up the start and end points (the punch-in and punch-out points) for the area you want to replace. You then record over the area in real time. 
+You set the punch-in and punch-out points by specifying the measure and beat. 
+With the exception of the punch-in and punch-out settings, this method is identical to the REPLACE method for realtime recording. For additional information, see page 112. 
+[Procedure]
+1. Starting from the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F5] (PUNCH). 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to select the track you want to record.You can select any of the sequence tracks (TR1 to TR32) or the PATTERN, CHORD, or TEMPO track. 
+4. Press [D2] to position the cursor in the punch-point entry area. Set the punch-in and punch-out values (both measure and beat) using the data dial, the [Decrement] key/[Increment] key, or the numeric keypad. 
+5. Press d [D1] to move the cursor to the song-measure entry area. Set the measure at which you want playback to begin. 
+
+You will generally want to start playback several measures before the punch-in point. 
+
+6. Press the [Play]. 
+The PLAY indicator begins flashing, and song playback begins from the measure you specified at Step 5 above. The QY700 then automatically switches into recording operation when the song reaches the punch-in point. It then resumes playback upon reaching the punch-out point. 
+
+7. Input the data you wish to record, in real time. When you are finished, press s to return to the SONG PLAY screen. 
+
+Punch-In Point 
+This is the point within the song at which the QY700 begins realtime recording operation. You set this point by specifying its measure and beat. 
+
+Punch-Out Point 
+This is the point within the song at which recording stops, and the QY700 resumes song playback. You set this point by measure and beat. 
+
+
+The figure below illustrates the process. The QY700 switches from PLAY to RECORD at the punch-in point, then returns to PLAY at the punch-out point. 
+(Figure)
+Operation switches from playback to recording at Measure 13, Beat 1 of the song.
+Recording stops and playback resumes at Measure 16, Beat 1.
+
+
+Step Recording: Sequence Tracks (TR1 to TR32) 
+
+[SONG] SONG PLAY 
+[Recording] Song Recording 
+[F6] Step Recording 
+TR1 to TR32 
+PATTERN 
+CHORD 
+[Explanation]
+ You use this method to create a recording one note at a time,setting appropriate values for each note's length, velocity,and so on.
+[Procedure]
+1.Starting from the SONG PLAY screen, press [Recording].
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on.
+2. Press [F6] (STEP) to select step recording. 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to select the sequence track you want to record on (TR1 to TR32). 
+4. Press the [Play]. 
+The PLAY indicator comes on. The QY700 displays the step recording page for sequence-track recording.
+5. Move the location pointer to the point where you want to enter a note, using [Decrement] key/[Increment] key, the data dial, or the shuttle dial.
+To jump to a distant measure: Press d [D1] to move the cursor to the location-setting area, then enter the measure number with the numeric keypad.
+2] for step time, [D3] for velocity, [D4] for gate time) to move the cursor to the entry area, then enter the value using the data dial, [Decrement] key/[Increment] key, or numeric keypad. 
+7. Now enter the note itself. You can select the note using either the microkeyboard or an external MIDI key board. 
+If you want to enter a rest, press the [MUTE] key. If you want to enter a tie, press the [SOLO] key.
+
+8. If you make an incorrect entry, you can delete it as follows. 
+To delete the last note you entered, press [F5] (BkDelete). The location pointer moves back to position it had just before you entered the note. 
+To delete some other note: Move the location pointer to the note's location and press 6 (Delete). All notes that start at that position will be deleted. 
+9. When you have finished making your entries, press the [Stop] to terminate the recording and return to the SONG  PLAY screen.
+[Supplementary comments] 
+Under step recording, note registration occurs when you release the key(s), rather than when you press them. This  makes it easy to enter a block chord: you can pick out the  notes one by one and then release them all at the same time. 
+You may want to enter rough velocity values at this point (using only f, p, and mp, for example). You can then use one of the song jobs (such as Crescendo or Modify Velocity) to adjust the values later. (-> p.138) 
+Step recording supports entry of note data only. You can add other types of data using the SONG EDIT mode's Insert function (-> p.133). 
+
+The remainder of this section describes the step recording parameters (the parameters displayed on the screen) and the use of the step time, [D3] for velocity, [D4] for gate [MITE] and [SOLO] keys,. 
+
+Beat Graph 
+The beat graph is a useful guide for setting up the timing for your recording. 
+Each dash (-) on the graph represents a 32nd-note interval. 
+Eight consecutive dashes correspond to a quarter note, while 32 consecutive dashes correspond to a whole note. 
+A filled dot mark appears in the beat graph to indicate that at least one note begins at that point. 
+As an example, assume that you are recording in 4/4 time and your first measure contains the following note pattern: 
+Quarter note | Quarter note | Eighth note 16th note 16th note| Eighth note Eighth note. In this case, the beat graph will appear as shown below. 
+(Figure)
+ The beat graph cannot accurately indicate notes shorter than a 32nd. You can check the status of these notes using SONG EDIT mode (-> p.130). 
+
+[Explanation]
+The location pointer is the small triangular mark that appears just above the beat graph. The pointer points down at the current input location. 
+If you move the location pointer so that it comes above one of the note markings on the beat graph, the QY700 will play out the corresponding note(s). 
+When selected by the cursor, the pointer appears highlighted on the screen. When the pointer is in this condition, you can move it using the Cursor [left] or [right] key, the data dial, or the [Decrement] key or [Increment] key. 
+Regardless of the cursor position, you can always move the pointer using the shuttle dial or the [Rewind] or [Forward] keys. 
+When you enter a note, a rest, or a tie, the pointer automatically advances by one step. 
+
+Piano Roll 
+[Explanation]
+This graphical representation shows the pitch, timing, and length (gate time) of each recorded note. The horizontal gridlines represent pitch, the vertical gridlines correspond to time, and the horizontal bars indicate individual notes. 
+You can scroll the piano roll up or down an octave by pressing the [OCT UP] or [OCT DOWN] key. 
+The piano roll automatically scrolls in the horizontal direction as you move the location pointer. 
+
+
+Location 
+The location area indicates the current position of the location pointer. The first number gives the measure, the second gives the beat, and the third gives the number of clock cycles following the beat (the clock count). 
+Note that each beat is divided into 480 clock cycles (000 to 479)
+A clock count of 000 indicates that the pointer is at the start of the beat; a value of 240 indicates that it is at the center of the beat. 
+You can use the location setting to jump the location pointer to a different measure, as described in the following procedure. 
+
+[Procedure]
+1. Press d [D1] to move the cursor into the location area. 
+2. Select the new location using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+Step Time 
+[Explanation]
+This parameter sets the step time for the next note to be 
+You can use the upper setting area to set the step time by note type. The easiest way to make this setting is by pressing the appropriate numeric key, as shown below. Note that after entering a note type (by pressing a key between [1] and [9]), you can change it into the corresponding dotted note by pressing [0] once. Or you can change it to a double-dotted note by pressing [0] twice. When you select the note type, the clock-cycle value (in the lower setting area) sets accordingly. 
+(Figure)
+0	Dotted note 
+1	Whole note (1920 cycles) 
+2	Half note (960 cycles) 
+3	Quarter note (480 cycles) 
+4	Eighth note (240 cycles) 
+5	16th note (120 cycles) 
+6	32nd note (60 cycles) 
+7	Quarter-note triplet (320 cycles) 
+8	Eighth-note triplet (160 cycles) 
+9	16th-note triplet (80 cycles) 
+
+The lower part of the step-time entry area sets the step time by clock cycles. You can set to any value from 0001 to 9999. If the input value matches the cycle length of any of the notes indicated above (or the corresponding dotted note), the note image will appear in the upper part of the entry area. 
+1. Press d [D2] to move the cursor to the upper part of the step time entry area. 
+2. To set the step time by note type, select the desired note image. You can make your selection using the data dial or [Decrement] key/[Increment] key, or by pressing the appropriate note-image key on the numeric keypad. 
+3. If you want to set the step by number of cycles, press [D2] again to move the cursor to the lower part of the area. 
+4. Set the cycle value, using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+Velocity 
+This velocity entry area sets the velocity (force) for the next note to be input. 
+The upper part of the entry area sets the velocity by its musical notation. Again, the easiest way to make the setting is by pressing one of the numeric keys. When you select the notation, the corresponding velocity value (see illustration below) automatically appears in the lower setting area.(Figure)
+0	EXT (Keyboard velocity) 
+1	ppp : (008)
+2	pp : (024)
+3	p : (040)
+4	mp : (056)
+5	(064) 
+6	mf: (072)
+7	f : (088) 
+8	ff : (104) 
+9	fff : (120) 	
+  
+You can use the lower entry area to set an actual MIDI velocity value (from 001 to 127). When you enter a value, a corresponding notation will appear in the upper entry area. (If you set the value to 0 (EXT), the QY700 sets the velocities according to the keyboard input.) 
+   
+[Procedure]
+1. Press d [D3] to move the cursor to the upper part of the velocity entry area. 
+2. To set the value by notation, select the notation (such as ff or mp) using the data dial or [Decrement] key/[Increment] key, or by pressing the appropriate numeric key. 
+3. If you want to set a numerical velocity value, press [D3] again to move the cursor to the lower part of the area. 
+4. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+Gate Time 
+[Explanation]
+This value sets the note length (time that the note is actually sounded), as a percentage of the step time. For example, you can set the note to play staccato, so that its sound switches off well before its step time is over. Or you can hold it right up to the start of the next step (so that it slurs into the next note). 
+You can use the upper part of the entry area to set the gate time by type. (When you make your selection, the corresponding percentage value will appear in the lower part of the entry area.) Three types are available, as follows. 
+Stac (staccato) 	The gate time is 50 percent of the step time. 
+Norm (normal) 	The gate time is 90 percent of the step time. 
+Slur 	The gate time is 99 percent of the step time. 
+
+You can use the lower part of the setting area to set the gate time as an explicit percentage (from 001 percent to 120 percent) of the gate time. 
+
+[Procedure]
+1. Press d [D4] to move the cursor to the upper part of the gate-time entry area. 
+2. To set the step time by type, select the appropriate type value (Step, Norm, or Slur) using the data dial or the [Decrement] key or [Increment] key. 
+
+3. If you want to set an explicit percentage, press [D4] again to move the cursor to the lower part of the area. 
+4. Set the percentage value, using the data dial, [Decrement] key/[Increment] key, or the numeric keypad.
+
+[MUTE]/REST 
+[Explanation]
+You use this key to enter a rest. First set the step value to the rest time that you want to use, and then press [MUTE]. The rest is entered, and the location pointer advances accordingly.
+Example To enter a quarter-note rest: Set the step time to quarter note, then press [MUTE]. 
+
+[SOLO]/TIE 
+[Explanation]
+You use this key to enter a musical tie. This extends the length of the note you just entered, by adding an additional step time. 
+To use this feature, you begin by setting the step time for the first note in the tie, and entering the note. You then set the step time for extension note. You then press [SOLO].
+
+Example Assume that you want to set up the tie illustrated below. 
+1. Set the step time to quarter note.
+2. Enter the C.
+3. Set the step time to eighth note.
+4. Press [SOLO](TIE). 
+
+The original quarter note is extended by an eighth-note interval. (The note bar on the piano roll indicates the extended length.) 
+
+ [F5] (BkDelete) Back delete 
+[Explanation]
+You use this function to delete the last note or rest that you entered. This provides a simple way to remove your incorrect entries. 
+When you press [F5](BkDelete), the QY700 deletes the last note entry and moves the location pointer back by one step. You can then enter the correct value. 
+(Figure)
+Removes the last entered note, and moves location pointer one step back.
+
+
+[F6] (Delete)
+This function deletes all notes that begin directly under the location pointer.
+
+
+Step Recording: PATTERN track 
+
+[SONG] SONG PLAY 
+[Recording] Song Recording 
+[F6] Step Recording 
+	TR1 to TR32 
+	PATTERN 
+	CHORD 
+[Explanation]
+You use this method to write settings into the PATTERN track one item at a time. For each measure you can set the meter, the style, and the section. 
+[Procedure]
+1. Starting from the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F6] (STEP) to select step recording. 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to set the recording track to PATTERN. 
+4. Press the [Play].
+The PLAY indicator comes on. The QY700 displays the step recording page for PATTERN-track recording.
+5. Select the measure you want to work on, using either of the following methods. 
+Press [D1] to move to the location parameter. 
+Select the measure using the data dial, [Decrement] key/[Increment] key, or the numeric keypad.
+With the cursor in the Meter, Section, or Style column, 
+press [TRACK UP] or [TRACK DOWN] to scroll up or down. 
+6. Press Cursor [right] or [left] to move the cursor to the appropriate Meter, Section, or Style entry area, and enter the desired value. You can enter any of these values using the data dial or [Decrement] key/[Increment] key. In addition: 
+You can enter the style number using the numeric keypad. 
+You can enter the section letter by pressing a microkeyboard key from E2(A) to E3(H).
+
+7. You can delete any incorrect entries by moving the cursor back to the entry area and pressing [F6] (Clear). 
+8. When you have finished, press s to terminate the session and return to the SONG PLAY screen. 
+[Supplementary comments] 
+Set the style number at the end of the song to 65 ( equal end). If you set a different value, the song will not end. (-> p.113) 
+
+The remainder of this section describes the various screen settings, and the use of the [F6](Clear) function. 
+
+
+ Location 
+[Explanation]
+The location area indicates the measure at which the cursor is located. 
+You can jump the cursor to a different measure by entering the corresponding measure number into this area.
+[Procedure]
+1. Press d [D1] to move the cursor into the location-setting area.
+2. Select the new location using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+Meter 
+[Explanation]
+The Meter column sets the meter for the corresponding measure. 
+You can use this feature to adjust meter values for sequence tracks that have already been recorded. 
+Each meter setting applies to all tracks 
+You can set the value to any of the following: 1/16 to 16/16, 1/8 to 16/8, 1/4 to 4/4. 
+
+
+Style and Section 
+[Explanation]
+These columns select the style and section for each measure. 
+If you want to continue the style or section from the previous measure, leave the entry space blank. 
+If you leave the Style or Section column completely empty, the Q700 will use the style or section selected at the SONG PLAY screen. 
+Style 00 ( equal off), 01 to 64, 65 ( equal end) Section A to H 
+
+[F6] (Clear) 
+This function clears the Style or Section entry selected by the cursor. 
+
+
+Step Recording: CHORD track 
+
+[SONG] SONG PLAY 
+[Recording] Song Recording 
+[F6] Step Recording 
+	TR1 to TR32 
+	PATTERN 
+	CHORD 
+
+[Explanation]
+You use this method to write chord data into the CHORD track. There are five data types: chord type, chord root, on-bass, original bass, and syncopation. 
+[Setting values]
+Chord root:C, C sharp , D, E flat , E, F, F sharp , G, A flat , A, Bflat , B 
+Chord type: M, M7, 6, 7, m, m7, m6, mM7, m7 (5), dim, aug, sus4, add9, m7 (9), 6 (9), 7 (9), madd9, m7 (9), m7 (11), 7 (5), 7 (5), 7 (9), 7 (9), 7 (13), 7 (13), 7sus4, 7 (11), ---( equal THRU) 
+Syncopation: 
+Eighth note, Eighth note triplet, 16th note, 16th note triplet
+
+[Procedure]
+1. Starting from the SONG PLAY screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F6] (STEP) to select step recording. 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to set the recording track to CHORD. 
+4. Press the [Play]. 
+The PLAY indicator comes on. The QY700 displays the step recording page for CHORD-track recording. 
+5. Select the measure you want to work on, using either of the following methods. 
+Press [D1] to move the cursor to the location entry area. Select the measure using the data dial, the [Decrement] key/[Increment] key, or the numeric keypad. 
+With the cursor in the chord entry area, press  or d to move to the next measure. 
+6. Press cursor [left] or [right] to move the cursor to the beat at which you want to enter the chord.
+7. Enter the chord. 
+
+If you are not using fingered chords, enter chords as follows. 
+To select the chord root: 
+Press a microkeyboard key between E2 and D sharp 3. 
+To select the chord type: 
+Press a key between E3 and F4. 
+To set an "on-bass": 
+Hold down the left-sided [OCT DOWN] key and press a microkeyboard key between E2 and D sharp 3. 
+To set an "original bass": 
+Hold down the left [OCT UP] key and press a key between E2 and D sharp 3, followed by a key between 
+E3 to F4. 
+
+If you are using fingered chords, enter as follows. 
+1) The fingered-chord switch must be set on in the SONG PLAY page. If necessary, return to that page and set the switch on (and leave the cursor in the switch area). 
+2) Play the desired chord within the "fingered-chord zone" on your external MIDI keyboard (-> p.299). The QY700 will automatically set the chord root and type. 
+3) While continuing to hold down the chord in the keyboard zone, press a single note to the left of the zone to set the "on-bass," or play a chord to the left of the zone to set the "original bass." 
+
+8. Set the syncopation. 
+Move the cursor the chord for which you want to add syncopation. 
+Press the right u [OCT UP] key once or twice to select eighth-note or eighth-note-triplet syncopation. The first press selects eighth-note, the second press selects the triplet, and the third press switches syncopation back off. ( Eighth note-> Eighth note triplet -> off) 
+Press the right d [OCT DOWN] key once or twice to select 16th-note or 16th-note-triplet syncopation. ( -> sixteenth note -> sixteenth note triplet -> off) 
+The remainder of this section describes the various screen settings and the use of the [F6] (Clear) function. 
+ 
+Chord Root and Chord Type 
+[Explanation]
+You can set a different chord (root and type) for each beat. (-> p.127) 
+If you want to continue the chord from the preceding beat, you can leave the entry space blank. 
+You can use the fingered-chord feature to simplify chord input. 
+
+On-Bass 
+[Explanation]
+The "on-bass" value sets a fixed pitch for bass-type phrases. 
+Bass-type phrases will produce this single tone only. (-> p.39) 
+You can set this value separately for each chord entry. (-> p.115) 
+
+Original Bass 
+[Explanation]
+The "original bass" value sets an alternative chord (root and type) for bass-type phrases. Bass-type phrases will produce this alternative chord only. (-> p.39) 
+You can set this value separately for each chord entry. (-> p.115) 
+
+Syncopation 
+[Explanation]
+You use this feature when you want the chord to change slightly ahead of the beat, for a syncopated feel. Settings are as follows. 
+Eighth note 
+Chord-change occurs one eighth-note ahead of the beat. 
+Eighth note triplet
+Chord-change occurs one eighth-note-triplet ahead of the beat. 
+sixteenth note.
+Chord-change occurs one 16th-note ahead of the beat. 
+sixteenth note triplet
+Chord-change occurs one 16th-note-triplet ahead of the beat. 
+ 
+Note that you must enter the chord before you can set its syncopation. 
+
+
+[F6] (Clear) 
+This function deletes the chord at the cursor position. All of the chord's values (root, type, on-bass or original bass, and syncopation) are deleted. 
+
+
+6. Song Editing 
+
+[SONG] SONG PLAY 
+[EDIT] Song Edit 
+[F1] Graphic 
+[F1] Event list 
+[F3] Track name 
+[F2] XG View 
+[F4] View Filter 
+[F5] Delete 
+[F6] Insert 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number Track name 	01 to 32, PATTERN, CHORD, TEMPO character string	Indicates the currently selected track. Shows the name of the track.	P.130 
+2 Location 	001 to 999 	Shows/sets cursor location (measure and beat) 	P.130 
+3 Measure 	001 to  999 	Shows/changes time of indicated event. 	P.131 
+Beat 	1 to ,8 
+Clock count 	000 to 239 
+4 Event name 	Note, Bend, PC, CC, ChAT, KeyAT, Excl, Tmp 	Shows/sets MIDI event. 	P.131 
+Parameter values 	Varies by event type	Event-related arguments. 
+5 View Filter mark 		Mark appears if View Filter is ON. P.132 
+6 XG Viewer mark 		Mark appears if XG Viewer is ON. P.132 
+7 MUTE and SOLO marks 	[M],[S] 	Mark appears if mute or solo is ON. 	P.132 
+(Table end)
+
+[Explanation]
+You use the SONG EDIT submode to edit the contents of a song. You can adjust or delete any of the MIDI events that constitute the song, and you can add new events. 
+The QY700 offers two different sequence-track editing screens: an event list and a graphic display. You can toggle between these screens by pressing [F1]. 
+The event list presents a listing of the track's MIDI events, in order of their occurrence. Each entry shows an event's location in time, its name, and its numerical arguments. You are free to adjust the location or any of the argument values. You can delete any of the events, or insert new ones. The event-list screen is described in detail directly below.
+The graphic display consists of a piano-roll section and a point-graph section. You can edit the event values on this screen, but you cannot insert or delete events. Description of the graphic display begins on page 135. 
+You can also use SONG EDIT submode for measure-by-measure editing of the PATTERN and CHORD tracks. The edit page presents a list-type display that you can use to make changes, additions, and deletions. 
+[Procedure]
+1. At the SONG PLAY screen, press [TRACK UP] or [TRACK DOWN] to select the track you want to edit. 
+ On the SONG PLAY screen, the selected track (the "keyboard track") is indicated by highlight. 
+2. Press [EDIT] to enter SONG EDIT submode (Event 
+List screen). 
+3. Move the cursor to the event that you want to edit.You can use various methods, as follows. 
+ Press [D1] to move the location entry area. Select the measure using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+Regardless of the cursor position, you can always move the cursor rapidly across the screen using the shuttle dial or the [Rewind] or [Forward] keys. If you move the cursor more slowly with the shuttle dial, the QY700 will play out note events as the cursor passes. 
+You can move up or down one event at a time by pressing cursor [up] or [down]. Again, the QY700 will reproduce note events when the cursor lands on them. 
+
+4. When you reach an event that you want to edit, use l or r to move the cursor along the line to each value you want to change (the measure, the beat, the clock count, or any of the arguments). Change the values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. Regardless of the entry method, you must press the [ENTER] to register the value. 
+The new settings will blink on the screen until you press the [ENTER] to register them. If you move the graph cursor before pressing the [ENTER], the original values will remain in effect. 
+
+5. If you wish to insert a new event, press [F6] (Insert) and proceed as described on page 133. If you wish to delete an entire event, move the cursor to the corresponding line and press 5 (Delete). 
+6. When you have finished editing, press [EXIT] to return to the SONG PLAY screen. 
+[Supplementary comments] 
+If you make an error during editing, you can cancel all changes made during the current SONG EDIT session by executing the UNDO song job (job 00). (-> p.141) 
+
+
+1. Track number and name 
+[Explanation]
+This area identifies the track that you are editing. The first value gives the track's number, and the second value gives its name. 
+You can you use [F3] (TrName) to set or change the track's name. (-> p.132) 
+You can change to a different track by pressing [TRACK UP] or [TRACK DOWN]. 
+
+
+2. Location 
+[Explanation]
+The location area indicates the measure and beat at which the cursor is located. 
+You can jump the cursor to a different measure by entering the corresponding measure number into this area. You can select any measure between song start (001:1) and song end. 
+
+[Procedure]
+1. Press [D1] to move the cursor into the location area. 
+2. Select the target measure using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+When you change the measure, the beat automatically sets to 1. 
+
+
+3. Measure, Beat, and Clock count 
+[Explanation]
+These values give the precise location of the MIDI event within the song. 
+By changing the measure, beat, or clock count, you change the time at which the event occurs. 
+Measure: 
+Indicates the measure at which the event occurs. 
+Beat: 
+Indicates the beat (within the measure) at which the event occurs. 
+Clock count: 
+Indicates the place within the beat at which the event occurs. Each beat is divided into 480 clock cycles (000 to 479). A clock count of 000 indicates that the event occurs at the exact start of the beat. A value of 240 indicates that the event occurs at the middle of the beat. 
+[Setting values]
+Measure 	001 to 999
+Beat 	01 to 08 (but varies according to meter)
+Clock count 	000 to 479 (but varies according to meter)
+
+[Procedure]
+1. Move the cursor to the measure, beat, or clock-count entry for the event whose time you want to change. 
+2. Enter the new value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+The event line flashes on the screen. The value is not registered until you press the [ENTER] . 
+3. Press the [ENTER] to register the change. 
+The line stops flashing, and the new timing values are shown. 
+If you move the cursor while the line is still flashing, the change is canceled. 
+
+ 
+4. Event name and parameter values 
+[Explanation]
+When you record a performance onto a sequence track, you are recording it as a series of MIDI events. Each event corresponds to a specific MIDI action. The striking of a note is a "note event", the switching of a voice is a "program change event", and so on. 
+Most event specifications must include information indicating how the event is to be carried out. A note-event specification, for example, must identify the note (the note name), the note's time span (the gate time), and the note's force (the velocity). Each of these information requirements is referred to as a parameter. (The actual value that a parameter takes is referred to as a parameter value or argument.) 
+The first item on the event list is Top, while the last item is End. These items are for marking purposes only; they do not represent events, and they cannot be edited. 
+[Setting values]
+Events: 
+Note, PB (Pitch Bend), PC (Program Change), CC (Control Change), CAT (Channel Aftertouch), PAT (Polyphonic Aftertouch), RPN (Registered Parameter Number), NRPN (Non-Registered Parameter Number), Exc (System Exclusive), XG Parameter, Tempo Change 
+
+Parameters 
+Vary according to event type. 
+
+[Procedure]
+1. Move the cursor to the parameter value you want to change. 
+2. Enter the new value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+The event line flashes on the screen. The value is not registered until you press the [ENTER]. 
+3. Press the [ENTER] to register the change. 
+The line stops flashing, and the new timing is indicated. 
+If you move the cursor while the line is still flashing, the change is canceled. 
+
+
+5. View Filter mark 
+6. XG Viewer mark 
+7. MUTE and SOLO marks 
+[Explanation]
+The QY700 includes a "View Filter" that can limit the event types that appear on the event list, so that you can "filter out" the types that are not of interest. The "View Filter mark" appears at the top of the event-list display to indicate that you have set the filter to block out certain types. The mark warns you that you may not be looking at a complete list of all events. 
+You can access the View Filter by pressing [F4] (ViwFiltr). See page 133 for details. 
+The XG Viewer mark comes on to indicate that you are currently using the QY700's XG viewer. When you use this viewer, XG-defined events (such as RPN events, NRPN events, and XG system exclusives) are listed by their XG parameter names. This is useful when you are generating XG-compatible song data. You can toggle the viewer ON and OFF by pressing [F2](XGView). 
+The MUTE mark indicates that you have switched on the mute for the track that you are editing. You can set or release the mute by pressing the m key. 
+The SOLO mark indicates that you have switched the track you are editing to SOLO play. You can set and release SOLO operation by pressing the s key. 
+
+[F2] (XGView) XG Viewer ON/OFF 
+The XG Viewer lists XG-defined events (such as RPN, NRPN, and XG system exclusives) by their XG parameter names. This feature is useful when you are working with XG-compatible song data. 
+Note that there are some XG system exclusives that the viewer does not display by XG name. 
+The XG Viewer mark comes on to indicate that the XG viewer is currently ON. 
+[Procedure]
+Toggle the XG Viewer ON or OFF by pressing 2 (XGView). 
+
+[F3] (TrName) Track Name 
+[Explanation]
+You can use this function to enter a name (up to eight characters) for the currently selected track. 
+The QY700 displays the track name on the SONG PLAY and TRACK VIEW screens. You may therefore find it helpful to use a descriptive name, such as a name that identifies the track's voice or part. 
+[Procedure]
+1. Press 3 (TrName). 
+The TrName indicator (above the [F3] key) becomes highlighted, and a cursor appears in the track-name area at the upper right of the screen. 
+2. Use the microkeyboard to enter the track name. 
+For information about how to input the characters, refer to Chapter 1. (-> p.53) 
+3. When you have finished entering the name, press [F3] (TrName) again to return to normal editing. 
+
+
+[F4] (ViwFiltr) ViewFilter 
+[Explanation]
+The QY700's "View Filter" lets you select the event types that appear on the editing screens (both the event list and the graphic screen). To select an event for display, place a checkmark in the box next to the event name. To filter out an event type (so that it does not appear on the list), remove 
+the checkmark so that the box is empty. 
+Under the default setup all event types are shown, and the View Filter mark does not appear. If you choose to filter out one or more event types, the View Filter mark appears at the top of the editing screens to remind you that the filter is on. 
+As an example, assume that you want to work on note events only. In this case, you will probably want to filter out all other event types from the event list . since this will make the list easier to follow, and will protect against accidental changes to other events. To set the filter to block out all non-note events, remove checkmarks from all boxes other than the Note box. 
+You can remove all checkmarks at once by pressing [F5] (ClearAll). To set checkmarks into all boxes, press [F6] (Set All). 
+[Procedure]
+1. At the Event List screen, press 4 (ViwFiltr). 
+2. Move the cursor to the appropriate event types, and use the data dial or [Decrement] key/[Increment] key to set the filter on or off for each type. 
+Remember that you can use [F5] (ClearAll) or [f6] (Set All) to clear or restore all checkmarks at one time. 
+3. When you are finished, press [EXIT] to return to the Edit List page. 
+
+[F5] (Delete) 
+[Explanation]
+You use this function to delete an unwanted event. 
+[Procedure]
+1. Move the cursor to the event that you want to delete. 
+2. Press [F5] (Delete). 
+
+[F6] (Insert) 
+[Explanation]
+You use this function to insert a new event into the event list. 
+When inserting an event, you need to set the event name, the event time (measure, beat, and clock count), and the parameter values. Each of these are described below. 
+
+Event name 
+As explained above, all MIDI performances are recorded as a series of events. Each event is defined by its name and its accompanying parameters. The event name describes the type of action to be performed. A "Note" event, for example, indicates that a note is to be played; a "Program Change" event indicates that the voice must be changed. 
+You can use the 6 (Insert) function to insert any of the following 10 event types onto the track: Note, Pitch Bend, Program Change, Control Change, Channel Aftertouch, Polyphonic Aftertouch, RPN, NRPN, Exclusive, and XG Parameter. 
+
+Measure, Beat, and Clock Count 
+These values define the time at which the event is inserted.
+Measure: Sets the measure at which the event will occur. 
+Beat: Sets the beat (within the measure) at which the event will occur. 
+Clock count: Sets the precise point within the beat at which the event will occur. Each beat is divided into 480 clock cycles (000 to 479). A clock count of 000 places the event at the exact start of the beat. A value of 240 places the event at the dead center of the beat. 
+
+On the QY700, you can set the measure to any value between 001 and 999. The allowable beat and time values vary according to the selected time meter. The maximum range for the beat is 01 to 16. The maximum range for the clock count is 000 to 479. 
+
+Parameter values 
+As described above (-> p.131), each event is defined by its type and by its accompanying parameter values. When entering an event type, you must include parameter values indicating how it is to be carried out. If entering a note event, for example, you must include values for velocity (note force) and gate time (note playback time). 
+Required parameters are different for each event type. 
+
+[Procedure]
+1. At the Event List screen, press [F6] (Insert). 
+The QY700 displays the "INSERT" window. 
+2. Move the cursor to the item that you want to set (event name, measure, beat, clock count, or parameter). 
+3. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+If you are using the numeric keypad, do not press the [ENTER] until you have finished entering all values and have checked them for correctness. Let the values remain flashing on the screen until you have completed all of the settings. 
+4. When you have finished entering all values for the event, press the [ENTER] to record the event onto the track. 
+As a shortcut, you can press the [ENTER] as many times as you like to insert multiple copies of the same event. You can then go back to the event-list page and edit these entries as necessary. 
+If you wish to set up and insert another event, return to Step 2 above. 
+5. When you have finished, press the [EXIT] to return to the EVENT LIST page. Check the listing to make sure that the events were correctly inserted. 
+[Supplementary comments] 
+Entering a System Exclusive at the INSERT window. 
+Use the following procedure to insert a system exclusive when working at the INSERT window. 
+
+1. Select Exc as the event name. Set the measure, beat, and clock count at which you want the exclusive to occur. 
+2. Move the cursor to the parameter area. Enter the hexadecimal values, moving the cursor from value to value as necessary. 
+You can enter the hexadecimal numbers using [Decrement] key/[Increment] key or the data dial. You can also enter them with the numeric keypad: use the pad keys to enter digits from 0 to 9, and 
+microkeyboard keys [F sharp 2], [G sharp 2], [A sharp 2], [C sharp 3], [D sharp 3], [F sharp 3] to input digits A to F, respectively. (But don't press the [ENTER] until you have completed entry of all values.) 
+Be sure to enter value F7 ("End of Exclusive") as the final data item. 
+
+3. When you have entered all values for the system exclusive, press the [ENTER] to record it onto the track. 
+As a shortcut, you can press the [ENTER] to insert multiple copies of the same system exclusive. You can then go back to the event-list page and edit the values as necessary. 
+If you wish to insert another, different system exclusive, return to Step 2 above. 
+
+4. When you have finished, press the [EXIT] to return to the EVENT LIST page. Check the listing to make sure that the new system exclusives are correct. 
+
+
+[F1] (Graphic) Graphic screen 
+
+[SONG] SONG PLAY 
+[EDIT] Song Edit 
+[F1] Graphic 
+[F1] Event list 
+[F3] Track name 
+[F2] XG View 
+[F4] View Filter 
+[F5] Delete 
+[F6] Insert 
+
+[Explanation]
+The graphic editing page shows the following data in graphical form: note events, velocity values, pitchbend events, and control changes. The page is divided into three different graphs: a beat graph, a piano roll, and a point graph. In addition, an event line along the bottom of the screen indicates the values for the currently selected event. 
+The screen presents two cursors. The graph cursor, in the graphical part of the screen, selects the event to be edited. The edit cursor, along the bottom line, selects the value to be edited. 
+Note that a location pointer along the top of the screen always points to the current location of the graph cursor. 
+You adjust the various values (such as gate times and pitchbend levels) by entering changes directly on the event line along the bottom of the page, using the same procedures that you use when working at the Event List screen (-> p.131). The changes that you make produce corresponding changes in the graphical part of the screen. 
+It is not possible to insert or delete events at this screen. If you wish to make an insertion or deletion, you must return to the Event List screen. 
+You can return to the Event List screen by pressing [F1] (EvntList). You can change the track being edited at any time by pressing [TRACK UP] or [TRACK DOWN]. 
+
+[Procedure][Procedure]
+1. At the SONG PLAY screen, press [TRACK UP] or [TRACK DOWN] to select the track you want to edit. 
+On the SONG PLAY screen, the selected track (the "keyboard track") is indicated by highlight. 
+2. Press [EDIT] to enter SONG EDIT submode (Event List screen). 
+3. Press [F1] (Graphic) to move to the graphical edit screen. 
+4. Move the graph cursor to the event that you want to edit. You can use various methods, as follows. Notice that the location pointer along the top of the screen always points to the current position of the graph cursor. 
+Press [D1] to move the location entry area. Select the measure using the data dial, n, y, or the numeric keypad. 
+You can always move the graph cursor rapidly across the screen using the shuttle dial or the [Rewind] or [Forward] key. If you move the cursor more slowly with the shuttle dial, the QY700 will play out note events as the cursor passes. 
+You can move the graph cursor one event at a time by pressing cursor [up] or [down]. Again, the QY700 will reproduce note events when the cursor lands on them. 
+
+5. When you reach an event that you want to edit, use cursor [left] or [right] to move the edit cursor (on the bottom line) to the value you want to change: the measure, the beat, the clock count, or any of the arguments. Then change the selected value using the data dial, the [Decrement] key/[Increment] key, or the numeric keypad. Regardless of the entry method, you must press the [ENTER] to register the value. 
+The new settings will blink on the screen until you press the [ENTER] to register them. If you move the graph cursor before pressing the [ENTER], the original values will remain in effect. 
+
+6. When you are finished, press [F1] (EvntList) to return to the Event List screen, or press the [EXIT] to return to the SONG PLAY screen. 
+
+
+1. Beat Graph 
+[Explanation]
+The beat graph indicates the start point for each note event. 
+. Each dash (-) on the graph represents a 32nd-note interval. 
+Eight consecutive dashes therefore correspond to a quarter note, while 32 consecutive dashes correspond to a whole note. 
+A filled dot mark appears in the beat graph to indicate that at least one note begins at that point.
+As an example, assume that you are recording in 4/4 time and your first measure contains the following note pattern: Quarter note | Quarter note | Eighth note sixteenth note sixteenth note| Eighth note Eighth note. In this case, the beat graph for this measure will appear as shown below. 
+(Figure)
+
+
+2. Piano Roll 
+[Explanation]
+This graphical representation shows the pitch, timing, and length (gate time) of each recorded note. The vertical scale represents pitch, the horizontal scale represents time (measures and beats), and the horizontal bars indicate individual notes. 
+When you select a note (for editing), the graph cursor appears (as a square highlight) at the left edge of the note bar. 
+The left edge of the note bar corresponds to the point at which the note is "struck," the right end indicates its point of release, and the vertical position indicates its pitch. 
+You can scroll the piano roll up or down an octave by pressing [OCT UP] or [OCT DOWN]. 
+
+
+3. Point Graph 
+[Explanation]
+This area illustrates the numerical values for note velocities and for pitchbend and control-change events. For velocity and controller events, the scale runs from 0 or 1 (bottom) to 127 (top). For pitchbend events, the scale runs from minus 8192 to  plus 8191, with the center of the graph (the dashed line) corresponding to 0. 
+Note that the graph will only show values for one type of control-change event. You can select the type by entering the appropriate control-change number into the CONTRL box, as described below. 
+On the graph, velocity values are indicated by a symbol, pitchbend values by a symbol, and control-change values by a symbol. Note that you can filter out any of these indications by removing the checkmark from the corresponding area along the right of the screen; see below. 
+You can select a pitchbend or controller event for editing by moving the graph cursor to the event point on the graph. 
+
+ 
+4. Event Line 
+This line indicates the position (measure, beat, and clock count), the name, and the parameter values for the currently selected event. The content is identical to the corresponding entry in the Event List screen. 
+You use this line to edit the values that you want to change. The editing procedure is the same as that for the Event List screen. (-> p.131) 
+
+
+5. Velocity 
+6. Pitch Bend 
+7. Control Change 
+[Explanation]
+The VELCTY box lets you select whether or not to display velocity values on the point graph. If you choose to display these values, they are indicated by a symbol that appears directly under the start point of each note. The scale runs vertically from 1 (at the bottom) to 127 (at the top). 
+The P.BEND box lets you select whether to display pitchbend values on the point graph. If you choose to display these values, they are indicated by a symbol. The scale runs from minus 8192 (bottom) to  plus 8191 (top), with the center of the graph (the dashed line) corresponding to 0. 
+The point graph will only display one type of control-change event. You use the CONTRL box to select the type, as well as to enable or disable the display. You enable/disable the display by setting or removing the checkmark. You select the event type by entering the control-change number: for example, 001 to show modulation-wheel events, or 011 to display expression events. Occurrences of the selected control change event are indicated on the graph by the symbol. 
+The scale (for the control change argument) runs from 0 (bottom) to 127 (top). 
+
+[Setting values]
+To display on point graph: check
+To suppress from graph: none
+Control change number : No.001 to No.031,No.033 to No.119
+[Procedure]
+1. Press d[D2], d[D3], or d [D4] to move the cursor into the checkmark area of the VELCTY, P.BEND, or CONTRL box. 
+2. Use [Decrement] key/[Increment] key or the data dial to set or remove the checkmark. 
+3. To change the control-change number: Press [D4] once or twice to move the cursor to the number-setting area. Set the number using [Decrement] key/[Increment] key or the data dial. 
+
+
+7. Song Jobs 
+(Table)
+Song Job 	Purpose 	See page 
+00 Undo/Redo 	If UNDO: Cancel the last operation. If REDO: Cancel the last UNDO. 	P.141 
+01 Quantize 	Quantize the note events within the selected range. 	P.142 
+02 Modify Velocity 	Change velocities in selected range. 	P.145 
+03 Modify Gate Time 	Change gate times in selected range. 	P.147 
+04 Crescendo 	Gradually increase or decrease velocity over selected range. 	P.148 
+05 Transpose 	Transpose all notes over selected range. 	P.149 
+06 Shift Note 	Replace all instances of selected note (pitch) with specified replacement, over designated range. 	P.150 
+07 Shift Clock 	Shift all data over selected range, by specified number of clock cycles. 	P.150 
+08 Chord Sort 	Sort chordal note events, by pitch, over specified range of selected track. 	P.151 
+09 Chord Separate 	Play chord notes one at a time, introducing specified delay between consecutive notes. 	P.152 
+10 Shift Event 	Change one event type into another, over specified range of specified track. 	P.153 
+11 Copy Event 	Copy all events over selected range into specified target. 	P.154 
+12 Erase Event 	Erase all events over selected range, and replace with rests. 	P.155 
+13 Extract Event 	Move events of specified type from selected range of one track into same range on another. 	P.155 
+14 Thin Out 	Reduce data quantity utilized by specified event type in specified track. 	P.157 
+15 Time Stretch 	Expand or compress all timing over specified range, in accordance with specified time ratio. 	P.158 
+16 Create Measure 	Insert empty measures into all tracks. 	P.158 
+17 Delete Measure 	Delete specified measures from all tracks. 	P.159 
+18 Copy Track 	Copy track data into another track. (Target track can be in a different song.) 	P.160 
+19 Mix Track 	Mix one track into another. (Target track can be in a different song.) 	P.161 
+20 Clear Track 	Clear all data from selected track. 	P,162 
+21 Expand Backing 	Expand PATTERN- and CHORD-track data into performance data, and write results into sequence tracks 17 to 32. 	P.162 
+22 Normalize Play 	Effect Rewrite sequence track(s) so that play-effect settings are internalized. 	P.163 
+23 Copy Song 	Copy all content of another song. 	P,164 
+24 Clear Song 	Delete all of a song's data. 	P.164 
+25 Song Name 	Assign a name to the song. 	P.165 
+(Table End)
+
+[Explanation]
+You use the QY700 song jobs to perform various operations on the songs that you have recorded. 
+You select the job from the job menu using cursor [up], [down], or the data dial. As an alternative, you can select a job by entering the job number at the numeric keypad. You can also make your selection using the function keys, as described below. 
+Note that the job menu is too large to fit entirely on the screen. But you can scroll through the list using cursor [up], [down], or the data dial. 
+The menu is divided into four groupings, in accordance with job type: event-related, measure-related, track-related, and song-related. You can jump the cursor to the first job in any of these grouping by pressing the corresponding key on the side of the screen. 
+ [D1](Event) ......... jumps to 01 Quantize. 
+ [D2](Measure) .... jumps to 16 Create Measure. 
+ [D3](Track) ......... jumps to 18 Copy Track. 
+ [D4](Song) .......... jumps to 23 Copy Song. 
+
+As the factory default, function keys [F1] to [f6] on the menu page automatically switch you into the job execution screens for jobs 00 to 05, respectively. But you can reassign each function key so that it accesses a job of your choice: just move the cursor to the job you want to assign, then hold down [SHIFT] and press the function key. Note that the function key assignments are displayed along the bottom line of the screen. 
+[Procedure][Procedure]
+1. Go to the SONG PLAY screen and select the song and track that you want to work on. 
+2. Press [JOB]. 
+The screen displays the job menu. 
+3. Move the cursor to the job you want to execute, or else enter the job number using the numeric keypad. 
+Then press the [ENTER] to open the job-execution screen. 
+4. Move the cursor to the various entry spaces on the job execution screen, and enter the required values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+CAUTION.
+Do not press the e key until you are ready to execute the job. Even when entering values with the numeric keypad, you do not need to press the [ENTER]. 
+
+5. When you have entered all the values and are ready to execute the job, press e. 
+The QY700 executes the job. The screen displays "Executing...", and then "Completed". 
+
+6. Press the [EXIT] twice to return to the SONG PLAY screen. 
+[Decrement] key/[Increment] key
+Most jobs operate on a specified segment of the track, which you designate by selecting the start and end points (by measure and beat). If you make an invalid specification, the screen may return the message "No Data". If you see this message, press the [EXIT] to clear it. 
+You can use job 00 (Undo/Redo) to undo the results of a job that you have just executed (see next page). This allows you to recover from an incorrect job operation. Once you have "undone" a job, you can then "redo" it. In some cases you may find it useful to do successively "undo" and "redo" a job so that you can compare the pre-job and post-job versions of your data. 
+If you select a job that requires you to enter a segment designation, the screen will display boxes in which you can set the start point and end point (with a  to  character between the boxes). If you want the operation to begin at Measure 5 Beat 1 and terminate at Measure 8 Beat 4, for example, your specification would look like this: 005:1  to  008:4. 
+The number of beats per measure depends on the meter. If the meter is 4/4, for example, you can use a beat value of 1 to 4 when specifying the segment. If the meter is 8/4, then (since there are eight beats per measure) you can set the beat to any value between 1 and 8. 
+Note that the beat setting is linked to the measure setting. If you continuously increment (or decrement) the beat setting, the measure setting will change accordingly. 
+CAUTION.
+Do not switch off the power while a job is executing (while the "Executing..." message is on the screen), as this may cause destruction of your song data. 
+Chapter 2. SONG MODE 
+
+
+JOB 00 UNDO/REDO
+[Explanation]
+The UNDO job cancels the changes you made in your most recent recording session, editing session, or job, restoring the data to its previous state. This allows you to recover from accidental data loss. 
+The REDO job, which becomes available only after you execute an UNDO, cancels the UNDO and restores the changes. 
+The UNDO/REDO job is effective on recording sessions, editing sessions, and jobs (with the exception of the SONG NAME and PATTERN NAME jobs) carried out under SONG, PATTERN, and PHRASE modes. It is also effective on PATTERN-mode patch operations. 
+The UNDO job is effective only on the most recent data changes. If you run a recording session and then an editing session, for example, the UNDO will be available only for the editing session. (But note that if you move to a recording, editing, or job screen and then quit without making any changes, this does not count as a session.) 
+As soon as you execute an UNDO, the job name changes to REDO. The REDO will remain available until you change data again. 
+You can undo and then redo the same change as many times as you like (provided that you don't make any other changes in between). This can be useful when you want to compare two versions of your data.
+
+[Procedure]
+ Check the JOB 00 UNDO/REDO execution screen to make sure that the details are correct, and then press the [ENTER] . 
+As a shortcut, it is often possible to execute an UNDO/ REDO job immediately -- without moving into the corresponding job screens -- by pressing [SHIFT] plus [JOB]. This feature is available, for example, from the SONG PLAY screen. 
+
+1. Undo/Redo indication 
+[Explanation][Explanation]
+The screen displays the word Undo or Redo to indicate the job that is currently available. 
+
+2. UNDO/REDO target 
+[Explanation]
+The two entries at the right of the screen identify the data-change currently available for UNDOing or REDOing. This will be the most recently executed editing, recording, or job-related data change. (In the example above, the most recent change was made by running the THIN OUT job under SONG mode.) 
+
+
+JOB 01 QUANTIZE
+[Explanation]
+This job quantizes note events over a specified segment of a specified track. Quantizing is the process of adjusting the timing of note events by pulling them closer to the nearest interval boundary (or quantizing line). You can use this feature, for example, to improve the timing of a performance you recorded in real time. 
+Before running the job, you must set the musical interval (or quantizing value) that you want to use. This value sets the distance between adjacent quantizing lines. The figure below illustrates the concept for quarter-note and eighth-note quantizing values. 
+The quantizing strength determines how closely notes are pulled toward the nearest quantizing line, while the sensitivity selects which notes are targeted (based on distance from the nearest line). You can combine these settings, for example, to direct the QY700 to slightly adjust only those notes that are far away from the nearest line, while leaving the closer notes untouched. 
+The swing rate can be used to slightly delay the note events in every even-numbered interval, thereby adding a "swing" to the music. If you are using an eighth-note quantizing value, for example, the delay applies to all notes starting within the second, fourth, sixth, or eighth interval of the measures, as illustrated. 
+(Figure)
+Finally, you can further improve the swing by adjusting the velocities and gate times of the notes in every other interval. 
+
+1. Track setting: TR 
+[Explanation]
+Sets the track to which quantizing is applied. 
+[Setting values]
+01 to 32, All 
+ 01 to 32 	Apply quantizing to the corresponding track. 
+ All 	Apply quantizing to all 32 sequence tracks. 
+
+2. Segment and notes (M and Note equal ) 
+[Explanation]
+The two boxes at the top of the screen (to the right of the M) select the area of the track to be quantized. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to which quantizing is applied; notes outside of this range are not adjusted. 
+[Setting values]
+Measure: beat 	001:1 to 999:8
+Note range 	C-2 to G8
+
+
+3. Quantizing value 
+[Explanation]
+The Quantize setting selects the quantizing interval. You can set the value using [Decrement] key/[Increment] key or the data dial, or by pressing the appropriate note key on the numeric keypad.
+Notice that the plus 3 settings create both "normal" and "triplet" intervals over the same space. The Eighth note plus 3 , for example, sets quantizing lines at every eighth-note spacing and at every eighth-note-triplet spacing. 
+[Setting values]
+32nd-note intervals 
+Quantizing line
+16th-triplet intervals 
+16th-note intervals
+8th-triplet intervals
+8th-note intervals 
+Quarter-note-triplet intervals 
+Quarter-note intervals 
+16th-note and 16th-triplet intervals
+8th-note and 8th-triplet intervals 
+
+4. Strength
+[Explanation]
+The Strength value sets the degree by which note events are pulled toward the nearest quantizing line.A setting of 100 percent pulls each note event all the way to the nearest quantizing line. A setting of 50 percent pulls each note only halfway to the nearest quantizing line.
+[Setting values]
+000 percent to 100 percent
+
+5. Sensitivity 
+[Explanation]
+You can use the Sensitivity setting to limit quantization to only those notes that are at a certain distance from the quantizing line. You can choose, for example, to quantize only those notes that are close to the nearest quantizing line,or only those notes that are far away.
+The full quantizing range extends from 1/2 interval to the left through 1/2 interval to the right of the quantizing line.
+(See figure below.) If you were to apply quantizing at 100 percent sensitivity and 100 percent strength, for example, then all notes over this range would be pulled exactly onto the quantizing
+line.
+If you set Sensitivity to 100 percent (or minus 100 percent), then all notes within the range are pulled toward the quantizing line. If you set the value to 50 percent, then quantizing applies only to the notes in the half-interval span surrounding the line (starting 1/4-interval to the left of the line, and extending to 1/4-interval to the right). If you use 50 percent sensitivity with a "quarter-note" quantizing value, for example, then all notes within a 16th-note to either side of the line are shifted, while notes  that are farther away are left untouched. 
+You use the negative values when you want to shift only notes that are farthest away from the line. A sensitivity of minus 50 percent, for example, applies quantizing to the notes in the far 1/4-interval to the left and the far 1/4-interval to the right. 
+Assuming a "quarter-note" quantizing value, this would quantize all notes that are more than a 16th-note away from the quantizing line, while leaving closer notes unaffected. 
+
+[Setting values]
+minus 100 percent to plus 000 percent to plus 100 percent
+[Supplementary comments] 
+Use of the feature allows you to correct notes that are markedly off time while retaining the more subtle discrepancies characteristic of an authentic performance. To achieve this kind of result, you would generally want to set the sensitivity between approximately minus 30 percent and minus 50 percent. 
+
+
+6. Swing rate 
+This setting lets you apply a delay to the notes in every even-numbered quantizing interval (but see below) to produce a more swinging rhythm. This adjustment is carried out after quantizing is completed: first the notes are quantized, and then the swing delay (if any) is applied. 
+If you are using a 32nd, 16th, 8th, or quarter-note quantizing value, the QY700 applies the delay to every even-numbered interval. If you are using an 8th-note, for example, then the notes in the first 8th-note interval are normal, the notes in the second 8th-note interval are delayed, the notes in third interval are normal, and so on. 
+If you are using one of the triplet quantizing values, then the QY700 applies the delay to the notes in every third interval. If you are using the Eighth note plus 3 or sixteenth note plus 3 quantizing value, the QY700 applies the delay to the non-triplet part of the rhythm only (to the Eighth note or sixteenth note rhythm only). 
+The "swing rate" is given as a scale value indicating the position for the shifted "beat." For non-triplet rhythms, a value of 50 percent leaves the position unchanged, while higher values apply a delay. (In this case, 100 percent represents double the length of the quantizing interval.) The available settings depend on the rhythm type, as described below. 
+
+Where quantizing value is Quarter note, Eighth note, sixteenth note or thirty-second note:
+For the quantizing values indicated above, a 50 percent setting produces no adjustment, so that the even-numbered interval remains exactly centered. Higher values shift the interval to the right, to produce an added swing. The maximum setting is 75 percent, which shifts the interval by an amount equal to one-half the quantizing value. 
+
+Where quantizing value is Quarter note triplet, Eighth note triplet or Sixteenth note triplet:
+With the triplet quantizing values (see above), the QY700 applies the shift to the third interval only. In this case, a 66 percent setting produces no adjustment (so that the third interval remains at its original position). Higher values shift the interval to the right. The maximum setting is 83 percent, which shifts the interval by an amount equal to one-half the quantizing value. (Notice that in this case, the 100 percent scale represents three times the quantizing length.) 
+
+
+Where quantizing value is Eighth note plus 3, sixteenth note plus 3:
+In the case of normal-plus-triplet quantizing values, the QY700 applies the shift only to the non-triplet part of the rhythm, as illustrated above. In this case, a setting of 50 percent produces no shift, while higher values shift the even interval to the right. Note that the maximum setting is 66 percent, which moves the interval all the way up to the position of the third note in the triplet rhythm. (The 100 percent scale represents double the Eighth note or sixteenth note quantizing length.)
+[Setting values]
+If quantizing value is Quarter note, Eighth note, sixteenth note, thirty-second note : 50 percent to 75 percent 
+If quantizing value is Quarter note triplet, Eighth note triplet or Sixteenth note triplet  : 66 percent to 83 percent 
+If quantizing value is Eighth note plus 3 or sixteenth note plus 3 : 50 percent to 66 percent 
+[Supplementary comments] 
+If you set STRENGTH below 100 percent, notes may lie at arbitrary locations within the interval prior to the "swing-rate" shift. In this case, the QY700 will slide all of the notes within 
+the interval by an equal amount. 
+Where STRENGTH is less than 100 percent, therefore, it is possible that the swing adjustment may push some notes into the next interval. If the QY700 must push a note beyond 0 percent 50 percent 75 percent 100 percent one or more notes lying in the next interval, it will shift these other notes to the same location as well. 
+
+7. Swing Gate Time 
+This value applies a proportional adjustment to the gate timing of the notes within the swing-adjusted intervals. 
+The gate time is the length of time that a note is held. You can use this setting, therefore, to lengthen or shorten the notes in the swing-adjusted intervals. 
+A setting of 100 percent leaves the original gate time unchanged. Higher settings increase the gate time, while lower settings Where quantizing value is shorten it.
+If an adjusted gate-time value is less than 1, the QY700 sets the value to 1. 
+[Setting values]
+000 percent to 100 percent to 200 percent
+
+
+8. Swing velocity 
+[Explanation]
+This value applies a proportional adjustment to the note velocities within the swing-adjusted intervals. 
+Remember that velocity is a measure of the note's force. You can use this setting, therefore, to increase or reduce the force of the notes within the swing-adjusted intervals. 
+A setting of 100 percent leaves the original velocities unchanged. Higher settings increase the velocity, while lower settings decrease it. 
+. If an adjusted value is less than 1 or higher than 127, the QY700 sets the velocity to 1 or 127, respectively. 
+[Setting values]
+000 percent to 100 percent to 200 percent
+
+
+JOB 02 MODIFY VELOCITY
+[Explanation]
+This job alters the velocity values of the specified range of notes (pitches) in the specified segment of the designated track. Remember that velocity refers to the force with which a note is struck. The precise effect of a velocity change varies according to the voice: in most cases a higher velocity produces a louder sound. 
+Using this job, you can choose to set all targeted notes to an identical velocity value, or you can apply a relative (linear) adjustment to the original velocity values. 
+If making a relative adjustment, you use two parameters: the Rate and the Offset. The Rate value applies a proportional change to the velocity value, while the Offset value 
+(which is applied after the Rate adjustment) adds a fixed value. The relation is as follows: 
+
+Adjusted velocity  equal  (original velocity X Rate)  plus  Offset. 
+If the adjustment result is less than 1, the QY700 sets the value to 1. If the result is higher than 127, the QY700 sets the value to 127. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the sequence track to which adjustment is applied. 
+[Setting values]
+01 to ,32
+
+
+2. Segment and notes (M and Note equal ) 
+[Explanation]
+The two boxes at the top of the screen (to the right of the M) select the track segment over which adjustment is carried out. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to be targeted by the adjustment: notes with pitches outside this range are not affected.
+[Setting values]
+Measure: beat 	001:1 to 999:8
+Note range 	C-2 to G8
+
+3. Set all 
+[Explanation]
+Use this parameter if you want to set the velocities of all targeted notes to the same fixed value (1 to 127). If you do not want to use this feature (if you want to make the linear adjustment instead), set the value to Off. 
+Note that if the setting is other than Off, the Rate and Offset values are ignored. 
+[Setting values]
+Off (0), 001 to 127 
+
+4. Rate 
+[Explanation]
+The Rate parameter applies a proportional change to the velocities of all targeted notes. A setting of 100 percent produces no change; a setting of 50 percent cuts the velocities in half; a setting of 200 percent causes the velocities to double.
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+5. Offset 
+[Explanation]
+This parameter adds a fixed value to each of the Rate-adjusted velocity values. A setting of 0 produces no change. Positive values increase the velocity, while negative values decrease it. 
+[Setting values]
+minus 99 to plus 00 to plus 99 
+
+
+JOB 03 MODIFY GATE TIME
+[Explanation] 
+This job alters the gate times of the specified range of notes (pitches) in the specified segment of the designated track. The gate time refers to the length of time that a note is held. For non-percussive voices, the gate time is equal to the actual playback time span. 
+Using this job, you can choose to change all targeted notes to some fixed gate time, or you can apply a relative (linear) adjustment to the original gate times. 
+If making a relative adjustment, you use two parameters: the Rate and the Offset. The Rate value applies a proportional change to the gate time, while the Offset value (which is applied after the Rate adjustment) adds a fixed value. The relation is as follows: 
+
+Adjusted gate time  equal  (original gate time X Rate)  plus  Offset. 
+If the adjustment result is less than 1, the QY700 sets the Original gate timing value to 1. 
+
+1. Track setting: TR 
+[Explanation]
+. This parameter selects the sequence track to which adjustment is applied. 
+[Setting values]
+01 to 32 
+
+2. Segment and notes (M and Note equal )
+[Explanation]
+The two boxes at the top of the screen (to the right of the M) select the track segment over which adjustment is carried out. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to be targeted by the adjustment: notes with pitches outside this range are not affected. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+Note range 	C-2 to G8 
+
+3. Set all 
+[Explanation]
+Use this parameter if you want to set all targeted notes to some identical gate time (1 to 9999). If you do not want to use this feature (if you want to make the linear adjustment instead), set the value to Off. 
+Note that if the setting is other than Off, the Rate and Offset values are ignored. 
+[Setting values]
+Off (0), 0001 to 9999 
+
+4. Rate 
+[Explanation]
+The Rate parameter applies a proportional change to the gate timing of all targeted notes. A setting of 100 percent produces no change; a setting of 50 percent cuts the gate time in half; a setting of 200 percent causes the gate time to double. 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+
+5. Offset 
+[Explanation]
+This parameter adds a fixed value to each of the Rate-adjusted gate times. A setting of 0 produces no change. Positive values increase the gate time, while negative values decrease it. 
+[Setting values]
+minus 9999 to plus 0000 to plus 9999 
+
+
+
+JOB 04 CRESCENDO 
+[Explanation]
+You use this job to apply a crescendo or decrescendo to the specified range of notes (pitches) in the specified segment of the designated track. The QY700 produces the effect by applying a slight velocity adjustment (offset) at the beginning of the segment, with the offset increasing gradually up until the end of the segment. 
+
+1. Track setting: TR 
+[Explanation]
+. This parameter selects the sequence track to which adjustment is applied. 
+[Setting values]
+01 to 32 
+
+2. Segment and notes (M and Note equal )
+[Explanation]
+The two boxes at the top of the screen (to the right of the M) select the track segment over which the crescendo or diminuendo is created. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to be targeted by the adjustment: notes with pitches outside this range are not affected.
+[Setting values]
+Measure: beat 	001:1 to 999:8
+Note range 	C-2 to G8
+
+3. Range 
+[Explanation]
+You use the Range parameter to set the intensity of the crescendo. 
+The Range setting selects the value added to the velocities of notes at the final meter and beat of the segment. The QY700 gradually increases the amount added to (or subtracted from) the velocities within the segment, beginning with a "0" amount at the beginning of the segment, and ending with the full Range amount at the end of the segment. 
+Velocity cannot be less than 1 or higher than 127. Adjusted valves below 1 are raised to 1, adjusted values above 127 are set to 127.
+[Setting values]
+minus 99 to plus 00 to plus 99 
+
+
+JOB 05 TRANSPOSE 
+
+[Explanation]
+You use this job to transpose a specified range of notes (pitches) in a specified segment of the designated track. You set the transposition level in semitone increments. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the track. 
+[Setting values]
+01 to 32,Chd 
+01 to 32 	Apply transposition to the corresponding sequence track. 
+Chd 	Apply transposition to the CHORD track. 
+
+2. Segment and notes (M and Note equal ) 
+[Explanation]
+The two boxes to the right of the M select the track segment containing the notes to be transposed. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to be targeted: notes with pitches outside this range are not affected. 
+[Setting values]
+Measure: beat 	001:1 to 999:8
+Note range 	C-2 to G8
+
+3. Transposition amount 
+. The Transpose value sets the number of transposition intervals 
+(semitones). A value of  plus 12 would transpose all targeted 
+notes up by exactly one octave, while a value of -12 
+would transpose down by an octave. 
+minus 99 to plus 00 to  plus 99 
+
+
+
+JOB 06 SHIFT NOTE 
+[Explanation]
+This job replaces all occurrences of a specified pitch (within the selected segment of the selected sequence track) with some other pitch. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the track. 
+[Setting values]
+01 to 32 
+
+2. Segment and notes (M) 
+[Explanation]
+The two boxes to the right of the M select the track segment over which notes are to be changed. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 	001:1 to ,999:8 
+
+3. Source pitch 
+[Explanation]
+The first box to the right of "Note  equal " indicates the note (pitch) to be changed. Each of these notes will be converted to an equivalent note of the destination pitch. 
+[Setting values]
+C-2 to G8 
+
+4. Destination pitch 
+[Explanation]
+The second box to the right of "Note equal " selects the new pitch for the transposed notes. 
+[Setting values]
+C-2 to G8 
+
+
+JOB 07 SHIFT CLOCK
+[Explanation]
+This job executes a time shift of all data events on the selected segment of the selected track. The shift is executed in clock-cycle increments.
+If you wish to move events by one or more full beats or measures, you may find it easier to use the COPY EVENT job. (-> p.154) 
+
+Note that this job will never move an event past the designated segment's start or end points; any event that would otherwise move past this point is instead deposited at the segment's border. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the track. 
+[Setting values]
+01 to 32, Tmp 
+01 to 32 	Apply the shift to the corresponding sequence track. 
+Tmp 	Apply the shift to the TEMPO track. 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the track segment for the shift. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+
+3. Clock cycles 
+[Explanation]
+The Clock value sets the number of clock cycles for the data shift. Positive values shift events toward the right (toward the end of the song), while negative events shift them back. 
+Note that there are 480 cycles per beat. 
+[Setting values]
+minus 9999 to plus 0000 to plus 9999 
+
+
+
+Job 08 Chord Sort
+[Explanation]
+This job "sorts" chord events (simultaneous note events) by order of pitch. The sort is reflected in the EDIT page listing, and determines the separation sequence used by the CHORD SEPARATE job (see next page). 
+. Sorting is by pitch. If notes E3, C3, and G3 all begin at the same time, the job adjusts the sequence to C3, E3, G3 (if the setting is Normal) to G3, E3, C3 (if Reverse).
+
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects track containing the data to be sorted. 
+[Setting values]
+01 to 32 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the track segment over which the chord sort is executed. The first box sets the measure and beat for the start point; the second box sets the end point.
+[Setting values]
+Measure: beat	001:1 to 999:8
+
+
+3. Type 
+[Setting values]
+Normal 	Sort from low pitch to high. 
+Reverse 	Sort from high pitch to low. 
+
+
+JOB 09 CHORD SEPARATE
+[Explanation]
+This job plays opens each chord formation (within the specified segment of the specified track) into its individual notes, inserting a specified delay between each note. 
+If the Clock value is set to 30, a block chord consisting of elements C3, E3, G3 will be played as a C3 (at the chord's original timing) followed 30 cycles later by the E3, and then another 30 cycles later by the G3. This feature is useful, for example, when you want to open up guitar strokes. 
+Note that it is not possible to break chords over the next measure boundary or into the next chord. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the target track. 
+[Setting values]
+01 to 32 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the track segment over which chord separations are executed. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+
+3. Clock cycles 
+[Explanation]
+The Clock value sets the number of clock cycles inserted between adjacent chord notes. 
+Note that there are 480 clock cycles per beat. 
+[Setting values]
+000 to 999 
+
+
+JOB 10 SHIFT EVENT
+[Explanation] 
+This job replaces all occurrences of a specified event type (within the selected segment of the selected sequence track) with some other designated event type. Although the event type itself is replaced, the accompanying argument (parameter value) is retained and applied to the new event type. 
+As an example, you can use this function to change breath-controller events into channel-aftertouch events, while leaving the magnitude of the event unchanged. 
+
+1. Track setting: TR 
+[Explanation]
+This parameter selects the target track. 
+[Setting values]
+01 to 32 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the target track segment. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+
+3. Source event 
+[Explanation]
+The two boxes at the center select the event type to be replaced. 
+[Setting values]
+CC 001 to 031,033 to 127 	Control-change event
+CAT 	Channel aftertouch 
+PB MSB	Pitch bend MSB
+Note
+Note (Velo equal 64)	Note event (where the note-number argument is retained.) 
+Note Velo# (Note equal C3) 	Note event (where the velocity argument is retained.) 
+
+4. Destination event 
+[Explanation]
+The two boxes at the bottom select the event type that replaces the "source" event. 
+[Setting values]
+CC 001 to 031,033 to 127 	Control-change event 
+CAT	Channel aftertouch 
+PB MSB 	Pitch bend MSB (With the LSB argument set to 00) 
+Note 
+Note (Velo equal 64) 	Note event (where original argument gives the new note number; velocity is set to 64; and gate time is set to 108.) 
+Note 
+Velo# (Note equal C3) 	Note event (where  original argument gives the new velocity; the note is set to C3; and gate time is set to 108.) 
+
+
+JOB 11 COPY EVENT 
+This job copies all data from a specified source area (song, track, and segment) to a specified destination, overwriting any data already existing at the destination. 
+This job is useful when you want to copy data from one song to another, or when you want to copy or move data from one area of a track to another.
+Note that this job does not operate on voice settings and play-effect settings. 
+You can choose to copy more than one iteration of the source data. If you select three iterations, for example, the source data will be repeated three times on the destination side. 
+
+1. Source song 
+[Explanation]
+The upper Song value selects the song from which the data are to be copied.
+[Setting values]
+01 to 20 
+
+2. Source track
+[Explanation]
+The upper TR value selects the track from which the data are copied.
+[Setting values]
+01 to 32, Pat, Chd, Tmp, All 
+01 to 32 Sequence track
+Pat PATTERN track 
+Chd CHORD track
+Tmp TEMPO track
+All All tracks 
+NOTE: The source and destination tracks must be the same type. If you set the above value to Pat, Chd, Tmp, or All, the destination track setting will automatically take the same value. If you copy from a sequence track, the destination must also be a sequence track.
+
+ 
+3. Source segment 
+[Explanation]
+The two boxes to the right of the M (on the upper line of the screen) select the track segment from which data are copied.
+[Setting values]
+Measure: beat 	001:1 to 999:8
+
+4. Destination song 
+[Explanation]
+The lower Song value selects the destination song. 
+[Setting values]
+01 to 20 
+
+5. Destination track 
+[Explanation]
+The lower TR value selects the destination track. 
+[Setting values]
+01 to 32, Pat, Chd, Tmp, All 
+01 to 32 Sequence track 
+Pat PATTERN track 
+Chd CHORD track 
+Tmp TEMPO track 
+All All tracks 
+
+NOTE: The source and destination tracks must be the same type. If you set the above value to Pat, Chd, Tmp, or All, the source track setting will automatically take the same value. If you set the above to a sequence track, the source must also be a sequence track. 
+
+6. Start point of destination segment 
+[Explanation]
+The first box to the right of the M (on the lower line of the screen) selects the start point for the copy on the destination track. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+
+7. Copy iterations 
+[Explanation]
+The final entry on the job page sets the number of times the copy is executed. 
+[Setting values]
+01 to 99
+
+
+JOB 12 ERASE EVENT 
+[Explanation]
+This job clears all data from the specified segment of the designated song, so that the segment becomes silent. 
+
+1. Track setting 
+[Explanation]
+This TR value selects the track from which data are to be cleared. 
+[Setting values]
+01 to 2, Pat, Chd, Tmp 
+01 to 32 Sequence track 
+Pat PATTERN track 
+Chd CHORD track 
+Tmp TEMPO track 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the track segment to be cleared. 
+[Setting values]
+Measure: beat	001:1 to 999:8 
+
+
+
+JOB 13 EXTRACT EVENT 
+[Explanation]
+This job moves all instances of specified event data from a selected segment of a sequence track to the same segment on a different sequence track. Following the operation, the targeted events no longer exist in the source segment. 
+You can use the Spot Clock setting to target only those events that occur within a certain interval of each of the segment's measures. For example, you can choose to extract only events that fall between the second and third beats of each of the targeted measures. 
+If data already exist at the destination side, the extracted data and existing data are mixed. 
+. You can also use this job to delete the specified event data  rather than moving it. (You can do this by setting the second TR value to "Off".) 
+
+1. Source track 
+[Explanation]
+The first TR setting selects the track from which events are to be extracted. 
+[Setting values]
+01 to 32 
+
+2. Source segment 
+[Explanation]
+The two boxes to the right of the M select the track segment for the extraction. 
+[Setting values]
+Measure: beat 	001:1 to 999:8 
+
+3. Spot clock 
+[Explanation]
+The Spot Clock parameter selects the interval of each measure from which data are to be extracted. 
+The interval is set by clock cycles, where each measure starts at cycle 0000. There are 480 cycles per quarter note. 
+For example, assume that timing is set to 4/4. In this case, if you want to extract data only from the first half of each measure, you would set the range to 0000 to 0959. 
+If you wanted to copy only those events that fall exactly on the fourth beat, you would set the range to 1440 to 1440. 
+[Setting values]
+0000 to 3840 
+
+4. Destination track 
+[Explanation]
+The lower TR setting selects the destination track. 
+[Setting values]
+01 to 32, Off 
+01 to 32 	Sequence track 
+Off 	No destination. (Extract and delete) 
+
+5. Event 
+[Explanation]
+The third pair of boxes (at the center of the screen) select the event type to be extracted. 
+[Setting values]
+Note, PC, PB, CC (000 to 127, All), CAT, PAT, EXC 
+Note 	Note events (C2 to G8, All) 
+PC 	Program change 
+PB 	Pitch bend 
+CC(000 to 127,All) Control 	change (Any single control-change message type 000 to 127, or all control-change messages) 
+CAT 	Channel aftertouch 
+PAT 	Polyphonic aftertouch 
+EXC 	System exclusive 
+
+6. Argument range 
+[Explanation]
+The lowest two boxes on the screen select the argument range. The QY700 will extract only those note events whose arguments fall within the specified range. 
+If you are extracting note events, for example, you can use this setting to limit extraction to all note events within a certain pitch range (for example, C3 to C4). If extracting program-change events, you can limit extraction to events with a certain range of program numbers only. 
+Note that the EXC event type does not accept an argument-range value. 
+The values listed below show the maximum ranges. In all cases you can set a smaller range. Note that the first value of the range must be less than or equal to the second value. 
+[Setting values]
+C-2 to G8 	Maximum range for note events 
+minus 8192 to plus 8191 	Maximum range for pitchbend events 
+000 to 127 	Maximum range for all event types other than note and pitchbend. 
+
+
+JOB 14 THIN OUT
+[Explanation]
+You use this job to remove some occurrences of a specified non-note event within the designated segment of a selected track. The purpose is to reduce the data volume and free up additional memory. 
+. Specifically, the job will remove every other occurrence of the event in areas where the event recurs within 60 clock cycles. The job will not remove an event that is separated from the previous occurrence by at least 60 clock cycles. 
+
+1. Track setting 
+[Explanation]
+The TR value selects the target track. 
+[Setting values]
+01 to 32, Tmp 
+ 01 to 32 Sequence track 
+ Tmp TEMPO track 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the track segment to be thinned. 
+[Setting values]
+Measure: beat 001:1 to 999:8 
+
+3. Event 
+[Explanation]
+The bottom pair of boxes select the targeted event type. 
+Note that these settings are available only when you are working on a sequence track. If you have selected the TEMPO track, the QY700 will automatically target tempo-change events. 
+[Setting values]
+PB, CC (000 to 127), CAT, PAT 
+PB Pitch bend 
+ CC(000 to 127) Control change (Any single control-change message type, 000 to 127) 
+CAT Channel aftertouch 
+PAT Polyphonic aftertouch 
+
+
+JOB 15 TIME STRETCH 
+[Explanation]
+This job expands or compresses the timing over the selected segment on the selected track. 
+The operation affects all event timing, note step times,and note gate times. 
+
+1. Track setting 
+[Explanation]
+The TR value selects the target track. 
+[Setting values]
+01 to 32, All
+ 01 to 32 	Corresponding sequence track 
+ All	 All sequence tracks 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the target segment of the track. 
+
+[Setting values]
+Measure: beat	001:1 to 999:8
+
+3. Time 
+[Explanation]
+The Time parameter sets the time multiplier. 
+[Setting values]
+050 percent to 200 percent 
+
+
+JOB 16 CREATE MEASURE 
+[Explanation]
+This job inserts one or more empty measures into the same location on all tracks (all 32 sequence tracks, as well as the PATTERN, CHORD, and TEMPO tracks). 
+
+1. Insertion point 
+[Explanation]
+The M value sets the position for the insertion. Specifically, the value sets the measure number (within the song) for the first inserted measure. A value of 001, for example, inserts the measures at the very beginning (so that the first inserted measure becomes Measure 1). 
+[Setting values]
+001 to 999 
+[Supplementary comments] 
+If you set the insertion point past the end of the song, the QY700 will append the empty measure(s) to the end of Track 1 only.
+
+ 
+2. Meter 
+[Explanation]
+The middle box on the screen sets the meter for the new measure. 
+You can select any meter that you like. You may find it convenient to use this job when you need to create a song that incorporates meter changes. 
+[Setting values]
+1/16 to 16/16; 1/8 to 16/8; 1/4 to 8/4
+
+3. Number of measures to insert 
+[Explanation]
+The final box on the screen sets the number of measures to be inserted. 
+[Setting values]
+01 to 99
+
+
+JOB 17 DELETE MEASURE 
+[Explanation]
+This job removes a segment consisting of one or more measures. The segment is removed from all tracks (all 32 sequence tracks, as well as the PATTERN, CHORD, and TEMPO tracks). 
+The area that trails the deleted segment shifts forward (toward the start of the song) to fill in the gap. 
+
+1. Range 
+[Explanation]
+The M values set the segment to be removed. The first value gives the number of the first measure of the segment; the second value gives the number of the final measure. 
+[Setting values]
+001 to 999
+
+
+JOB 18 COPY TRACK 
+[Explanation]
+This job copies all data (or a selected type of data; see below) from one track onto another. The source and destination tracks may be in the same song, or in different songs. 
+Note that the source track's transmission-channel and meter settings are not copied. 
+This operation overwrites any data already existing on the destination track. 
+
+1. Source song 
+[Explanation]
+The first Song setting selects the song containing the source track.
+[Setting values]
+01 to 20
+
+2. Source track 
+[Explanation]
+The first TR setting selects the track containing the data to be copied. 
+[Setting values]
+01 to 32, Pat, Chd, Tmp
+ 01 to 32 Sequence track 
+ Pat PATTERN track 
+ Chd CHORD track 
+ Tmp TEMPO track 
+
+NOTE: The source and destination tracks must be the same type. If you set the destination to Pat, Chd, or Tmp, the destination track setting will automatically take the same value. If you copy from a sequence track, the destination must also be a sequence track.
+
+3. Destination song 
+[Explanation]
+The second Song setting selects the song containing the destination track.
+[Setting values]
+01 to 20
+
+4. Destination track 
+[Explanation]
+The second TR setting selects the destination track. 
+ [Setting values]
+ 01 to 32, Pat, Chd, Tmp 
+ 01 to 32 	Sequence track 
+Pat 	PATTERN track
+Chd 	CHORD track 
+Tmp 	TEMPO track 
+
+NOTE: 
+The source and destination tracks must be the same type. If you set the destination to Pat, Chd, or Tmp, the source track setting will automatically take the same value. If you copy from a sequence track, the destination must also be a sequence track. 
+
+
+5. Data type
+The last three items on the screen allow you to select the type. If you set the above value to Pat, Chd, or Tmp,track's SONG-mode play effect settings. 
+If you select Event, the job copies all event data from the source track to the destination track. 
+If you select Play Effect, the job copies all of the source track's SONG-mode play effect settings.
+If you select Voice, the job copies all of the source track's associated VOICE-mode settings. 
+
+The checkmark settings have no meaning if the track is set to Pat, Chd, or Tmp. 
+
+[Setting values]
+Check Copy the corresponding data type. 
+None	Do not copy this data type.
+
+
+
+JOB 19 MIX TRACKS 
+[Explanation]
+This job mixes all data from a selected sequence track onto another sequence track. The two tracks do not have to be in the same song. 
+When the operation is completed, the source track remains unchanged, while the destination track contains both its original data and a copy of the source track's data. 
+
+
+1. Source song 
+[Explanation]
+The first Song value selects the song containing the source track. 
+[Setting values]
+01 to 20 
+
+2. Source track (Track "a") 
+[Explanation]
+The first TR value selects the source track. This is the track containing the data to be mixed into the destination track. 
+Following the mix, the source track's content will remain unchanged. 
+[Setting values]
+01 to 32 
+
+3. Destination song 
+[Explanation]
+The second Song value selects the song containing the destination track (track "b"). 
+[Setting values]
+01 to 20 
+
+4. Destination track (Track "b") 
+The second TR value selects the destination track. The original content of this track becomes mixed with the content from Track "a." 
+[Setting values]
+01 to 32 
+
+5. Play Effect and Voice source 
+[Explanation]
+The final two items let you select which play-effect and voice settings to apply to the destination track (track "b"). 
+For both Play Effect and Voice, you can choose to apply the values from track "a" or to retain the values already in effect at track "b". 
+[Setting values]
+a, b 
+ a Use the settings from track "a". 
+ b Use the settings from track "b". 
+
+
+JOB 20 CLEAR TRACK 
+[Explanation]
+This job deletes all data (of the selected type) from the selected track.
+To select a data type for deletion, place a checkmark in the corresponding box.
+If you select Event, the job will delete all event data from the track.
+If you select Play Effect, the job will initialize all play-effect settings for that track.
+If you select Voice, the job will initialize the track's VOICE-mode settings. 
+
+1. Track 
+[Explanation]
+The TR setting selects the track to be cleared.
+[Setting values]
+01 to 32, Pat, Chd, Tmp, All 
+ 01 to 32 	Sequence track 
+ Pat  PATTERN track 
+ Chd  CHORD track 
+ Tmp  TEMPO track 
+ All  All tracks 
+
+ 2. Data type 
+[Explanation]
+Check the box containing the data type(s) that you want to delete. 
+[Setting values]
+Check	Delete the corresponding data type.
+None	Do not delete this data type. 
+
+
+ 
+JOB 21 EXPAND BACKING
+[Explanation]
+This job expands pattern-track and chord-track data into pattern performance data (event data), and places the results into sequence tracks 17 to 32.
+
+Note that the job will cause loss of any data already existing in tracks 17 to 32. 
+Expanded pattern data includes program change messages. 
+There is no need to make explicit VOICE mode settings. 
+The PATTERN mode's play effects are incorporated into the expanded data. 
+
+
+JOB 22 NORMALIZE PLAY EFFECTS
+[Explanation]
+This job rewrites the data in the selected sequence track so that the new data incorporates the current play-effect settings (-> p.80). In other words, the external play-effect values are internalized into the track's MIDI event data. 
+After rewriting the track's sequence data, the job reinitializes the track's play-effect parameters. 
+
+1. Track 
+[Explanation]
+The TR value selects the track to be normalized. 
+[Setting values]
+01 to 32, All 
+ 01 to 32 	Normalize the corresponding sequence track. 
+ All 	Normalize all sequence tracks. 
+
+
+JOB 23 COPY SONG 
+[Explanation]
+This job copies the selected song (including play effects and VOICE-mode settings) into another song location. Following the copy, the selected song will exist at two song locations. 
+The copy operation causes loss of any data already existing in the destination song. 
+
+1. Source song 
+[Explanation]
+The first Song value selects the song to be copied. 
+[Setting values]
+01 to 20 
+
+2. Destination song 
+[Explanation]
+The second Song value selects the destination. 
+[Setting values]
+01 to 20 
+
+
+JOB 24 CLEAR SONG 
+This job deletes all data from the selected song, and reinitializes the song's play effects and VOICE-mode settings. 
+
+ 1. Song 
+[Explanation]
+The Song value selects the song to be deleted. 
+[Setting values]
+1 to 20
+
+
+
+JOB 25 SONG NAME
+[Explanation]
+You use this job to set or change the name for the currently selected song. 
+
+1. Song name 
+[Setting values]
+Supported characters: 
+0 to 9, a to z, A to Z " Åe ^ ( ) < = > @ | \ _ ! ? # $  percent & * +  - / , . : ; space 
+
+[Procedure]
+1. Use the numeric keypad and the microkeyboard to input each character. You can use the cursor [left] and [right] keys to move the cursor left and right as necessary. 
+For information about how to input characters, refer to Chapter 1.(-> p.53) 
+
+2. When you have finished entering the name, press [EXIT] twice to return to the SONG PLAY screen. 
+Check that the name appears correctly on the second line of the display. 
+Note that you do not need to press the [ENTER] to enter the name. 
+
+
+This is the end of the file.

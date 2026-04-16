@@ -57,7 +57,7 @@ def check_midi_ports():
 
 
 def send_sysex_file(out_port_name: str, syx_path: str,
-                    init_delay: float = 0.5, msg_delay: float = 0.15):
+                    init_delay: float = 1.0, msg_delay: float = 0.3):
     """Send a .syx file to QY70 via rtmidi."""
     import rtmidi
 
@@ -94,7 +94,8 @@ def send_sysex_file(out_port_name: str, syx_path: str,
 
 
 def capture_playback(in_port_name: str, out_port_name: str,
-                     bpm: float, duration: float, bars: int) -> dict:
+                     bpm: float, duration: float, bars: int,
+                     style_name: str = "unknown") -> dict:
     """Start MIDI playback and capture notes.
 
     Sends MIDI Start + Clock to trigger QY70 playback,
@@ -107,7 +108,7 @@ def capture_playback(in_port_name: str, out_port_name: str,
     ports = mi.get_ports()
     port_idx = ports.index(in_port_name) if in_port_name in ports else 0
     mi.open_port(port_idx)
-    mi.ignore_types(sysex=True, timing=False, active_sense=True)
+    mi.ignore_types(sysex=True, timing=True, active_sense=True)
 
     # Open output for clock
     mo = rtmidi.MidiOut()
@@ -165,13 +166,34 @@ def capture_playback(in_port_name: str, out_port_name: str,
     mi.close_port()
     mo.close_port()
 
-    print(f"  Captured {len(raw_events)} events in {time.time()-t0:.1f}s")
+    elapsed = time.time() - t0
+    print(f"  Captured {len(raw_events)} events in {elapsed:.1f}s")
+
+    # Diagnostic: count event types
+    note_on_count = 0
+    note_off_count = 0
+    ch_counts = {}
+    for ev in raw_events:
+        d = ev["data"]
+        status = d[0] & 0xF0
+        ch = (d[0] & 0x0F) + 1
+        if status == 0x90 and len(d) >= 3 and d[2] > 0:
+            note_on_count += 1
+            ch_counts[ch] = ch_counts.get(ch, 0) + 1
+        elif status == 0x80 or (status == 0x90 and len(d) >= 3 and d[2] == 0):
+            note_off_count += 1
+
+    print(f"  Note ON: {note_on_count}, Note OFF: {note_off_count}")
+    if ch_counts:
+        print(f"  Channel note_on counts: {ch_counts}")
+    else:
+        print("  WARNING: No notes captured!")
 
     return {
-        "style": os.path.basename(args.syx_file),
+        "style": style_name,
         "bpm": bpm,
         "duration": duration,
-        "channels": {},
+        "channels": ch_counts,
         "raw": raw_events,
     }
 
@@ -190,20 +212,37 @@ def main(args):
     print()
 
     # Step 2: Send style to QY70
-    print("Step 2: Sending style to QY70")
-    send_sysex_file(out_port, args.syx_file)
-    print(f"  Waiting {args.load_delay}s for QY70 to load...")
-    time.sleep(args.load_delay)
+    if args.skip_send:
+        print("Step 2: SKIPPED (--skip-send)")
+    else:
+        print("Step 2: Sending style to QY70")
+        send_sysex_file(out_port, args.syx_file)
+        print(f"  Waiting {args.load_delay}s for QY70 to load...")
+        time.sleep(args.load_delay)
     print()
 
     # Step 3: Capture playback
     print("Step 3: Capturing MIDI playback")
-    capture = capture_playback(in_port, out_port, args.bpm, args.duration, args.bars)
+    capture = capture_playback(in_port, out_port, args.bpm, args.duration, args.bars,
+                               style_name=os.path.basename(args.syx_file))
     capture_path = output_dir / "capture.json"
     with open(capture_path, "w") as f:
         json.dump(capture, f, indent=2)
     print(f"  Saved: {capture_path}")
     print()
+
+    # Check if we got any notes
+    if not capture["channels"]:
+        print("=" * 60)
+        print("ABORT: No notes captured. Possible causes:")
+        print("  1. Pattern not loaded on QY70 (send failed or wrong slot)")
+        print("  2. PATT OUT not set to 9~16 on QY70")
+        print("  3. QY70 not in Pattern mode")
+        print("  4. MIDI cable issue (QY70 OUT → UR22C IN)")
+        print(f"  Raw events saved to: {capture_path}")
+        print()
+        print("Retry with --skip-send if pattern is already loaded.")
+        sys.exit(1)
 
     # Step 4: Quantize and convert
     print("Step 4: Quantizing and converting")
@@ -257,8 +296,10 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--duration", type=float, default=15.0,
                        help="Capture duration in seconds")
     parser.add_argument("-o", "--output-dir", help="Output directory")
-    parser.add_argument("--load-delay", type=float, default=2.0,
+    parser.add_argument("--load-delay", type=float, default=3.0,
                        help="Seconds to wait after sending style")
+    parser.add_argument("--skip-send", action="store_true",
+                       help="Skip sending .syx, assume pattern already loaded")
 
     args = parser.parse_args()
 

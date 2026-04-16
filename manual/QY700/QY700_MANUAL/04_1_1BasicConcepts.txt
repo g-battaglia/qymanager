@@ -1,0 +1,617 @@
+Chapter 1. BASIC CONCEPTS
+This chapter explains the basic concepts that you need to know be-fore use, such as the mode structure and the internal structure of the QY700. 
+
+1. Mode structure 
+About modes 
+The many functions of the QY700 are grouped by type into modes, sub-modes, and pages (see the diagram below). 
+When operating the QY700, you will arrive at the desired function by first selecting the mode, then the sub-mode, and finally the page. 
+Modes are the largest division of functions. Use the Mode buttons to switch between modes. 
+Sub-modes are broad divisions of the functions within each mode. If the bottom line of the display shows a menu shaped like buttons, you can press the corresponding function button to select the desired sub-mode. In some cases, you will enter a sub-mode by pressing the [STOP], [ENTER], or [JOB] keys. 
+Pages contain groups of related parameters within a submode. If the bottom line of the sub-mode display shows a tab-shaped menu, you can press the corresponding function button to switch pages. In some sub-modes, you can select sub-pages within a page, or move to a special page to make settings. 
+(Figure)
+
+[Supplementary comments] 
+The following example shows the Song (mode) Play Effect (sub-mode) Groove Quantize (page) display. 
+(Figure)(Figure)
+Mode name 
+Sub-mode name 
+Page name 
+Sub-page name 
+Special page name 
+
+
+Modes and sub-modes 
+The QY700 has the following modes and sub-modes. 
+
+Song mode 
+Here you can record or playback songs. (-> p.70)
+The Auto-accompaniment functions allow you to create music efficiently.
+Press the [SONG] key to enter this mode.
+
+Song Play 
+Here you can select and playback songs. (-> p.72)
+This is the first sub-mode you will enter when you press the [SONG] key.
+
+
+Play Effect 
+Here you can make temporary adjustments to the note timing and dynamics for song playback. (-> p.80)
+In Song Play, press the  [F1] (PlayFx) to enter this sub-mode.
+
+Track View 
+This display shows the measures in which data has been input in each track. (-> p.100)
+In Song Play, press the  [F2] (TrView) to enter this sub-mode.
+
+Out Channel 
+Here you can set the output channel for each of the tracks and patterns which make up the song, determining how they will be transmitted to the tone generator block and to the MIDI OUT connectors. (-> p.103) 
+In Song Play, press the  [F3] (OutCh.) to enter this sub-mode. 
+
+Song Recording 
+Here you can record song data onto the tracks of a song. (-> p.106)
+In Song Play, press the  [Stop] to enter this sub-mode.
+
+Song Edit 
+Here you can modify the song data of a song, or insert new data. (-> p.129)
+In Song Play, press the [EDIT] key to enter this sub-mode.
+Song Job 
+Here you select and execute song jobs to edit or modify a song. (-> p.138)
+In Song Play, press the [JOB] key to enter this sub-mode.
+
+Voice mode 
+Here you can make tone generator settings such as voice and volume for each part, determining how each part will sound when the song is played back. (-> p.168) 
+Press the [VOICE] key to enter this mode. 
+
+Mixer 
+Here you can make tone generator settings such as voice, pan and volume for each part. (-> p.170)
+In Voice mode, press the  [F1] (Mixer) to enter this sub-mode.
+
+Tune 
+Here you can transpose or tune each part. (-> p.174)
+In Voice mode, press the  [F2] (Tune) to enter this sub-mode.
+
+Voice Edit 
+Here you can modify parameter values for each part to modify the voice. (-> p.176)
+In Voice mode, press the  [F3] (VoicEdit) to enter this sub-mode.
+
+Drum Setup Edit 
+Here you can edit Drum Setup 1 and 2 to indirectly modify drum voices. (-> p.182) 
+After selecting Drum Setup 1 or 2 as the voice category in Voice mode, press the  [F4] or [F5] to enter this sub-mode. 
+
+Effect mode 
+Here you can make settings for the effects used in a song. (-> p.188)
+Press the [EFFECT] key to enter this mode.
+
+Effect Connection 
+Here you can select the way in which the Variation effect is connected. (-> p.190)
+In Effect mode, press the  [F1](Connect) to enter this sub-mode.
+
+Effect Reverb Edit
+Here you can make settings for the Reverb effect. (-> p.193)
+In Effect mode, press the  [F2] (Reverb) to enter this sub-mode.
+
+Effect Chorus Edit
+Here you can make settings for the Chorus effect. (-> p.193)
+In Effect mode, press the  [F3] (Chorus) to enter this sub-mode.
+
+Effect Variation Edit
+Here you can make settings for the Variation effect. (-> p.193)
+In Effect mode, press the  [F4] (Vari.) to enter this sub-mode.
+
+Pattern mode
+Here you can create and playback patterns or phrases. (-> p.200)
+Press the [PATTERN] key to enter this mode.
+
+Patch
+Here you can select and playback patterns. Patterns are created by assigning phrases to each track of the pattern. (-> p.200)
+This is the sub-mode that you will enter when you first press the  [PATTERN]. 
+
+Play Effect 
+Here you can make temporary changes in the timing and dynamics of pattern playback. (-> p.212)
+In Patch, press the  [F1] (PlayFx) to enter this sub-mode.
+
+Pattern Voice 
+Here you can make tone generator settings such as voice or volume for each pattern track. (-> p.225).
+In Patch, press the  [F2] (Voice) to enter this sub-mode.
+
+Pattern Effect 
+Here you can make settings for the effects used in the pattern.(-> p.239)
+In Patch, press the  [F3] (Effect) to enter this sub-mode.
+
+Phrase Recording 
+Here you can record musical data into the selected User Phrase.(-> p.247)
+In Patch, move the cursor to User Phrase and press the  [Stop] to enter this sub-mode.
+
+Phrase Edit 
+Here you can modify or insert data in a Preset Phrase or User Phrase. (It is possible to enter Edit mode even with a preset phrase, but the data cannot be edited.) (-> p.254) 
+In Patch, move the cursor to User Phrase, and press the [EDIT] key to enter this sub-mode. 
+
+Pattern Job 
+Here you can select and execute jobs to edit or modify a pat tern.  (-> p.256)
+In Patch, press the [JOB] key to enter this sub-mode.
+
+Utility mode 
+Here you can make basic settings for the QY700 and MIDI-related settings. (-> p.288)
+Press the [UTILITY] to enter this mode.
+
+System 
+Here you can make basic settings for the QY700 such as master tuning and controller settings. (-> p.289)
+In Utility mode, press the [F1](System) to enter this sub-mode.
+
+MIDI 
+Here you can make MIDI-related settings. (-> p.291)
+In Utility mode, press the [F2] (MIDI) to enter this sub-mode.
+
+MIDI Filter 
+Here you can specify whether or not various categories of MIDI message will be transmitted or received via the MIDI connectors. (-> p.293) 
+In Utility mode, press the [F3] (MIDI Fltr) to enter this sub-mode. 
+
+Sequencer 
+Here you can make basic settings related to the sequencer block.(-> p.295)
+In Utility mode, press the [F4](Seqencr) to enter this sub-mode.
+
+Click
+Here you can make basic settings for the click sound. (-> p.297)
+In Utility mode, press the [F5] (Click) to enter this sub-mode.
+ 
+Fingered Chord Zone 
+Here you can specify the range of the keyboard in which Fingered Chord will function. (-> p.299)
+In Utility mode, press the [F6](FngZone) to enter this sub-mode.
+
+Disk mode 
+In this mode you can transfer data to and from the floppy disk. (-> p.302) 
+Press the [DISK] key to enter this mode. 
+
+Save 
+Here you can save internal memory data to floppy disk. (-> p.307)
+In Disk mode, press the [F1] (Save) to enter this sub-mode.
+
+Load 
+Here you can load data from floppy disk into internal memory.(-> p.310)
+In Disk mode, press the [F2] (Load) to enter this sub-mode.
+
+Rename 
+Here you can change the filename of a file on floppy disk. (-> p.312)
+In Disk mode, press the [F4] (Rename) to enter this sub-mode.
+
+Delete 
+Here you can delete a file from the floppy disk. (-> p.314) 
+In Disk mode, press the [F5] (Delete) to enter this sub-mode. 
+
+Format 
+Here you can format a floppy disk. (-> p.316)
+In Disk mode, press the [F6] (Format) to enter this sub-mode.
+
+
+2. Function tree 
+
+Song mode 
+[SONG] Song Play  	p.72
+	[F1] Play Effect  	p.80
+		[F1]Groove 	p.82
+			[F4]Groove View 	p.82
+			[F5] Copy Template 	p.89
+		[F2] Clock Shift / Gate Time / Velocity 	p.90
+		[F3] Transpose 	 p.94
+			[F4] Drum Table Edit 	p.97
+	[F2] Track View 	p.100
+	[F3] Out Channel 	p.103
+	[F5] Save Song 	 p.307
+	[F6] Load Song 	 p.310
+	[SHIFT] plus [F5] Save Song SMF 	p.307
+	[SHIFT] plus [F6] Load Song 	p.310
+	[Stop] Song Recording 	p.106
+		[F1] Multi 	p.110
+		[F3] Replace 	p.112
+		[F4] Overdub 	p.112
+		[F5] Punch	p.118
+		[F6] Step 	p.120
+	[EDIT] Song Edit 	p.129
+		[F1] Graphic, Event List	 p.135
+		[F2] XG View	p.132
+		[F3] Track Name	p.132
+		[F4] View Filter	p.133
+		[F5] Delete	p.133
+		[F6] Insert	p.133
+	[JOB] Song Job	p.138
+		00 Undo/Redo 	p.141
+		01 Quantize 	 p.142
+		02 Modify Velocity	p.145
+		03 Modify Gate Time	p.147
+		04 Crescendo	p.148
+		05 Transpose	p.149
+		06 Shift Note	p.150
+		07 Shift Clock	p.150
+		08 Chord Sort	p.151
+		09 Chord Separate	p.152
+		10 Shift Event	p.153
+		11 Copy Event	p.154
+		12 Erase Event	p.155
+		13 Extract Event	p.155
+		14 Thin Out	p.157
+		15 Time Stretch	p.158
+		16 Create Measure	p.158
+		17 Delete Measure	p.159
+		18 Copy Track	p.160
+		19 Mix Track	p.161
+		20 Clear Track	p.162
+		21 Expand Backing	p.162
+		22 Normalize Play Effect	p.163
+		23 Copy Song	p.164
+		24 Clear Song	p.164
+		25 Song Name	p.165
+
+Voice mode 
+[VOICE]
+	[F1] Mixer 	p.170
+	[F2] Tune 	p.174
+	[F3] Voice Edit	p.176
+	[F4] Drum Setup 1 Edit	p.182
+	[F5] Drum Setup 2 Edit	p.182
+
+Effect mode 
+[EFFECT] 	p.188
+	[F1] Effect Connection	p.190
+	[F2] Effect Reverb Edit	p.193
+	[F3] Effect Chorus Edit	p.193
+	[F4] Effect Variation Edit	p.193
+
+Pattern mode 
+[PATTERN] Patch 	 p.200
+	[F1] Play Effect	p.212
+		[F1] Groove	p.214
+			[F4] Groove View	p.214
+		[F2] Clock Shift / Gate Time / Velocity	p.217
+		[F3] Transpose 	 p.219
+			[F4] Drum Table Edit 	 p.222
+		[F5] Pattern Voice 	 p.225
+		[F6] Pattern Effect 	 p.239
+	[F2] Pattern Voice 	 p.225
+		[F1] Mixer 	 p.227
+		[F2] Voice Edit	p.232
+		[F3] Drum Setup 3 Edit	p.235
+		[F5] Play Effect	p.212
+		[F6] Pattern Effect 	 p.239
+	[F3] Pattern Effect	p.239
+		[F1] Connection	p.241
+		[F2] Reverb	p.244
+		[F3] Chorus	p.244
+		[F4] Variation	p.244
+		[F5] Play Effect	p.212
+		[F6 Pattern Voice	p.225
+	[F4] Phrase Solo	p.208
+		[F6] Phrase Table	p.209
+	[F5] Rest	p.208
+	[F6] Clear	p.208
+	[Stop] Phrase Recording	p.247
+		[F4] Replace	p.252
+		[F5] Overdub	 p.252
+		[F6] Step	p.253
+	[EDIT] Phrase Edit Change	p.254
+		[F1] Graphic / Event List 	 p.254
+		[F2] XG View 	 p.254
+		[F4] View Filter 	p.254
+		[F5] Delete 	p.254
+		[F6] Insert 	p.254
+	[JOB] Pattern Job	p.256
+		00 Undo/Redo 	p.259
+		01 Quantize 	p.260
+		02 Modify Velocity 	p.261
+		03 Modify Gate Time 	p.262
+		04 Crescendo 	p.263
+		05 Transpose 	p.263
+		06 Shift Note 	p.264
+		07 Shift Clock 	p.265
+		08 Chord Sort 	p.265
+		09 Chord Separate	p.266
+		10 Shift Event	p.267
+		11 Copy Event	p.268
+		12 Erase Event	p.269
+		13 Extract Event	p.269
+		14 Thin Out	p.271
+		15 Time Stretch	p.272
+		16 Copy Phrase	p.272
+		17 Mix Phrase	p.274
+		18 Append Phrase	p.275
+		19 Split Phrase	p.276
+		20 Get Phrase	p.277
+		21 Put Phrase	 p.278
+		22 Clear Phrase 	 p.279
+		23 Phrase Name 	p.279
+		24 Clear Track 	p.280
+		25 Copy Pattern 	p.281
+		26 Append Pattern 	p.282
+		27 Split Pattern	p.283
+		28 Clear Pattern 	p.284
+		29 Pattern Name	p.284
+		30 Style Icon	p.285
+
+Utility mode 
+[UTILITY] 	p.288
+	[F1] System 	 p.289
+	[F2] MIDI 	 p.291
+	[F3] MIDI Filter 	p.293
+	[F4] Sequencer 	p.295
+	[F5] Click 	p.297
+	[F6] Fingered Chord Zone 	p.299
+
+Disk mode 
+[DISK]	p.302
+	[F1] Save 	 p.307
+	[F2] Load 	p.310
+	[F4] Rename	p.312
+	[F5] Delete 	p.314
+	[F6] Format 	p.316
+
+
+3. How the QY700 is organized 
+Four blocks 
+The QY700 consists of four blocks: the sequencer block, the tone generator block, the controller block, and the effect block. 
+
+Sequencer block (-> p.37) 
+This block lets you create songs by recording/editing musical performances recorded from an external MIDI device or from the controller block, and then plays back this data, transmitting it to the tone generator block or to an external MIDI tone generator as MIDI messages. 
+The sequencer block can be operated in two modes: Song mode (-> p.70) and Pattern mode (-> p.198). 
+Using the Auto-Accompaniment function (-> p.37) allows you to create music efficiently. 
+By recording one track at a time to create a multi-track recording, you can create songs which use up to 32 tracks (up to 48 tracks if you use the Auto-Accompaniment function). 
+When songs or patterns are played back, the musical data is output to the tone generator block and to the MIDI OUT connectors. The output destination of the musical data can be specified for each track by setting the Out Channel (-> p.103). 
+
+Tone generator block (-> p.43) 
+This block produces sound in response to the MIDI messages that it receives from the sequencer block, controller block, and from the MIDI IN connectors. 
+Settings for this block can be made in Voice mode (-> p.168). 
+This is a 32 part 32 note polyphonic multi-timbral XG-compatible tone generator. 
+
+Controller block (-> p.46) 
+This block contains the microkeyboard, pitch wheel, assignable wheel, and foot switch that you use to perform, and from which MIDI messages are transmitted to the sequencer block and to the tone generator block. 
+The functions of the pitch wheel, assignable wheel, and foot switch can be set in Utility mode (-> p.288). 
+The output destination of the musical data transmitted from the controller block is specified by the Keyboard Track setting (-> p.74) of the sequencer block. The musical data is output as specified by the Out Channel setting of the keyboard track, either to one of the parts of the tone generator or to the MIDI OUT connectors. 
+
+Effect block (-> p.47) 
+This block processes the audio signal that is output from the tone generator block, adding reverberation or ambiance etc. 
+This block provides three XG-compatible effects: reverb effect, chorus effect, and variation effect. 
+Settings for this block can be made in Effect mode (-> p.188). 
+
+How the blocks are connected 
+The four blocks are connected as follows. 
+(Figure)
+
+
+4. Sequencer block 
+1. About the sequencer block 
+ This block lets you create songs by recording/editing the musical performance that is recorded from an external MIDI device or from the controller block, and then plays back the data, transmitting it to the tone generator block or to an external MIDI tone generator as MIDI messages. 
+The sequencer block can be operated in two modes: Song mode and Pattern mode. 
+Using the Auto-Accompaniment function allows you to create song efficiently by joining together patterns and phrases. 
+Patterns and phrases will be explained below. 
+By recording one track at a time to create a multi-track recording, you can create songs which use up to 32 tracks (up to 48 tracks if you use the Auto-Accompaniment function). 
+When songs or patterns are played back, the musical data is output to the tone generator block and to the MIDI OUT connectors. The output destination of the musical data can be specified for each track by setting the Out Channel. 
+"Tracks" are memory areas in which musical performances are recorded. Musical data can be recorded, edited, and played back independently for each track. 
+(Figure)
+
+2. Auto-Accompaniment 
+Auto-Accompaniment is a function that lets you specify chords for the phrases or patterns created in Pattern mode, creating an accompaniment that is played back automatically. 
+The accompaniment created using the Auto-Accompaniment function consists of three types of elements: phrases, patterns, and songs. 
+"Phrases" are musical accompaniment phrases for a single instrument, such as a rhythm pattern for the rhythm part, a bass line for the bass part, or a chord backing for the guitar part. Phrases are the smallest unit that makes up the accompaniment of a song. 
+"Patterns" are created by joining two or more Phrases horizontally, or by joining up to 16 parts vertically to create an accompaniment with drums, bass, and chord backing. While phrases contain musical data for a single instrument, patterns combine two or more phrases to create a single backing pattern. Patterns are the basic unit with which the accompaniment of a song is created. 
+In order to create the accompaniment for an entire song, you will need to create different patterns for the various parts of the song, such as the intro, theme, fill-ins, breaks, and ending. 
+Song mode provides a Pattern track in which patterns can be arranged, and a Chord track in which chords can be arranged. 
+When you place patterns and chords in these tracks as appropriate for the changes in your song, the accompaniment 
+patterns will automatically be converted for playback with the chords you specify. 
+(Figure)
+
+3. Phrases 
+"Phrases" are musical accompaniment phrase for a single instrument, such as a rhythm pattern for the rhythm part, a bass line for the bass part, or a chord backing for the guitar part. Phrases are the smallest unit that makes up the accompaniment of a song. 
+. The QY700 provides 3,876 Preset Phrases, and 99 User Phrases for each Style. 
+. Preset phrases and user phrases are categorized by three parameters: "instrument category," "beat" and "number." 
+This lets you efficiently find desired phrases without having to be familiar with each individual phrase.
+
+Instrument category
+. Instrument category refers to the type of instrument or playing technique. There are the following 15 instrument categories. "US" indicates a "User Phrase," and all others are preset phrases.
+
+(Table)
+Display 	Category 
+Da 	Drum-a 	Drum phrases 
+Db 	Drum-b(General) 	Drum phrases 
+Fa 	Drum Fill-a(Pop & Rock) 	Drum fill-in phrases 
+Fb 	Drum Fill-b(Specific) 	Drum fill-in phrases 
+Fc 	Drum Fill-c(General) 	Drum fill-in phrases 
+DP 	Durm Parts	Drum phrases separated by instrument 
+PC 	Percussion 	Percussion phrases 
+PF 	Percussion Fill 	Percussion fill-in phrases 
+Ba	Bass-a 	Bass phrases 
+Bb 	Bass-b(General) 	Bass phrases 
+GC 	Guitar Chord 	Guitar chord backing phrases 
+GA 	Guitar Arpeggio 	Guitar arpeggio phrases 
+GR 	Guitar Riff 	Guitar riff phrases 
+KC 	Keyboard Chord 	Keyboard chord backing phrases 
+KA 	Kbd Arpeggio 	Keyboard arpeggio phrases 
+KR 	Keyboard Riff 	Keyboard riff phrases 
+PD 	Pad Pad-type phrases 
+BR 	Brass 	Brass phrases 
+SE 	Sound Effect 	Sound effect phrases 
+US	User 	User phrases 
+(Table end)
+
+
+Beat 
+. Beat categorizes phrases by their basic rhythm, into the following three types. 
+(Table)
+Display 	Type 
+16 	16 beat : 16-beat phrases 
+08 	8 beat 	: 8-beat phrases 
+34 	3/4 beat 	: 3/4 time or 6/8 time phrases 
+(Table End) 
+
+Number 
+. Number specifies phrases within Instrument Category and Beat by a number 001 to 256. (User phrases are numbered 001 to 099.) 
+
+4. How chord conversion works Chord conversion table 
+. The QY700's "chord conversion table" allows phrases to  be developed and played according to the Chord Root and Chord Type that you specify. 
+. The chord conversion table provides pitch data corresponding to 12 chord roots and 28 chord types. The data played back by a phrase passes through the chord conversion table and is converted to the pitches that correspond to the chord root and chord type. In this way, the phrase is developed into the specified chord. 
+. The Source Chord indicates the chord with which the phrase was originally recorded. The source chord plays an important role in the chord conversion of phrases. This is because the original chords must be known in order for the chords of a phrase to be converted into the specified chords. 
+. In other words, chord conversion is performed by reading relative pitch differences between the source chord and the specified chord from the chord conversion table. 
+. You can specify the Phrase Type of each phrase so that chord conversion will be performed in a manner appropriate for the instrument. There are seven phrase types: melody 1 and 2, chord 1 and 2, bass, bypass, and parallel. The chord conversion table is switched according to the phrase type. 
+. The Phrase Type and Source Chord can be set for each phrase in the phrase table (-> p.209). 
+
+
+On Bass and Original Bass 
+. In addition to Chord Root and Chord Type, chord settings also allow you to specify On Bass and Original Bass. 
+. On Bass and Original Bass are effective only for phrases whose Phrase Type is set to Bass. 
+. On Bass lets you specify a root note for the bass that is separate from the chord, so that when the pattern or phrase is played back, phrases with a phrase type of Bass will be fixed at the root note. For example if On Bass G is specified for a CM7 chord, the display will be "CM7onG", and phrases whose phrase type is set to Bass will all be played as "G". 
+. Original Bass lets you specify a chord for the bass that is separate from the chord, so that when the pattern or phrase is played back, phrases with a phrase type of Bass will be played with a separate bass chord. For example if a CM7 chord is set to an Original Bass of G7, the display will be "CM7/G7" and phrases whose phrase type is Bass will be played back just as though the chord had been set to G7. 
+. For details on inputting chords, refer to "7. Chord input methods" (-> p.42). 
+
+
+5. Patterns 
+. "Patterns" are created by joining two or more Phrases horizontally, or by joining up to 16 parts vertically to create an accompaniment with drums, bass, and chord backing. While phrases contain musical data for a single instrument, patterns combine two or more phrases to create a single backing pattern. Patterns are the basic unit with which the accompaniment of a song is created. 
+. Patterns are created in the Patch display of Pattern mode. (-> p.200) 
+. The QY700 manages patterns by Style and by Block. 
+. "Styles" are groups of patterns for each song. The QY700 provides 64 styles. 
+. "Blocks" are groups of patterns within a song that provide changing accompaniment such as for intros, themes, fill-ins, breaks, and endings. For each style, the QY700 provides eight blocks A to H.
+. The QY700 provides 64 x 8  equal  512 patterns. 
+. When you specify a chord for a pattern, each of the various phrases that make up that pattern will be processed by chord conversion, meaning that in effect, chord conversion is performed for the entire pattern. 
+
+
+Track structure within each pattern 
+. Patterns are organized as a matrix of tracks and measures, as shown in the diagram below. 
+. A phrase or a rest can be specified for each measure in each track of the pattern. 
+
+
+Playback channel of each track 
+. When a pattern is played back, the musical data of each track in the pattern is transmitted to the tone generator block and the MIDI OUT connectors according to the Out Channel settings of Song mode. (-> p.103) 
+. The data is transmitted to the tone generator block as specified by the "TO TG" setting, and to the MIDI OUT connectors as specified by the "MIDI OUT-A" / "MIDI OUT-B" settings. 
+
+
+
+6. Songs 
+. "Songs" are songs that have been created by recording musical data to tracks in the QY700's Song mode. 
+. The QY700's song memory can hold 20 songs. 
+. Each song consists of a total of 35 tracks: 32 sequence tracks, the pattern track, the chord track, and the tempo track. 
+. In addition to creating songs in the same way as on a conventional sequencer by recording only sequence tracks, you can also create a song by using the auto-accompaniment function to create the backing portion of a song, and then adding melody and other parts to complete the song. 
+
+Track structure of a song 
+. Each song consists of 32 sequence tracks (TR1 to TR32), a pattern track (PATTERN), a chord track (CHORD), and a tempo track (TEMPO). 
+. The sequence tracks are used to record musical data. Data can be recorded from the controller block etc. using realtime recording or step recording etc. The QY700 has 32 sequence tracks, and each track can record musical data for one Part. 
+. To use the auto-accompaniment function, you will arrange patterns in the pattern track. This track also allows you to input the time signature for each measure. Pattern track input is performed in Song Recording. 
+. The chord track contains the chords that are used to playback the pattern track. In addition to chords, this track also allows you to input the On Bass, Original Bass, and Syncopation etc. Chord track input is performed in Song Recording. 
+. The tempo track contains tempo changes that are applied when the song is played back. This lets you create changes in song tempo, such as accelerando and ritardando. Tempo track input is performed in Song Recording. 
+
+(Table)
+Sequence tracks 	TR 1 	musical data 
+	TR 2 	musical data 
+	TR 3 	musical data 
+	TR 31 	musical data 
+	TR 32 	musical data 
+Pattern track 	PATTERN 	Patterns, time signatures 
+Chord track 	CHORD 	Chord Root, Chord Name, On Bass, Original Bass, Syncopation 
+Tempo track 	TEMPO 	Tempo changes 
+Sequence track Tempo track 
+(Table End)
+
+Sequence track playback channels 
+. When a song is played back, the musical data of each sequence track and the musical data of each pattern specified by the pattern track is transmitted to the tone generator block and the MIDI OUT connectors according to the Out Channel settings of Song mode. (-> p.103) Out Channel (Sequencer tracks)
+. The data is transmitted to the tone generator block as specified by the Out Channel "TO TG" setting, and to the MIDI OUT connectors on the channels specified by the "MIDI OUT-A" / "MIDI OUT-B" settings. 
+. Since the tone generator block has only 32 parts, it is not able to simultaneously produce the sounds for the sequence tracks of the sequencer block (32 tracks) as well as all of the pattern tracks (16 tracks). However if you use an external tone generator, you can make Out Channel settings so that any 16 of the tracks are played back by the external MIDI tone generator so that all tracks will playback simultaneously. 
+
+
+7. Chord input methods  
+. This block explains how to input the chords in Song mode or Pattern mode so that you can use the auto-accompaniment function.
+
+Using Chord Root and Chord Type to input 
+You can use the symbols printed on the microkeyboard to enter the Chord Root and Chord Type. 
+For the Chord Root, use the E2 to D sharp 3 keys to specify the root of the chord. 
+For the Chord Type, use the E3 to F4 keyboard buttons to select from the 28 chord types printed on the buttons. 
+By combining the Chord Root and Chord Type you can specify 336 different chords. You can also specify On Bass chords or Original Bass chords, for even more variation. 
+
+Using the Fingered Chord function to input chords 
+Fingered Chord is one of the functions included in auto-accompaniment, that automatically detects the chord from the combination of notes that you press on the keyboard, so that the pattern or phrase is converted into that chord at the time of playback. 
+When the QY700's fingered chord function is used, chords that you play in the Fingered Chord Zone will be automatically analyzed as a chord, and specified. 
+It is also possible to use the microkeyboard below the Fingered Chord Zone to specify the On Bass or the Original Bass at the same time that you play the chord. A single note that you play below the Fingered Chord Zone will be detected and set as the On Bass, and a chord will be detected 
+as the Original Bass. 
+. The fingered chord function can be used not only from the QY700's microkeyboard, but also from a MIDI keyboard connected to the MIDI IN connector. 
+
+Turning the Fingered Chord Zone on/off
+In order to use the fingered chord function to input chords, you must first make Fingered Chord Zone settings in Utility mode to specify the range of the keyboard in which this function will operate. (-> p.299) 
+A Fingered Chord function on/off setting is provided in the Patch displays of Song Play and Pattern modes, and in the chords Utility mode Fingered Chord Zone setting display. The settings in these three displays are linked. 
+When Fingered Chord is on (FINGRD), the keys below the Zone High key of the fingered chord zone will no longer be usable as conventional keys for performance or recording. 
+When Fingered Chord is off (OFF), the fingered chord function will not operate, and you can input the Chord Root and Chord Type using the symbols printed on the keyboard buttons.
+
+5. The tone generator block 
+About the tone generator block
+The tone generator block is what actually produces sound in response to the MIDI messages received from the sequencer block, the controller block, and from the MIDI IN connectors.
+The tone generator block always functions as a 32 part multitimbral tone generator.
+The tone generator block of the QY700 is GM and XG compatible. It is able to playback any song data bearing the GM logo or XG logo, including extension voices and effect settings.
+
+Voice
+"Voices" are the individual sound programs that you can edit, which are used by the tone generator to produce sound. 
+There are two types of voices: normal voices which change their pitch as you play different notes on the keyboard, and drum voices which produce a different rhythm instrument sound for each note of the keyboard. 
+Normal voices consist of 1 or 2 "elements." By using two elements you can produce a richer sound, or create a voice that produces different sounds depending on the pitch or velocity.
+Drum voices are special voices in which different sounds are assigned to each note. You can make detailed modifications to the sound of each note.
+Elements are the building blocks that each voice is made of, and are made from sampled waveforms. You can make detailed modifications to the pitch, tone and volume.
+
+Voice Category, Program Number, and Bank Number
+The QY700 contains 480 normal voices and 11 drum voices. 
+This is more voices than can be selected by a program number of 1 . 128. Thus, voices are selected on the QY700 using a combination of the Voice Category, Program Number, and Bank Number.
+
+Voice Category 
+The Voice Category is a broad classification of the type of voice. The QY700 uses four voice categories: normal voices, SFX voices, SFX kits and drum voices. In addition to these four voice categories, you can select drum setup 1 and drum setup 2 in Voice mode, and drum setup 3 in Pattern mode. These three categories are used to select drum setups, and are used in a different way than the first four categories. 
+Normal voice is the voice category that specifies normal voices. 
+SFX voice is a voice category that specifies sound effects. The sound effects in this category have the same element structure as normal voices, and their pitch will change as different notes of the keyboard are played. 
+SFX kit is a voice category that specifies sound effect. The sound effects in this category have the same element structure as drum voices, and will produce different types of sound effect as different notes of the keyboard are played. 
+
+Drum voice is the voice category that specifies drum voices. In this category, drum voices can be freely assigned, and you can select a different drum voice for each part. However it will not be possible to edit the drum voice. 
+If you wish to edit a drum voice, you can use the three voice categories drum setup 1 to drum setup 3. These categories "overlay" a drum voice with a drum setup that can be edited. This means that by editing the drum setup for a part that is set to this category, you can indirectly edit a drum voice. However if you specify the same drum setup for two or more parts, editing one of the parts will automatically edit the drum voice for the other part. 
+
+Program number 
+The program number specifies the voice number to select the voice. The voices selected by the program number will depend on the voice category setting. 
+If the voice category is set to a Normal voice, program numbers 1 to 128 will allow you to select the 128 voices of the XG basic bank ( equal  GM System Level 1). 
+If the voice category is other than Normal voice, it will not necessarily be the case that each program number selects a different voice. Also, if SFX voice is selected as the category, some program numbers will produce no sound. 
+For lists of voices, refer to the List Book. 
+
+Bank number 
+Bank number is effective only for parts whose voice category is set to Normal voice . 
+The Bank number specifies the XG expansion banks to select variation voices relative to the 128 voices of the XG basic bank ( equal  GM System Level 1). 
+For example with program number 17 "DrawOrgn", variation voices can be selected by changing the bank number to 64 to select "Organ Ba", 65 to select "70sDrOr2", 66 to select "CheezOrg," or 67 to select "DrawOrg3." 
+
+Selecting voices via MIDI 
+Voice Category, Program Number, and Bank Number respectively correspond to the MIDI messages Bank Select MSB, Program Change, and Bank Select LSB. When using MIDI to select a voice, transmit these three MIDI messages in the order of Bank Select MSB, Bank Select LSB, and Program Change. 
+The voice categories Drum Setup 1 to Drum Setup 3 are selected using MIDI System Exclusive messages. 
+Each voice is placed in a three-dimensional space with the three axes being the Bank Select MSB, LSB, and Program Change (see diagram below). 
+The Bank Select MSB and LSB are used to manage 105 voice banks. 
+
+MSB equal 000 : LSB equal 000 (Normal voices: XG basic bank 
+ equal  GM System Level 1) 
+MSB equal 000 : LSB-001 . 101 (Normal voices: XG extension banks) 
+MSB equal 064 : LSB equal 000 (SFX voices) 
+MSB equal 126 : LSB equal 000 (SFX kits) 
+MSB equal 127 : LSB equal 000 (Drum voices) 
+
+The voices within the bank specified by the Bank Select messages are selected by Program Change messages. 
+(Figure)
+Program Change equal 000 to 127 
+Voice Category 
+MSB equal 000 to 127 
+LSB equal 000 to 127 
+Bank Number 
+Program Change equal 000 to 127 
+
+
+Maximum polyphony 
+The tone generator block has a maximum polyphony of 32 notes, in element units. I.e., 32 notes can be played simultaneously if you are using normal voices that consist of one element or drum voices, and 16 notes can be played simultaneously with normal voices that consist of two elements. 
+The number of elements used by each voice is given in the voice lists of the separate "QY700 Reference Listings". 
+If MIDI messages are received which request more than the available maximum polyphony, currently-sounding notes will be turned off, and the later arrivals will be played. This type of note assignment is called "last-note priority." 
+The note priority of each part of the tone generator is fixed as follows, and when the maximum polyphony is exceeded, notes will be turned off starting with the lower-priority parts. 
+You should use high-priority parts for musically important parts such as the melody or bass, so that these important lines will not be interrupted even if the maximum polyphony is exceeded. 
+
+(Table)
+Note priority order	1	2	...	10	11	...	16	17	18	...	26	27	...	32 
+Part number 	10 	1 	...	9 	11 	...	16 	26 	17 ...	25 	27 	32 
+(Table End)
+
+It is possible to use MIDI System Exclusive messages to specify Element Reserve settings for each part. If you specify an Element Reserve setting, the specified number of notes will be reserved for that part, so that no further notes will be "stolen" from that part when the maximum polyphony is exceeded. It is a good idea to make Element Reserve settings for musically important parts such as the melody or bass, whose notes must not be interrupted. 
+
+
+Connections between the sequencer block and the tone generator block 
+The sequencer block is internally connected to the tone generator block via MIDI. 
+The connections between each track of the sequencer block and each part of the tone generator block can be specified by the Song mode Out Channel ( -> p.103) setting "TO TG." 
+The MIDI channels of the 32 parts of the tone generator block can be set to any desired setting via MIDI System Exclusive messages. With the default settings, these are set to the same MIDI channel number as the part number, as shown in the following table. 
+When setting the Song mode Out Channel "TO TG" parameter, you must first check the MIDI channel of the tone generator block. 
+Unless you have something special in mind such as layering multiple parts, it is best to use the System Exclusive XG System On message to restore the MIDI channel of each tone generator part to the default value before making "TO TG" settings. 
+
+This is the end of the file.

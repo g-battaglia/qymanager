@@ -328,17 +328,18 @@ class QY700PhraseParser:
         while pos < len(data):
             cmd = data[pos]
 
-            if cmd == 0xD0:  # Drum note on
+            if cmd == 0xD0 or cmd == 0xD1 or (0xD8 <= cmd <= 0xDF):
+                # Drum/percussion note (4 bytes: Dx vel GM_note gate)
                 if pos + 3 < len(data):
-                    note = data[pos + 1]
-                    velocity = data[pos + 2]
-                    next_byte = data[pos + 3]
+                    velocity = data[pos + 1]
+                    note = data[pos + 2]
+                    gate = data[pos + 3]
                     events.append(
                         MidiEvent(
                             event_type="drum",
                             note=note,
                             velocity=velocity,
-                            param=next_byte,
+                            param=gate,
                             raw_bytes=data[pos : pos + 4],
                         )
                     )
@@ -346,21 +347,23 @@ class QY700PhraseParser:
                 else:
                     break
 
-            elif cmd == 0xE0:  # Melody note on
-                if pos + 3 < len(data):
-                    note = data[pos + 1]
-                    velocity = data[pos + 2]
-                    next_byte = data[pos + 3]
+            elif cmd == 0xE0:  # Melody note on (5 bytes: E0 gate param note vel)
+                if pos + 4 < len(data):
+                    gate = data[pos + 1]
+                    param = data[pos + 2]
+                    note = data[pos + 3]
+                    velocity = data[pos + 4]
                     events.append(
                         MidiEvent(
                             event_type="note",
                             note=note,
                             velocity=velocity,
-                            param=next_byte,
-                            raw_bytes=data[pos : pos + 4],
+                            param=param,
+                            delta=gate,
+                            raw_bytes=data[pos : pos + 5],
                         )
                     )
-                    pos += 4
+                    pos += 5
                 else:
                     break
 
@@ -380,7 +383,7 @@ class QY700PhraseParser:
                 else:
                     break
 
-            elif cmd >= 0xA0 and cmd <= 0xA7:  # Delta time
+            elif cmd >= 0xA0 and cmd <= 0xAF:  # Delta time (A0-AF range)
                 if pos + 1 < len(data):
                     step_type = cmd - 0xA0
                     delta = data[pos + 1]
@@ -389,6 +392,21 @@ class QY700PhraseParser:
                             event_type="delta",
                             delta=delta,
                             param=step_type,
+                            raw_bytes=data[pos : pos + 2],
+                        )
+                    )
+                    pos += 2
+                else:
+                    break
+
+            elif cmd in (0xBA, 0xBB):  # Control/release with timing
+                if pos + 1 < len(data):
+                    param = data[pos + 1]
+                    events.append(
+                        MidiEvent(
+                            event_type="ctrl",
+                            param=param,
+                            delta=param,  # BA/BB value acts as small delta
                             raw_bytes=data[pos : pos + 2],
                         )
                     )

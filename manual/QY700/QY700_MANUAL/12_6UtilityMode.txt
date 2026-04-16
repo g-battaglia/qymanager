@@ -1,0 +1,406 @@
+Chapter 6. UTILITY MODE
+This chapter explains Utility mode. 
+Utility mode is where you can make system settings and MIDI-related settings. 
+
+About Utility mode 
+
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+[Explanation]
+Utility mode is where you can make system settings and MIDI settings. 
+Utility mode does not have a "top" page which will always appear when the MODE key is pressed. (The last-selected page will appear.) 
+Utility mode has six sub-modes, and these are accessed by pressing the [F1] to [F6] function keys. 
+Pressing [F1] (System) will access the System page. (-> p.289) 
+Pressing [F2] (MIDI) will access the MIDI page. (-> p.291) 
+Pressing [F3] (MIDI Fltr) will access the MIDI filter page. (-> p.293) 
+Pressing [F4] (Seqencr) will access the sequencer page. (-> p.295) 
+Pressing [F5] (Click) will access the click page. (-> p.297) 
+Pressing [F6] (FngZone) will access the fingered chord zone page. (-> p.299) 
+The settings made in Utility mode are backed up by the internal battery, and will not disappear when the power is turned off. 
+
+
+1. System 
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+Here you can make settings for system-related parameters, such as Master Tune and controller settings.[Procedure]
+1. Press [UTILITY]. 
+The indicator located above [UTILITY] will light, and you will enter Utility mode. 
+2. Press [F1] (System) to access the system page. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to set the value. 
+1. Master tune 
+[Explanation]
+This sets the overall tuning of the entire QY700 in 0.1 cent steps. 
+The pitch of drum voices cannot be adjusted here. (-> p.182) 
+One cent is 1/100th of a semitone. 
+[Setting values]
+minus 102.4 to plus 000.0 to plus 102.3
+
+2. Backlite saver 
+[Explanation]
+This function automatically turns off the display backlight when the power has been left on for a certain time without any operations being performed. 
+Like any fluorescent light, the backlight of the QY700 has a finite lifespan. Turning the unit off when it will not be used for an extended time will extend its life as long as possible. However there may be times when the unit will be left on and unused for an extended time. In such cases, you can set Backlite Saver so that the backlight will automatically turn off when the specified time elapses, to conserve the lifespan of the backlight. 
+[Setting values]
+Off, 1 Hours, 2 Hours, 3 Hours, 4 Hours, 5 Hours, 6 Hours, 7 Hours, 8 Hours 
+
+3. Footswitch 
+[Explanation]
+This sets the function of the footswitch connected to the rear panel FOOT SW connector. 
+[Setting values]
+Start/Stop, Section, Sustain, Sostenuto 
+Start/Stop 
+Each time the footswitch is pressed, the song or pattern will alternately start or stop. 
+Section 
+Each time the footswitch is pressed, the Section of the pattern will be switched in the order of A to H. 
+Sustain 
+All notes played while the footswitch is held will be sustained until the footswitch is released. 
+Sostenuto 
+All notes which were being held on the keyboard when the footswitch was pressed will 
+be sustained until the footswitch is released. 
+
+4. Pitch bend wheel, Assignable wheel 
+[Explanation]
+These settings specify the MIDI messages that are output when the PITCH wheel and ASSIGNABLE wheel located on the QY700's top panel are operated. 
+Since the PITCH wheel will automatically return to the center position when it is released, it is suitable for controlling Pitch Bend. 
+The ASSIGNABLE wheel is detented in the center position. 
+[Setting values]
+OFF, P.B., Ctrl#001E. 119, CAT, VEL, TMP 
+OFF
+The wheel will have no function. 
+P.B. (Pitch Bend)
+Pitch Bend messages. 
+Ctrl#001 (Modulation) to 119 (ContrlChng) 
+Control Change messages. You can choose the control number. However, Ctrl#032 cannot be selected. 
+CAT (Ch After) 
+Channel aftertouch messages 
+VEL (Velocity) 
+Velocity 
+TMP (Tempo) 
+Tempo 
+
+
+2. MIDI
+
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+The MIDI page lets you make MIDI settings for the QY700. 
+[Procedure]
+1. Press [UTILITY]. 
+The indicator located above u will light, and you will enter Utility mode. 
+2. Press [F2] (MIDI) to access the MIDI page.
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to set the value.
+
+1. MIDI sync.
+[Explanation]
+This selects whether the QY700 will use its own internal clock or whether it will use MIDI Clock or MTC messages received from the MIDI IN connector. 
+You will need to make these settings when synchronizing the QY700 with external MIDI devices. 
+With a setting of Internal, the QY700 will use its own internal clock. Select this setting if you are using the QY700 by itself or as the master device in a system that is synchronized by MIDI Clock messages. 
+With a setting of MIDI-A or MIDI-B, the QY700 will be controlled by MIDI Clock messages received from MIDI IN-A or MIDI IN-B. Select this setting if you are using the QY700 as a slave device for synchronized play. This is the setting to use when synchronizing the QY700 to an external MIDI device.
+With a setting of MTC:MIDI-A or MTC:MIDI-B, the QY700 will synchronize to MTC messages received from 
+MIDI IN-A or MIDI IN-B, and will transmit MMC mesages from the corresponding MIDI OUT connector (MIDI OUT-A for MTC:MIDI-A, or MIDI OUT-B for MTC:MIDI-B). 
+MTC is an acronym for MIDI Time Code, and is a type of timecode that can be exchanged between MIDI device via a MIDI cable. MTC consists of "hour:minute:second:frame" units. 
+The QY700 does not output MTC. If you wish to synchronize using MTC, you will need a device that is able to output MTC such as the Yamaha MD4. 
+MMC is an acronym for MIDI Machine Control, and is a specification for controlling devices such as multi-track recorders from MIDI sequencers etc. When operations such as start/stop or rewind/fast-forward are performed on the sequencer, the corresponding operation will automatically be performed on the MMC-compatible multi-track recorder, so that playback on the recorder will always occur from the same location of the song as on the sequencer. 
+Select this setting if you are using the QY700 as a slave device for MTC synchronization, or if you are using the QY700 together with an external device such as an MMC-compatible multi-track recorder. 
+[Setting values]
+Internal, MIDI-A, MIDI-B, MTC:MIDI-A, MTC:MIDI-B
+
+2. MIDI control in/out 
+[Explanation]
+These settings determine whether the MIDI messages Start, Stop, Continue Start, Song Position/Pointer, and MIDI Clock will be transmitted or received. (MIDI Clock is only transmitted.) 
+MIDI Control In is the reception setting, and MIDI Control Out is the transmission setting. 
+[Setting values]
+MIDI Control In
+Off, In-A, In-B, In-A,B
+Off
+Messages will not be received. 
+In-A, In-B 
+Messages arriving at the MIDI IN-A connector or at the MIDI IN-B connector will be received. 
+In-A,B 
+Message arriving at either the MIDI IN-A or the MIDI IN-B connector will be received. 
+
+MIDI Control Out
+Off, Out-A, Out-B, Out-A,B
+Off
+Messages will not be transmitted. 
+Out-A, Out-B 
+Messages will be transmitted from either the MIDI OUT-A connector or from the MIDI OUT-B connector. 
+Out-A,B
+Messages will be transmitted from both the MIDI OUT-A and B connectors. 
+
+3. XG parameter out 
+[Explanation]
+When parameter values are modified in Voice mode or Effect mode, this setting specifies whether the operation will be transmitted in realtime from the MIDI OUT connectors as MIDI data.
+When using the QY700 together with another XG tone generator, this setting allows the external XG tone generator's voice and effect parameters to be controlled from the QY700. 
+[Setting values]
+Off, Out-A, Out-B, Out-A,B 
+Off 
+MIDI will not be output. 
+Out-A, Out-B 
+MIDI will be output from the MIDI OUT A connector or from the MIDI OUT-B connector.
+Out-A,B 	
+MIDI will be output from both the MIDI OUT-A and B connectors.
+
+4. MIDI echo back In-A/In-B 
+[Explanation]
+Echo Back is a function by which data received at a MIDI IN connector is re-transmitted from a MIDI OUT connector. These parameters are the echo back settings. 
+MIDI Echo Back In A sets echo back for data received at the MIDI IN-A connector, and MIDI Echo Back In B for data received at the MIDI IN-B connector. 
+If you wish to use the QY700's MIDI OUT connectors as MIDI THRU connectors, select Thru A, Thru B, or Thru A,B. 
+When using an external MIDI keyboard and external MIDI tone generator to record on QY700 tracks, select RecMonitor. 
+When connecting the QY700's MIDI IN and MIDI OUT connectors to an external MIDI device, select Off. 
+[Setting values]
+Off, Thru A, Thru B, Thru A,B, RecMonitor
+Off
+Echo back will not be performed. 
+Thru A, Thru B, Thru A, B 
+Echo back will be performed respectively from the MIDI OUT-A connector or the OUT-B connector, or from both OUT-A and OUT-B connectors. 
+RecMonitor 
+Echo back will be performed according to the Out Channel MIDI OUT-A and MIDI OUT-B settings of the Keyboard Track or the Recording Track. 
+[Supplementary comments] 
+System exclusive messages of 128 bytes or longer will not be echoed back. 
+
+5. MTC start offset 
+[Explanation]
+Specify the delay from when MIDI Time Code is received until when the sequencer is started, in hours:minutes: seconds:frames. 
+When synchronizing with an MTC-compatible MTR etc., 
+use this setting to make the song begin simultaneously. 
+[Setting values]
+hours:minutes:seconds:frames 
+Hours 	00 to 23 
+Minutes 00 to 59
+Seconds 00 to 59
+Frames 00 to 29
+
+
+3. MIDI filter 
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+MIDI Filter settings allow you to strip out specified types of MIDI events from the stream of MIDI data that passes through the MIDI IN connectors or MIDI OUT connectors. 
+MIDI Filter settings apply to recording and playback of the sequencer block. They have no effect on the tone generator block. 
+The display indicates whether the corresponding type of MIDI event will be passed or cut.
+
+none (Cut) The specified MIDI event will not be passed.
+Check (Pass) The specified MIDI event will be passed. 
+
+[Procedure]
+1. Press [UTILITY].
+The indicator located above [UTILITY] will light, and you will enter Utility mode.
+2. Press [F3] (MIDIFltr) to access the MIDI Filter page. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key or the data dial to make the setting.
+
+1. Note 
+[Explanation]
+Specify whether or not MIDI Note On and Note Off messages will be passed. 
+MIDI Note On messages are produced when a note of the keyboard is pressed, and Note Off messages when a note is released. If these MIDI messages are cut, there will be no sound. 
+ 
+2. Pitch Bend 
+[Explanation]
+Specify whether or not MIDI Pitch Bend messages will be  passed. 
+MIDI Pitch Bend messages are produced when the PITCH  wheel is operated. They are used to smoothly change the pitch. 
+
+3. Control Change 
+[Explanation]
+Specify whether or not MIDI Control Change messages will be passed. 
+MIDI Control Change messages convey many types of information, such as Modulation Wheel, Pan, and Volume. 
+
+4. Program Change 
+[Explanation]
+Specify whether or not MIDI Program Change messages and the control change messages Bank Select MSB and LSB will be passed. 
+Program Change, and Bank Select MSB and LSB are MIDI messages used to select voices. 
+
+5. Polyphonic After Touch 
+[Explanation]
+Specify whether or not MIDI Polyphonic After Touch messages will be passed. 
+
+6. Channel Aftertouch 
+[Explanation]
+Specify whether or not MIDI Channel Aftertouch messages will be passed. 
+
+7. System Exclusive 
+[Explanation]
+Specify whether or not MIDI System Exclusive messages will be passed. 
+MIDI System Exclusive messages are used to reset the tone generator and to operate internal parameters. 
+
+4. Sequencer 
+
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+Here are the setup parameters for the sequencer block. 
+[Procedure]
+1. Press [UTILITY]. 
+The indicator located above u will light, and you will enter Utility mode. 
+2. Press[F4] (Seqencr) to access the Sequencer page. 
+3. Move the cursor to the parameter that you wish to set.
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to set the value. 
+1. Mute tracks level 
+[Explanation]
+This setting specifies how much the volume (velocity) will be reduced when a track is muted. 
+This setting will also affect the other tracks that are muted when a track is soloed.
+[Setting values]
+Off, 01 percent to 99 percent 
+Off 
+There will be no sound. 
+01 percent to 99 percent 
+The velocity values will be reduced by the
+The muted volume will be (original velocity) times (mute track setting).
+
+2. Event chase 
+[Explanation]
+Event Chase is a function that rapidly plays back the specified types of event when a song, pattern, or phrase is played back from the middle or when it is rewound or fast-forwarded. This ensures that voice selections and pitch changes etc. will be correct for the location when playback begins. 
+If a song or phrase which uses program changes or pitch bend changes is played back from the middle or is rewound  or fast-forwarded, the playback may use unexpected voices or the wrong pitch. Such problems can occur if the section of the song or phrase that was skipped over contains events 
+such as program changes or pitch bends. 
+If the Event Chase function is used, the specified type(s) of event will be played back at high speed from the beginning whenever a song or phrase is played back from the middle. 
+This will mean that a certain length of time may elapse from .the moment the Start command is given until playback actually begins, or that the rewind/fast-forward speed will be slower. 
+If Event Chase is set to ALL, large amounts of MIDI data will be transmitted from the MIDI OUT connector, which  can cause MIDI errors to occur on the external MIDI deice that is receiving this data.
+[Setting values]
+Off, PC, PC,PB,Ctrl, ALL 
+Off 	Event Chase will not be performed. 
+PC 	Program Change messages 
+PC,PB,Ctrl 	Program Change, Pitch Bend, and Control Change messages 
+ALL 	All events other than notes 
+
+3. Interval time 
+[Explanation]
+When system exclusive data (bulk data) recorded in a sequence track is played back, an interval of the duration specified by this setting will be inserted between each 1 KB (kilobyte) of data. 
+When bulk data that was recorded is re-transmitted to an external MIDI device, limitations of the receiving device's bulk data processing power may result in MIDI errors. By setting an appropriate Interval Time, you can transmit bulk data at a rate that the receiving device is able to process. 
+In sequence tracks, each unit of system exclusive data is recorded in a single location of time. However when this data is played back, the Interval Time function will insert a delay between each 1 KB of data. The delay is specified in units of 100 ms (1/10 second). 
+If MIDI errors occur on the receiving device, increase the Interval Time setting and try transmitting the data again. 
+[Setting values]
+0 to 9 * 100 (msec) 
+[Supplementary comments] 
+Interval Time settings may cause playback to be delayed. 
+
+5. Click 
+
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+Here you can make settings for the Click sound that uses the QY700's tone generator block or an external MIDI tone generator. 
+Since the QY700 does not have a dedicated tone generator for the click, simply outputting a click signal does not necessarily mean that a click will sound. Also, the click sound will change depending on the Voice mode settings. 
+Find a part for which a drum voice is selected, and then set the channel here so that that part will sound. Then specify the note(s) of the drum voice with which the click will be sounded.
+
+[Procedure]
+1. Press [UTILITY]. 
+The indicator located above u will light, and you will enter Utility mode. 
+2. Press [F5] (Click) to access the Click page. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use[Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to set the value. 
+[Supplementary comments] 
+The initial settings are as shown in the screen above. 
+
+1. Channel 
+[Explanation]
+Specify the part and the tone generator on which the click will be played. 
+Find a part for which a drum voice is selected, and set this channel setting so that that part will be played.
+So that you can check whether or not the click will sound, set the song play Click Mode to "All" so that the click will always be played. (-> p.72)
+To avoid problems, set the Channel to "Off" for TG or MIDI OUT if they are not being used for the click.
+[Setting values]
+TG: Off, 	01 to 32	Sound the click using the QY700's tone generator block. 
+MIDI A: Off, 	01 to 16 	Sound the click on an external MIDI tone generator connected to the MIDI OUT-A connector. 
+MIDI B: Off, 	01 to 16 	Sound the click on an external MIDI tone generator connected to the MIDI OUT-B connector. 
+
+
+2. Accent note/level 
+3. Normal note/level 
+[Explanation]
+Accent specifies the click note and level for the first beat, and Normal specifies the click note and level for the second and later beats. 
+If you are using a drum voice to sound the click, you can use the Note setting to select instruments within the drum voice. 
+For the correspondence between notes and instrument, refer to the separate "QY700 Reference Listings"
+Level sets the volume by specifying the velocity. 
+[Setting values]
+Note C-2 to G8
+Level 000 to 127
+
+
+6. Fingered chord zone 
+[UTILITY]
+[F1] System 
+[F2] MIDI 
+[F3] MIDI filter 
+[F4] Sequencer 
+[F5] Click 
+[F6] Fingered chord zone 
+
+[Explanation]
+The chord detection function of the QY700's Auto-Accompaniment is referred to as Fingered Chord, and the range in which chord detection is performed is called the Fingered Chord Zone. 
+Here you can make on/off settings for Fingered Chord, and specify the Fingered Chord Zone etc. 
+[Procedure]
+1. Press [UTILITY]. 
+The indicator located above [UTILITY] will light, and you will enter Utility mode. 
+2. Press [F6](FngZone) to access the Fingered Chord Zone page. 
+3. Move the cursor to the parameter that you wish to set. 
+4. Use [Decrement] key/[Increment] key, the data dial, or numeric keypad -> [ENTER] to set the value. 
+
+1. Fingered chord 
+[Explanation]
+Specify whether or not Fingered Chord will be active. 
+This setting is linked with the "Fingered Chord" settings displayed in Song mode Song Play and in Pattern mode Patch. 
+[Setting values]
+OFF (Off), FINGRD (On)
+
+2. Zone low/high 
+[Explanation]
+The Fingered Chord Zone is specified by the lowest (Low) and highest (High) note. 
+Fingered Chord will operate in the keyboard area between the Low and High Zone settings. 
+Notes below the Zone Low are used to specify On Bass or Original Bass. 
+Zone settings can be made using [Decrement] key/[Increment] key or the data dial, and also using the microkeyboard of the QY700. 
+[Setting values]
+Zone Low C-2 . G8
+Zone High C-2 . G8
+(Zone Low less h\than/equal Zone High)   
+[Supplementary comments] 
+When Fingered Chord is selected (FINGRD), the keyboard below Zone High will be dedicated to the Fingered Chord function, and cannot be played normally. 
+These settings are not affected by the Keyboard Transpose setting. 
+For details on Fingered Chord, refer to "Chapter 1. BASIC CONCEPTS". (-> p.42) 
+
+
+3. MIDI port/channel 
+[Explanation]
+When using an external MIDI keyboard for Fingered Chord input, specify the MIDI IN connector(s) to which the keyboard is connected. 
+[Setting values]
+MIDI Port 	In-A, In-B, In-A,B
+MIDI Channel 	ALL, 01 . 16
+
+This is the end of the file.
+

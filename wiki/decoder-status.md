@@ -1,8 +1,10 @@
 # Decoder Status
 
-Current state of [QY70 bitstream](bitstream.md) decoding as of Session 20 (2026-04-15).
+Current state of [QY70 bitstream](bitstream.md) decoding as of Session 25b (2026-04-16).
 
-> **CRITICAL (Session 19)**: All confidence percentages below were measured by **self-consistency** (valid note range, beat counter monotonicity, etc.), NOT against ground truth MIDI output. Session 19 validated against actual QY70 playback capture and found **~0% accuracy on complex styles**. The rotation model is proven ONLY for simple simple patterns.
+> **CRITICAL (Session 19)**: All confidence percentages below were measured by **self-consistency** (valid note range, beat counter monotonicity, etc.), NOT against ground truth MIDI output. Session 19 validated against actual QY70 playback capture and found **~0% accuracy on complex styles**. The rotation model is proven ONLY for simple patterns.
+
+> **NEW (Session 25b)**: First ground truth validation of USER patterns (Summer). Discovered **groove template** — per-beat velocities are generated at playback time, NOT stored in the bitstream. Also discovered **instrument lane model** for dense drum tracks (4 events per bar = 4 instrument patterns), with fixed per-position R values [9,22,12,53].
 
 ## Per-Encoding Confidence
 
@@ -103,6 +105,8 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | **19** | **Ground truth validation: ALL decoders FAIL on complex styles** | **R=9×(i+1) only works for simple patterns. Strategic pivot to capture-based conversion** |
 | **20** | **Exhaustive analysis on correct file, velocity impossibility proven** | **All rotation models definitively disproven. Velocity encoding cannot produce required values. Sparse vs dense = fundamentally different encodings** |
 | **20b** | **QYFiler.exe disassembly: NO rotation in host software** | **Barrel rotation is QY70 hardware-internal. BLK format = raw SysEx. Dump Request definitively unsupported** |
+| **25** | **Summer ground truth captured (395 notes), PATT OUT enabled** | **First full GT for user pattern. Decoder 7/7 confirmed on known_pattern** |
+| **25b** | **Groove template discovery, instrument lane model, dense encoding analysis** | **Per-beat velocity NOT in bitstream — groove template at playback. Lane R=[9,22,12,53] works 4/6 bars. Cumulative R FAILS on dense patterns** |
 
 ## Strategic Pivot: Capture-Based Conversion (Session 19)
 

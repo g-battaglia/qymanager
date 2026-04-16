@@ -1,0 +1,236 @@
+{
+  "file": "DECAY.Q7P",
+  "size": 5120,
+  "phrases": [
+    {
+      "offset": 288,
+      "cmd": 251,
+      "track": 0,
+      "bank": 0,
+      "program": 0,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 297,
+      "cmd": 251,
+      "track": 1,
+      "bank": 0,
+      "program": 3,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 306,
+      "cmd": 251,
+      "track": 2,
+      "bank": 0,
+      "program": 5,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 315,
+      "cmd": 251,
+      "track": 3,
+      "bank": 0,
+      "program": 2,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 324,
+      "cmd": 251,
+      "track": 4,
+      "bank": 0,
+      "program": 1,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 333,
+      "cmd": 251,
+      "track": 5,
+      "bank": 0,
+      "program": 6,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 342,
+      "cmd": 251,
+      "track": 6,
+      "bank": 0,
+      "program": 7,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 351,
+      "cmd": 251,
+      "track": 7,
+      "bank": 0,
+      "program": 8,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 360,
+      "cmd": 251,
+      "track": 8,
+      "bank": 0,
+      "program": 9,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 369,
+      "cmd": 251,
+      "track": 9,
+      "bank": 0,
+      "program": 10,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 378,
+      "cmd": 251,
+      "track": 10,
+      "bank": 0,
+      "program": 11,
+      "type": "FB (normal)"
+    },
+    {
+      "offset": 387,
+      "cmd": 251,
+      "track": 15,
+      "bank": 0,
+      "program": 12,
+      "type": "FB (normal)"
+    }
+  ],
+  "track_blocks": [
+    {
+      "name": "tom",
+      "offset": 512,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 96,
+      "event_counts": {
+        "note_D": 16,
+        "timing_AB": 16
+      }
+    },
+    {
+      "name": "piano pad",
+      "offset": 640,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 34,
+      "event_counts": {
+        "chord_E": 6,
+        "timing_AB": 2
+      }
+    },
+    {
+      "name": "bass",
+      "offset": 768,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 14,
+      "event_counts": {
+        "chord_E": 2,
+        "timing_AB": 2
+      }
+    },
+    {
+      "name": "rim",
+      "offset": 896,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 14,
+      "event_counts": {
+        "timing_AB": 3,
+        "note_D": 2
+      }
+    },
+    {
+      "name": "hi hats",
+      "offset": 1024,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 288,
+      "event_counts": {
+        "note_D": 48,
+        "timing_AB": 48
+      }
+    },
+    {
+      "name": "dream bells",
+      "offset": 1408,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 240,
+      "event_counts": {
+        "note_C": 48,
+        "timing_AB": 48
+      }
+    },
+    {
+      "name": "deepnoisetim",
+      "offset": 1792,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 50,
+      "event_counts": {
+        "timing_AB": 9,
+        "note_D": 8
+      }
+    },
+    {
+      "name": "kick",
+      "offset": 1920,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 96,
+      "event_counts": {
+        "note_D": 16,
+        "timing_AB": 16
+      }
+    },
+    {
+      "name": "piano tik",
+      "offset": 2048,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 80,
+      "event_counts": {
+        "note_C": 16,
+        "timing_AB": 16
+      }
+    },
+    {
+      "name": "guitarpaddy",
+      "offset": 2176,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 14,
+      "event_counts": {
+        "chord_E": 2,
+        "timing_AB": 2
+      }
+    },
+    {
+      "name": "brum noise",
+      "offset": 2432,
+      "voice_bank": 36864,
+      "voice_prog": 0,
+      "pattern_ticks": 1200,
+      "event_bytes": 60,
+      "event_counts": {
+        "note_D": 10,
+        "timing_AB": 10
+      }
+    }
+  ]
+}

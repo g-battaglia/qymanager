@@ -389,6 +389,48 @@ convert_qy700_to_qy70(
 
 ---
 
+## MIDI Communication with QY70
+
+### CRITICAL: Init Handshake Required for Dump Request
+
+The QY70 **requires an Init handshake message** before it will respond to Bulk Dump Requests. Without the Init, all dump requests are silently ignored.
+
+```
+Step 1: Send Init       F0 43 10 5F 00 00 00 01 F7
+Step 2: Wait 500ms
+Step 3: Send Request     F0 43 20 5F 02 7E AL F7    (AL = track 0x00-0x07, or 0x7F = header)
+Step 4: Receive dump data
+Step 5: Send Close       F0 43 10 5F 00 00 00 00 F7
+```
+
+This was discovered in Session 22 (2026-04-16). All previous documentation incorrectly stated "QY70 does not support remote Dump Request".
+
+### XG Parameter Request (no handshake needed)
+
+```
+F0 43 30 4C 08 pp xx F7    (pp = part 0-15, xx = parameter offset)
+```
+
+Returns current XG tone generator parameters (voice, volume, pan, effects).
+
+### QY70 MIDI Settings for Reverse Engineering
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| PATT OUT CH | 9~16 | Output pattern tracks on MIDI channels 9-16 |
+| MIDI SYNC | External | Sync to external MIDI clock |
+| ECHO BACK | Off | Prevent MIDI echo loops |
+
+### Pipeline B: Capture-Based Conversion
+
+```
+Send .syx → QY70 → MIDI Start+Clock → Capture Notes → Quantize → SMF/Q7P
+```
+
+Uses `auto_capture_pipeline.py` for one-shot automated conversion.
+
+---
+
 ## File Formats
 
 ### QY70 SysEx (.syx)

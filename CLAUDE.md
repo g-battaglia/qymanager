@@ -30,6 +30,16 @@ This project has a persistent knowledge base in `/wiki/`. The wiki is the single
 
 The `/docs/` directory contains the original detailed format documentation (QY70_FORMAT.md, QY700_FORMAT.md, etc.). The wiki synthesizes and organizes this knowledge. The docs/ files are the raw source material; the wiki is the compiled knowledge base.
 
+## CRITICAL: QY70 Init Handshake for Dump Request
+
+The QY70 REQUIRES an Init message before accepting Dump Requests:
+```
+F0 43 10 5F 00 00 00 01 F7   ← MUST send this first!
+F0 43 20 5F 02 7E AL F7      ← Then dump request works
+F0 43 10 5F 00 00 00 00 F7   ← Close when done
+```
+Without the Init, all dump requests return NOTHING. Discovered Session 22.
+
 ## Language
 
 The user communicates in Italian. Respond in Italian. Code comments and technical terms remain in English.

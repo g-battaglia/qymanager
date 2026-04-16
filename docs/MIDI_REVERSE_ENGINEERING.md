@@ -156,10 +156,11 @@ Per pattern (formato singolo): solo AL 0x00-0x07 + AL 0x7F.
 
 ### Messaggi di controllo
 ```
-F0 43 1n 5F 00 00 00 01 F7   Init (prepara per bulk dump)
+F0 43 1n 5F 00 00 00 01 F7   Init (prepara per bulk dump) ← OBBLIGATORIO prima di Dump Request!
 F0 43 1n 5F 00 00 00 00 F7   Close (fine bulk dump)
-F0 43 2n 5F AH AM AL F7      Dump Request (richiedi dati)
+F0 43 2n 5F AH AM AL F7      Dump Request (funziona SOLO dopo Init!)
 F0 7E 7F 06 01 F7            Identity Request (standard MIDI)
+F0 43 3n 4C 08 pp xx F7      XG Parameter Request (funziona senza handshake)
 ```
 
 ---
@@ -176,8 +177,8 @@ F0 7E 7F 06 01 F7            Identity Request (standard MIDI)
 ### Sessione 1 - Live Connection + Bulk Dump (2026-02-26)
 - Cavo USB-MIDI generico NON funziona per ricevere dati dal QY70
 - Switchato a Steinberg UR22C -> ricezione immediata di 104 note MIDI
-- QY70 NON risponde a Universal Identity Request (F0 7E 7F 06 01 F7)
-- QY70 NON risponde a Yamaha Dump Request (F0 43 2n 5F ...) - dump solo manuale
+- QY70 NON risponde a Universal Identity Request (F0 7E 7F 06 01 F7) ← CORRETTO Session 22: risponde con cavo Steinberg UR22C!
+- QY70 NON risponde a Yamaha Dump Request (F0 43 2n 5F ...) ← CORRETTO Session 22: FUNZIONA con Init handshake! Vedi sotto.
 - Catturato bulk dump pattern: `midi_tools/captured/qy70_dump_20260226_200743.syx`
   - 808 bytes, 7 messaggi SysEx
   - Formato PATTERN (header[0] = 0x2C), non style

@@ -200,7 +200,7 @@ Il converter `qy70_to_qy700.py` scriveva a 3 offset **non confermati** nel file 
 | **General encoding (29CB) usa R=9** (come chord) | Alta |
 | **BASS slot può usare preamble 29CB** (non solo 2BE3) | Alta |
 | **Nessun .syx QY70 free disponibile online** | Alta |
-| **QY70 non supporta Dump Request remoto** | Alta |
+| ~~QY70 non supporta Dump Request remoto~~ **CORRETTO S22: FUNZIONA con Init handshake!** | Alta |
 | **QY70 Identity Reply: Family=0x4100 Member=0x5502** | Alta |
 | **Bar headers con campi >127 = encoding non-lineare** | Media |
 

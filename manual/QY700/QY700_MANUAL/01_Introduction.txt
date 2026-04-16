@@ -1,0 +1,112 @@
+Owner's Manual
+Reference 
+
+Introduction 
+Thank you for purchasing the Yamaha QY700 music sequencer. 
+The QY700 is a 20 song/32 track sequencer with 1/480th quarter note resolution featuring a built-in XG- and GM-compatible high-quality AWM2 tone generator, all contained in a newly-designed package. The Style Sequencer functions that were so popular on the QY300 etc. have been enhanced and made easier to use. A large LCD display also makes operation easier and more intuitive. 
+In order to take full advantage of the QY700's functionality, please make good use of this owner's manual. Once you have read it, keep it in a safe and convenient place for reference should any questions arise later. 
+
+ 
+Features of the QY700 
+
+Powerful sequencer functionality. 
+The sequencer of the QY700 provides 32 sequence tracks and 16 pattern tracks, and up to 110,000 notes of storage capacity for professional-level sequencing power. Note timing resolution is 1/480th of a quarter note. Memory is backed up, so your data will not disappear when the power is turned off. Play Effect functions and a full complement of editing jobs allow you to edit and modify your data as desired. Play Effects provide a Groove Quantize function that lets you instantly produce a variety of different groove feelings. Also provided are jobs such as Chord Sort and Chord Separate, convenient for entering guitar strokes. 
+
+Functional music production environment with Songs, Patterns, and Phrases. 
+The QY700's Auto-Accompaniment functionality provides a highly practical music production environment that lets you use patterns and phrases to create your song. 
+
+Easy operation with large display, dials, function buttons, and direct buttons. 
+The large 320 x 240 dot full-graphic display provides you with plenty of information for efficient music-making. For example, playback data can be viewed not only as an event list, but also graphically in a track-view or piano-roll display. 
+The jog dial provides an easy way to modify data, and the shuttle dial lets you rewind/fast-forward intuitively through data just as on a VTR. 
+
+Full assortment of preset phrases. 
+The QY700 provides a vast 3,876 types of preset phrases from all musical genres. All preset phrases have been carefully selected for immediate musical usefulness. Simply by combining preset phrases into patterns, you can create backing data with infinite variety. 
+
+Undo/redo function 
+The QY700 provides an Undo/Redo job. Even if recording, editing, or job execution has caused your important data to disappear, you will always be able to recover it. 
+
+XG tone generator for rich expressiveness. 
+The QY700 features an XG-compatible tone generator with 491 high-quality voices and 3 high-quality effect systems, providing the rich expressiveness that you expect from XG. 
+
+Wide range of compatibility. 
+The QY700's tone generator section is compatible with XG and with the GM system level 1 tone generator format. The sequencer section is compatible with ESEQ and SMF (Standard MIDI File) formats 0/1. Playback data that was created on the QS300 music synthesizer can also be played back on the QY700. You can also playback commercially available "XG-compatible song data" for additional enjoyment. 
+
+"GM System Level 1" is a standard specification that defines the arrangement of voices in a tone generator and its MIDI functionality, ensuring that data can be played back with substantially the same sounds on any GM-compatible tone generator, regardless of its manufacturer or model. 
+Tone generators and song data that meet the "GM System Level 1" bear this GM logo. 
+
+"XG" is a tone generator format that expands the voice arrangement of the "GM System Level 1" specification to meet the ever-increasing demands of today's computer peripheral environment, providing richer expressive power while maintaining upward compatibility of data. "XG" greatly expands "GM System Level 1" by defining the ways in which voices are expanded or edited and the structure and type of effects. 
+When commercially available song data bearing the XG logo is played back on a tone generator which bears the XG logo, you will enjoy a full musical experience that includes unlimited expansion voices and effect functions. 
+
+ 
+How to use the manuals. 
+The documentation for the QY700 consists of the following two manuals. Understand the role of each manual, and refer to them as necessary. 
+
+Owner's Manual: Reference (this manual) 
+This explains precautions for use, how to make connections, and all parameters and commands. Use this manual like a dictionary whenever you need to. 
+
+Chapter 1. BASIC CONCEPTS
+Chapter 2. SONG MODE
+Chapter 3. VOICE MODE
+Chapter 4. EFFECT MODE
+Chapter 5. PATTERN MODE
+Chapter 6. UTILITY MODE
+Chapter 7. DISK MODE
+
+"Song mode" and "Pattern mode" have several functions in common. 
+In this manual, explanations for these common functions is given in greatest detail in chapter 2 "SONG MODE". Some of the overlapping explanation in chapter 5 "PATTERN MODE" is omitted. In such cases, the appropriate page of chapter 2 "SONG MODE" is indicated so that you can refer to it. 
+
+Owner's Manual: QY700 Reference Listings. 
+This is a booklet that contains various lists such as the Voice list, Preset Phrase list, Effect list, Chord Type list, MIDI data format, and MIDI implementation chart. 
+
+
+Printing conventions in this manual 
+This manual uses the following icons to indicate buttons and to distinguish different types of information. 
+[SONG] This indicates a panel button. The characters in the box indicate the characters printed on the panel. Buttons for which there are no characters printed on the panel are indicated by the symbol printed on the panel, such as [Cursor left]. In the case of the function buttons [F1] to [F6], the function corresponding to each button is also given; for example, [F3] (Effect). 
+
+[Explanation] 
+This icon indicates an explanation of the function. 
+
+[Setting values] 
+This icon indicates the range of values that can be set for that function. 
+
+[Procedure] 
+This icon indicates the actual procedure for using the function. 
+
+[Supplementary comments] 
+This icon indicates supplementary explanations related to the function, examples of use, and hints. 
+
+[Caution] 
+This icon indicates a caution. To avoid erasing or damaging important data, be sure to read such sections. 
+
+plus  
+This icon means that an operation needs to be performed while doing something else. For example, [SHIFT] plus [YES] means "hold down [SHIFT] and press [YES]". 
+
+/ (Slash) 
+This icon means "or". For example,[Decrement] key slash [Increment] key means that you should press either the [Decrement] key or the [Increment] key. 
+
+-> (arrow)
+ This icon indicates the sequence in which buttons must be pressed. For example, numeric keys -> [ENTER] means that you must use the numeric keys to select a value and then press the [ENTER] button. 
+
+-> p.** 
+This indicates the page on which a related function or item is explained. Refer to these pages as necessary. 
+
+
+Finding the information that you need 
+In order to find the information that you need, you can make use of the following pages. 
+
+Table of contents (-> p.9) 
+Locate the desired information within the flow of the entire manual. 
+
+Front and rear panels (-> p.12) 
+Here you can read about the name and location of each button and control, and read about their function. 
+
+Function tree (-> p.34) 
+This lets you locate the desired information within the structure of the command hierarchy. 
+
+Glossary (-> p.324) 
+This section contains unfamiliar terms or phrases in alphabetical order with their explanations. 
+
+Index (-> p.328) 
+This lets you search alphabetically for unfamiliar terms to find pages on which they are discussed and pages on which related topics appear. 
+
+This is the end of the file.

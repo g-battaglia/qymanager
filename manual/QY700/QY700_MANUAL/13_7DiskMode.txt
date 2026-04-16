@@ -1,0 +1,365 @@
+Chapter 7. DISK MODE
+This chapter explains Disk mode.
+Disk mode is where data can be transferred to and from floppy disk.
+
+
+About floppy disks 
+On the QY700, floppy disks are used to save data that you create, or to exchange data with other devices. This section explains the types of floppy disks that the QY700 can use, and things you should know about floppy disk handling. 
+
+Types of floppy disk 
+The QY700 can use two types of floppy disk: 3.5 inch 2HD and 3.5 inch 2DD. 
+Before data files can be stored on a floppy disk, the disk must be formatted (initialized). (-> p.316) 
+The QY700 formats 2HD disks to 1.44 MB (megabytes) and 2DD disks to 720 KB (kilobytes) MS-DOS format. (MSDOS is a registered trademark of Microsoft Corporation.) Since this format is common to computers as well as to Yamaha products and the products of other manufacturers, it allows disk compatibility. 
+Inserting a floppy disk 
+With the label side of the floppy disk facing upward, insert it into the floppy disk drive starting with the end with the shutter. 
+Push the disk gently in until it clicks into place. 
+(Figure)
+Push disk gently in until it clicks into place 
+
+Removing a floppy disk 
+After making sure that the floppy disk drive is not in use, firmly press the eject button, make sure that the floppy disk has been completely ejected, and remove it from the drive. 
+(Figure)
+Press the eject button firmly and accurately, and make sure that the disk is ejected 
+
+If the disk catches inside and does not slide out smoothly, firmly press the eject button once again, or re-insert the floppy disk and then press the eject button once again. 
+While the disk-in-use indicator is lit, data is being transferred between the floppy disk and the QY700. While the disk-in-use indicator is lit, never turn off the power or attempt to remove the floppy disk. Doing so could damage not only the floppy disk but also the floppy disk drive. 
+
+Regular cleaning of the disk drive heads Floppy disk drives contain a high-precision magnetic head. 
+When a floppy disk drive is used for an extended period, the heads will become soiled by magnetic particles from the floppy disk. This will increase the chance of errors occurring when data is read or written. 
+In order to keep the floppy disk drive in good condition, we recommend that you clean the heads regularly (once a month). 
+
+Floppy disk handling and storage 
+Floppy disks should not be placed in locations of direct sunlight or temperature extremes, or in excessively damp or dusty locations. 
+Do not allow floppy disks to come near objects that have a strong magnetic field, such as televisions or speakers. 
+Before turning off the power, remove the floppy disk from the disk drive. Leaving a floppy disk in the drive for a long period with the power turned off can cause the disk to become dirty, producing read/write errors. 
+
+Preventing accidental erasure 
+Floppy disks have a write-protect slide which can be used to prevent accidental erasure of data. On floppy disks which contain important data, move the write-protect slide to the write-protect position (the window open) so that data cannot be written to the disk. 
+
+Data backup 
+The data on a floppy disk can be damaged by unforeseen accidents. If you have especially important data that you wish to keep, we suggest that you take the time to make a backup copy. 
+
+
+About Disk mode 
+
+[DISK]
+[F1] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+In Disk mode, data can be transferred between a floppy disk and the QY700. 
+Disk mode contains the following five groups of operations, which are accessed by the function keys [F1] (save) to {F6] (Format). as a single file. 
+
+[F1] (Save) lets you save data to floppy disk. (-> p.307)
+[F2] (Load) lets you load files from floppy disk. (-> p.310)
+[F4] (Rename) lets you modify a filename. (-> p.312)
+[F5] (Delete) lets you delete a file from floppy disk. (-> p.314)
+[F6] (Format) lets you format (initialize) a floppy disk. (-> p.316) 
+
+The various operations in 1 to 6 handle 3 to 5 different types of data. Use the direct cursor keys [D1] (All Data) to [D5] (Song SMF) to select from the applicable types of data. 
+
+[D1] (All Data) handles all data of the QY700's internal memory as a single file. 
+[D2] (Style) handles data such as the 8 patterns within a style or 99 phrases as a single file.
+[D3] (Song) handles the musical data for one song together with voice and effect settings etc. as a single file.
+However in the [F2] (Load),[F4] (Rename), and [F5] (Delete) pages, ESEQ and SMF song files are also handled.
+[D4] (Song ESEQ) handles only the musical data for one song as an ESEQ file.
+[D5] (Song SMF) handles only the musical data for one song as an SMF format file.
+
+Types of file used by the QY700 
+1. All Data 
+These files handle all data of the QY700's internal memory 
+All Data includes the following data. 
+Songs 	20 
+Styles 	64 
+System 	Setup 1 
+
+Song data includes the musical data for songs 01 to 20 of Song mode, the Voice mode and Effect mode settings for each song, and the Song mode Play Effect and Out Channel settings.
+Style data includes data for the eight Patterns of each Style(64 times equal  512), and 99 User Phrases for each Style (64 times 99 equal 6336).
+The data for each Pattern includes Play Effect, Pattern Voice, and Pattern Effect settings in addition to the musical data.
+System Setup contains the settings of Utility mode. 
+Song data that was created by using the automatic accompaniment functions to join patterns with the song must be saved and loaded as All Data.
+
+
+2. Style 
+Style files contain all the data included in a style of Pattern mode. 
+Style files contain the following data. 
+Patterns 	8 (sections)
+User Phrases 	99 (user phrases)
+Pattern data also contains the Play Effect, Pattern Voice, and Pattern Effect settings in addition to the musical data. 
+
+3. Song 
+Song files handle all data included in one song of Song mode as a single file. 
+Song files include the following data. 
+Musical data recorded in the song 
+Pattern track, Chord track, and Tempo track data 
+Play Effect, Out Channel settings 
+Voice mode settings 
+Effect mode settings 
+
+4. Song ESEQ 
+ESEQ is a sequencer format developed by Yamaha that is used on many Yamaha products including digital musical instruments such as the QY300 and QS300, Clavinovas and piano players. ESEQ-compatible models can exchange sequence data via floppy disk. (If you plan to exchange data with another Yamaha product, we suggest that you use 2DD disks to ensure disk drive compatibility.) 
+Song ESEQ handles as a single file only the musical data of TR1 to TR16 and the tempo track from one song in Song mode. 
+Play Effect, Out Channel, Voice mode and Effect mode settings are not included in an ESEQ file. 
+Disks which are commercially available for use on the Clavinova or piano players are protected for reasons of copyright, and cannot be loaded into the QY700. 
+
+5. Song SMF 
+SMF (Standard MIDI File) is defined as a suggested format for MIDI musical data, and is a sequencer data format used by many musical instrument manufacturers and computer software companies. Devices that are Standard MIDI File compatible can exchange sequence data via floppy disk, etc. 
+Song SMF handles one Song mode file as a single file. 
+Play Effect, Out Channel, Voice mode and Effect mode settings are not included in an SMF file. 
+The QY700 can use the following two types of Standard MIDI Files. 
+
+Format 0 
+This format combines data of two or more MIDI channels into a single track. This format can handle the musical data of QY700 Tr1 to Tr16 and the tempo track. 
+If a song in which music is recorded on Tr1 to Tr32 is saved as format 0, all of the data in Tr17 to Tr32 will be mixed to Tr1 to Tr16 when it is saved. If your song uses tracks 17 and later, use the following format 1 to save it. 
+
+Format 1 
+This format allows an unlimited number of tracks, and each track can contain data of multiple MIDI channels. This format can handle the musical data of all QY700 sequence tracks (Tr1 to Tr32) plus the tempo track. Format 1 was defined as an extension of format 0. This means that some SMF-compatible devices are able to handle only format 0, and cannot handle format 1. If compatibility is a concern, songs created with 16 or fewer tracks should be saved in format 0. 
+
+XG header 
+When saving a song in Song ESEQ and Song SMF formats, you can press 4 (XG HEADR) to highlight it, so that 1 or 2 setup measures will be added to the beginning of the musical data when it is saved. The QY700's Voice mode and Effect mode data that is required to set up the tone generator will be inserted in the form of MIDI System Exclusive data into these setup measures. 
+This function lets you create setup measure easily, without requiring an advanced knowledge of MIDI. 
+Since MIDI data that sets up the tone generator is contained at the beginning of song data that was saved with an XG header, the song can be played back using another sequencer and XG-compatible tone generator to produce the same musical result. 
+When a file saved with an XG header is loaded and then saved once again with the XG Header setting highlighted, tone generator setup data will again be inserted at the beginning of the song, resulting in duplicate data. For this reason, before saving the data for the second time, you should use the Song job Delete Measure to delete the previous setup measures that were added. 
+When a file saved with an XG header is loaded and played back, the tempo may lag slightly during measures 1 . 2. This is because the setup measures that were added contain bulk data. However this will have no effect on the playback of the original portion of the song data. 
+When a file saved with an XG header is loaded and played back, all settings of Voice mode and Effect mode will be ignored. If you wish to keep the Voice mode and Effect mode settings, use the Song job Delete Measure to delete the setup measures that were added. 
+
+Data filename extensions 
+When the above-mentioned five types of data are saved by the QY700, a filename extension (three characters indicating the type of file) will be automatically added to the name of the file as follows. 
+1. All Data .Q7A 
+2. Style .Q7P 
+3. Song .Q7S 
+4. Song ESEQ .ESQ 
+5. Song SMF .MID 
+
+
+1. Save 
+
+[DISK]
+[F1] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+(Table)
+Type of data 	Screen display 	Setting items 
+[D1] All Data 
+Save all data from QY700 memory to floppy disk. 	(Figure)	1. Specify the filename 
+[D2] Style 
+Save all data included in one Style of Pattern mode to floppy disk. 	(Figure)	1. Select the Style to be saved 
+2. Specify the filename 
+[D3] Song 
+Save all data included in one song of Song mode to floppy disk. 	(Figure)	1. Select the Song to be saved 
+2. Specify the filename 
+[D4] Song ESEQ 	Save only the musical data of TR1 to TR16 and the tempo track of one song of Song mode to floppy disk in ESEQ format. 	(Figure)	1. Select the Song to be saved 
+2. Turn XG Header on/off 
+3. Specify the filename 
+[D5] Song SMF 
+Save only the musical data of one song of Song mode to floppy disk in SMF format. 	(Figure)	1. Select the Song to be saved 
+2. Turn XG Header on/off 
+3. Format 0/1 
+4. Specify the filename 
+(Table End)
+
+[Explanation]
+The Save operation saves data from internal memory to floppy disk. 
+Select one of five types of data to be saved. For details on the different file types, refer to "Types of file used by the QY700." (-> p.304) 
+The "DISK INFORMATION" area located in the lower right of the screen shows the total number of files on the floppy disk, the total size of all files, and the free area on the disk. 
+The area below this shows the number of files of the selected type that are on the floppy disk, and the total size. 
+Refer to this information when saving your data. 
+Before a floppy disk can be used to save data, it must first e formatted. (-> p.316) 
+If the size of the data to be saved is greater than the free area of the floppy disk, a message of "Disk Full" will appear. 
+If this occurs, delete unwanted files from the disk, and try the Save operation once again. 
+CAUTION.
+Be careful that you do not accidentally delete important data from the disk. 
+[Procedure]
+1. Press [F1] (Save). 
+The top line of the display will indicate "DISK -- SAVE --". 
+2. Press [D1] (All Data) to [D5] (Song SMF) to select the type of data that will be saved. 
+The corresponding Save page will appear. 
+3. If Song ESEQ or Song SMF was selected as the data type, use [F4] (XG HEADR) to specify whether or 
+not an XG header will be added. 
+If you press [F4] (XG HEADR) to highlight the display, 
+1 to 2 measures of setup data will be added to the beginning of the playback data when it is saved. For details on the XG header, refer to "XG header" (-> p.306). 
+4. If Song SMF was selected as the data type, use [F1] (FORMAT0) or [F2] (FORMAT1) to select the format of the Standard MIDI File. 
+For details on Standard MIDI File formats, refer to "Types of file used by the QY700". (-> p.304) 
+5. In the left side of the display, select the style or song number that you wish to save. 
+If you are saving All Data, there will not be a number selection at this point. 
+6. Press the cursor [right] key to move the cursor to the right, and specify a filename. 
+The filename is what distinguishes between files on the same floppy disk. It is not possible to specify the same filename for two or more different files on the same disk. 
+For character input, refer to "Chapter 1. BASIC CONCEPTS". (-> p.53) 
+If you press [F6] (DeflName), the name previously specified for the selected of song or style will be copied to the filename. 
+When you access the Save page, the filename display will show the name of the file that was saved last. This means that if you press [ENTER] without modifying the filename, the previous file will be overwritten. 
+7. Make sure that the settings are correct, and press [ENTER]. 
+The display will indicate "Executing...", and the data will be saved. 
+If the data will be overwritten, a confirmation message will appear. To execute saving, press [Increment] key. To cancel saving, press [Decrement] key . 
+Chapter 7. DISK MODE 
+
+8. Press [EXIT] to close the Save page. 
+[Supplementary comments] 
+When saving a style or song, memory numbers for which there is no data will be displayed as "********" If you attempt to save such styles or songs, a message of "No Data" will appear, and it will not be possible to execute the Save operation. 
+It is not possible to use "*" or "?" characters in a filename. 
+If a filename includes characters such as spaces or periods which are not permitted by MS-DOS, computers or other devices may not be able to read that file. (MS-DOS is a registered trademark of Microsoft Corporation.) 
+
+
+2. Load 
+
+[DISK]
+[F1] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+(Table)
+Type of data 	Screen display 	Setting items 
+[D1] 	All Data 
+A file that was saved as QY700 All Data format will be loaded from floppy disk into internal memory. 
+	(Figure)	1. Select the file to be loaded 
+[D2] 	Style 	A file that was saved as QY700 Style format will be loaded from floppy disk into internal memory. 	(Figure)	1. Select the file to be loaded 
+2. Select the loading destination style 
+[D3] 	Song 
+A file that was saved in QY700 Song format or as ESEQ format or SMF format will be loaded from floppy disk into internal memory. 	(Figure)	1. Select the file to be loaded 
+2. Select the loading destination song 
+(Table End)
+
+[Explanation]
+The Load operation loads data from floppy disk into the QY700. 
+You can select one of three types of file to be loaded. For details on the types of file, refer to "Types of file used by the QY700." (-> p.304) 
+The "DISK INFORMATION" area located in the lower right of the screen shows the total number of files on the floppy disk, the total size of all files, and the free area on the disk. The area below this shows the number of files of the selected type that are on the floppy disk, and the total size. 
+Refer to this information when loading data. 
+CAUTION.
+When an All Data file is loaded, all data in memory such as Songs, Patterns, Phrases, and System setup data will be overwritten. If internal memory contains data that you wish to save, save it to disk before loading other data. 
+[Procedure]
+1. Press [F2] (Load). 
+The top line of the display will indicate "DISK -- LOAD --". 
+2. Press [D1] (All Data) to [D3] (Song) to select the type of data that you wish to load. 
+The load execute page will appear. 
+3. In the left side of the display, select the file that you wish to load. 
+
+Preplay function 
+If you have selected Song as the data type, and if a Standard MIDI File format 0 song file is selected, you can press [F6] (Preplay) to playback the file before you execute loading. 
+This is a convenient way to check the contents of the file. 
+
+4. Press cursor [right] to move the cursor to the memory number area in the right side of the display, and use [Decrement] key/[Increment] key, the data dial or the numeric keypad -> [ENTER] to specify a 
+memory number as the loading destination. 
+If you are loading All Data, this setting will not appear. 
+Vacant memory numbers will be displayed with a name of "********". 
+
+5. Check the settings, and press [ENTER]. 
+The display will indicate "Executing...", and the data will be loaded. 
+. If the data will overwrite existing data, a confirmation message will appear. To load the data, press [Decrement] key. To cancel, press [Increment] key. 
+
+6. Press e to close the Load execute page. 
+[Supplementary comments] 
+If the data to be loaded is larger than the remaining free memory, a message of "Memory Full" will appear. If this occurs, delete unneeded data and repeat the Load operation. 
+
+
+3. Rename 
+
+[DISK]
+[F2] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+(Table)
+Types of data 	Function 
+[D1] 	All Data 	Modify the filename of a file that was saved as QY700 All Data 
+[D2] 	Style 	Modify the filename of a file that was saved as QY700 Style data 
+[D3] 	Song 	Modify the filename of any file including files that were saved in QY700 Song format, ESEQ format, or SMF format 
+(Table end)
+
+[Explanation]
+Rename modifies the filename of a file that was saved on floppy disk. 
+You can select from three types of file to rename. For details on each type of file, refer to "Types of file used by the QY700." (-> p.304) 
+If you select "Song" as the file type, you will be able to modify the filenames of files that were saved by devices other than the QY700. 
+ The "DISK INFORMATION" area located in the lower right of the screen shows the total number of files on the floppy disk, the total size of all files, and the free area on the disk. 
+The area below this shows the number of files of the selected type that are on the floppy disk, the total size, and the size of the selected file. 
+
+[Procedure]
+1. Press [F4] (Rename). 
+The top line of the screen will indicate "DISK -- RENAME --". 
+2. Press  [D1] (All Data) to [D3] (Song) to select the type of data that you wish to rename. 
+The Rename execute page will appear. 
+3. In the left side of the display, select the file that you wish to rename. 
+4. Press cursor [right] to move the cursor to the right, and modify the filename. 
+For details on inputting characters, refer to "Chapter 1. BASIC CONCEPTS". (-> p.53) 
+5. Check the settings, and press [ENTER]. The display will indicate "Executing..." and the filename will be changed. 
+If you press [ENTER] without modifying the filename, the display will indicate "Can't Change File Name," and the Rename operation cannot be executed. 
+6. Press [EXIT] to close the Rename execute page. 
+[Supplementary comments] 
+If the filename extension of an ESEQ/SMF file is renamed, it may become impossible to load the file. 
+
+
+4. Delete
+
+[DISK] 
+[F1] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+(Table)
+Type of data 	Function 
+[D1] 	All 	Data Delete a file that was saved as QY700 All Data 
+[D2] 	Style 	Delete a file that was saved as QY700 Style data 
+[D3] 	Song 	Delete any file including files that were saved in QY700 Song format, ESEQ format, or SMF format 
+(Table End)
+
+[Explanation]
+Delete allows you to delete files from floppy disk. 
+You can select from three types of file to delete. For details on each type of file, refer to "Types of file used by the QY700." (-> p.304)
+If you select "Song" as the file type, you will be able to delete files that were saved by devices other than the QY700. 
+The "DISK INFORMATION" area located in the lower right of the screen shows the total number of files on the floppy disk, the total size of all files, and the free area on the disk. 
+The area below this shows the number of files of the selected type that are on the floppy disk, the total size, and the size of the selected file. You can refer to this area when deciding which files to delete. 
+
+CAUTION.
+If Delete is executed, the specified file will be lost forever and cannot be recovered. Before executing this operation, be sure that you really want to delete the file. 
+
+[Procedure]
+1. Press [F5] (Delete). 
+t The top line of the screen will indicate "DISK -- DELETE --". 
+2. Press [D1] (All Data) to [D3] (Song) to select the type of data that you wish to delete. 
+ t The Delete execute page will appear.
+3. Use cursor [up]/[down] to select the file that you wish to delete. 
+4. Check the display, and press [ENTER]. 
+A message will ask for confirmation. 
+5. Press [Increment] key. 
+The display will indicate "Executing..." and the file will be deleted. 
+To cancel without deleting, press [Decrement] key. 
+6. Press e to close the Delete execute page. 
+
+5. Format 
+
+[DISK]
+[F1] Save 
+[F2] Load 
+[F4] Rename 
+[F5] Delete 
+[F6] Format 
+
+[Explanation]
+The Format operation formats (initializes) a floppy disk. 
+Before a new floppy disk can be used, it must be formatted. 
+
+[Procedure]
+1. Press [F6] (Format). 
+The Format page will appear. 
+2. Insert a floppy disk into the floppy disk drive slot. 
+3. Press [ENTER]. 
+A message will ask for confirmation. 
+4. Press [Increment] key. 
+The display will indicate "Executing..." and formatting will begin. After the disk has been formatted, you will return to the Format page. 
+To cancel without formatting, press [Decrement] key. 
+The QY700 can use two types of floppy disk: 3.5 inch 2HD and 3.5 inch 2DD. 
+The QY700 will format 2HD disks to 18 sectors (1.44 megabyte MS-DOS format) and 2DD disks to 9 sectors (720 kilobyte MS-DOS format). (MS-DOS is a registered trademark of Microsoft Corporation.) 
+CAUTION.
+When the Format operation is executed, the entire contents of the floppy disk will be lost. Be careful not to format an important floppy disk by mistake. 
+
+
+This is the end of the file.

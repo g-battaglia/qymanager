@@ -1,0 +1,940 @@
+Chapter 2. SONG MODE
+You use SONG mode to play, edit, and record your songs. This chapter explains all SONG-mode operations. 
+
+SONG MODE Overview 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F2] Track View 
+[F3] Output Channels 
+[F5] Save 
+[F6] Load 
+[Recording] Song Recording 
+[EDIT] Song Edit 
+[JOB]	Song Jobs 
+
+(Figure).
+[Explanation]
+You use SONG mode to record, edit, and play songs. 
+A song is a set of playable performance data that you create by recording onto the QY700 tracks under SONG mode.
+The QY700's song memory has room for 20 songs. 
+Each song can comprise as many as 32 sequence tracks, together with a PATTERN track, a CHORD track, and a TEMPO track.
+If you wish to record songs in the same way as on a conventional sequencer, you can do so by working with the sequence tracks only. But in many cases you will want to use the auto-accompaniment feature to set up a backing. You can then play the backing while creating the melody and other parts. 
+
+Track Configuration 
+As mentioned above, each song comprises up to 32 sequence tracks, together with a PATTERN track, a CHORD track, and a TEMPO track. 
+The sequence tracks store your performance data, with each track storing a single part. Each part consists of a full set of performance data (note data, controller data, and so on). You can create each part using either realtime or step recording. 
+The PATTERN track stores the pattern list for the auto-accompaniment feature. The track can also include meter (time  signature) settings. You set up the patterns by entering appropriate styles and sections, again using either realtime or step recording. 
+The CHORD track stores the chords used for replaying the patterns. When entering a chord, you can also set an "on-bass" or original bass setting, and a syncopation.
+The TEMPO track sets the tempo (and tempo changes) for the song. You set these values using realtime or step recording. 
+The TEMPO track controls accelerando, ritardando, and other such tempo changes. 
+
+(Table)
+Sequence tracks 
+TR 1 	Performance data 
+TR 2 	Performance data 
+TR 3 	Performance data 
+TR 31 	Performance data 
+TR 32 	Performance data 
+PATTERN track 
+PATTERN 	Patterns, meters 
+CHORD track 
+CHORD 	Chord roots, types, on-bass, original bass, syncopation 
+TEMPO track 
+TEMPO 	Tempo changes 
+(Table End)
+
+Track Output Channels 
+During song replay, the QY700 transmits sequence data (from the sequence tracks) and pattern data (from the 16 pattern tracks) to both the tone generator block and the MIDI OUT connectors. You can set up the track/channel correspondence using the SONG mode's Output Channel function (-> p.103). 
+The tone generator block supports a maximum of 32 parts, and cannot reproduce data from all 32 sequence and 16 pattern tracks at the same time. But you can reproduce all 48 tracks at once by assigning any 16 of the tracks to an external MIDI tone generator. 
+
+
+1. SONG PLAY
+
+{SONG] SONG PLAY 
+[F1] Play Effects 
+[F2] Track View 
+[F3] Output Channels 
+[F5] Save 
+[F6] Load 
+[Recording] Song Recording 
+[EDIT] Song Edit 
+[JOB] Song Jobs 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Song no.	01 to 20,	Selects song for recording or replay.	P.73 
+Song name	View only	 Name of selected song.
+2 Pattern setup 	OFF, ON 	Selects whether the pattern's effect is used during song replay. 	P.73 
+3 Track numbers 	View only 	Shows track numbers. 	P.74 
+	Keyboard-track setting 	[Seq]	 1 to 32, [Pat] 1 to 16 The keyboard track is indicated in reverse video. 
+4 Track status (data, MUTE, SOLO) [ ] : no data [ _ ] : data exists [M]: MUTE [S]: SOLO 	Indicates whether track contains data. 
+Also indicates/selects SOLO or MUTE operation. P.74 
+5 Style no. 	00 ( equal off) to 65 	Sets initial style for backing. P.75 
+Style name 	View only 	Name of selected style. 
+Section 	A to H 	Selects one of the style's 8 sections. 
+Pattern name 	View only 	Name of selected section. 
+6 Chord root 	C, C sharp, D, E flat, E, F, F sharp, G, A flat, A, B flat, B 	Sets the chord root for pattern play. 
+Chord type 	M, M7, 6, 7, m, m7, m6, mM7, m7(b5), dim, aug, sus4, add9, M7(9), 6(9), 7(9), madd9, m7(9), m7(11), 7(b5), 7(#5), 7(b9), 7(#9), 7(13), 7(b13), 7sus4, 7(#11) --- ( equal THRU) 	Sets the chord type. P.75 
+7 Fingered-chord switch 	OFF, FINGRD 	Selects use or nonuse of fingered-chord input. P.76 
+8 Keyboard image 	View only 	Wheel/keyboard image monitors the data played from the keyboard track. P.77 
+9 Measure 	001 to 999 	Sets location (measure) for start of song playback, and monitors current playback location. P.77 
+Beat 	1 to 16 
+10 Loop switch 	OFF, LOOP 	Selects use or nonuse of looped play. P.78 
+Locations 1, 2 	001 to 999 	a) Sets jump points within song, by measure number. (To jump, press [LOC 1] or [LOC 2].) 
+b) For looped play: sets start and end points for loop. 
+11 Tempo 	25.0 to 300.0 	Sets tempo for song play. P.78 
+Meter 	View only 	Shows meter of selected song. 
+12 Click mode 	Off, Rec, Ply, All 	Selects use of acoustic click. P.78 
+Click beat 	16th note, Eighth note, Quarter note, half note, whole note 	Selects the click interval. 
+Count 	Off, 1 to 8Ms 	Sets number of lead-in measures to recording start. 
+13 Transposition 	minus 24 to plus 00 to plus 24 	Sets transposition for song playback, in semitones. P.78 
+(Table end)
+
+[Explanation]
+You use SONG PLAY mode to select songs for replay, to start and stop the replay, and to set the various replay parameters. 
+You can switch into VOICE mode and make adjustments in track voices and track balances while playback is in progress. 
+By selecting playback of an empty song (a song without data), you can use the auto-accompaniment feature as background for normal keyboard play. (-> p.106) 
+SONG PLAY includes eight submodes. You can switch from SONG PLAY into any of these submodes by pressing the appropriate key, as follows. 
+[F1](PlayFx) Move to Play Effects submode. (-> p.80) 
+[F2](TrView) Move to Track View submode. (-> p.100) 
+[F3](OutCh.) Move to Output Channel submode. (-> p.103) 
+[F5](Save) Move to Save Song submode. (-> p.307) 
+[SHIFT] plus [F5](Save) Move to Save Song submode (SMF save). (-> p.307) 
+[F6](Load ) Move to Load Song submode. (-> p.310) 
+[SHIFT] plus [F6](Load) Move to Load Song submode. (-> p.310)
+[Recording] Move to Record submode. (-> p.109)
+[EDIT] Move to Song Edit submode. (-> p.129)
+[JOB] Move to Song Job submode. (-> p.138)
+
+[Procedure]
+1. Press [SONG]. 
+The indicator above the key comes on, and the QY700 enters SONG mode (SONG PLAY). 
+2. Move the cursor onto the song number on the screen, and select the song using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+3. Press the [Play] to start playback. 
+The PLAY indicator comes on, and playback begins. 
+4. To stop the playback, press [STOP].
+
+[Supplementary comments]  
+If you start song replay from a point other than the beginning, you may find that some of the song's PATTERN-track and CHORD-track data drops out. You can solve the problem by moving the start point to a measure at which a full pattern change occurs. 
+
+1. Song number and name 
+[Explanation]
+You use the song number to select a song for playback or recording. 
+The screen displays the song name (if any) directly to the right of the song number. 
+To set or change the song name, you use the SONG NAME job (-> p.165). 
+[Setting values]
+Song no.: 01 to 20 
+[Procedure]
+1. Move the cursor onto the song number on the screen. 
+2. Select a song number using the data dial,[Decrement] key/[Increment] key, or the numeric keypad. 
+
+2. Pattern setup 
+[Explanation]
+This parameter determines whether the QY700 uses the pattern effects (the effects set up within each pattern) during song replay. 
+If you set this to OFF, the QY700 will not use the pattern effects. Instead, it uses the effects that you have selected under the EFFECT mode. 
+If you set this to ON, the QY700 uses the effects set up within the current pattern. In this case, the pattern's effect settings overwrite the EFFECT-mode settings. The EFFECT-mode settings therefore changes each time the pattern changes. 
+ 
+[Setting values]
+OFF, ON 
+[Procedure]
+1. Move the cursor to the PATT SETUP area on the screen. 
+2. Select the setting using either the data dial or . 
+
+
+3. Track numbers; keyboard-track setting 
+Each sequence track and pattern track is identified by a track number. 
+The highlighted track number identifies the current keyboard track. Note that the highlight is not related to cursor action. 
+The keyboard track (unlike all other tracks) is connected internally to the keyboard. This means that you can add keyboard play to the track while song replay is in progress. 
+Your keyboard play will be transmitted (along with the track's other data) to the tone generator block and MIDI OUT destinations selected by the track's Output Channel settings. (-> p.105) 
+
+[Setting values]
+1 to ,32 [sequence tracks], 1 to 16 [pattern tracks] 
+Press [TRACK UP] or [TRACK DOWN] as necessary to select the keyboard track. 
+The keyboard track is indicated by highlight. 
+
+
+4. Track status (data, MUTE, SOLO) 
+[Explanation]
+This area shows you the current status of each track. An underscore indicates that the track contains data. 
+The [M] symbol appears to indicate that a track is muted. 
+You can use the [MUTE] key to mute one or more tracks. 
+The [S] symbol appears to indicate that the track is selected for solo play. When you select a track for solo play (by pressing the [SOLO] key), all other tracks are switched off. The underscore under other tracks changes appearance (to a dashed line) to indicate that these tracks are switched off. 
+SOLO and MUTE options can be used with all tracks: the 32 sequence tracks and the 16 pattern tracks. 
+You can select and store SOLO and MUTE settings separately for each song. 
+
+[Procedure]
+1. First select a track using the [TRACK UP] or [TRACK DOWN] key, so that the track number is highlighted. 
+(Note that this also becomes the keyboard track.) 
+2. To mute the track: Press the [MUTE] key once, so that the [M] appears.
+To release a mute : Press [MUTE] once again.
+
+
+3. To select a track for SOLO play : Press the [SOLO], so that the [S] appears.
+To deselect : Press [SOLO] once again.
+You can easily use this feature to listen to your tracks one by one. Begin by playing one of the tracks solo, then press [TRACK UP] or [TRACK DOWN] to select the next track, then press s again. Note that each time you press the [SOLO], any previous SOLO selection is automatically canceled. 
+
+4. You can also use the solo feature to select multiple "solo" tracks, so that only the selected tracks are produced (with all other tracks silent). Begin by setting one of the tracks to SOLO as described above. Then use [TRACK UP]/[TRACK DOWN] to select another track, and then press [SHIFT]  plus [SOLO].
+To cancel all of these solo selections at once : Use [TRACK UP] or [TRACK DOWN] to move to any one of the solo tracks, and then press [SOLO]. 
+To switch off only one of the solo selections : Move to the corresponding track, and then press [SHIFT] plus [SOLO]. 
+
+
+5. Style number, style name, section, and pattern name 
+[Explanation]
+This area sets the style and section for the initial (default) backing pattern. 
+If your song's PATTERN track includes data (style and section settings), these settings will automatically become effective as playback proceeds. The content of this display area will change to indicate the effective settings. 
+For general information about styles and sections, refer to Chapter 1. (-> p.39) 
+[Setting values]
+Style no.: 00 to 65 (where 00 equal off; 65 equal end) 
+Section: A to H 
+
+[Procedure]
+1. Move the cursor onto the style number on the screen. Select the desired style using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+2. Move the cursor onto the section indicator. Select a 
+new section using the data dial, [Decrement] key/[Increment] key, or a microkeyboard key between E2 and E3. 
+[Supplementary comments] 
+If you are working with sequence tracks only (TR1 to TR32), you should set the style number to 00
+
+6. Chord root and type 
+[Explanation]
+This area sets the chord root and type for the initial backing. 
+If your song's CHORD track includes its own chord settings, these will automatically become effective as playback proceeds. The content of this display area will change to indicate the effective settings. 
+For each chord, you can select from among 12 roots and 28 types. 
+For each chord, you can also select a separate on-bass or original bass setting. (-> p.115) 
+
+On-bass: Sets fixed tone for bass phrases. Bass phrases will produce the on-bass tone only. 
+Original bass: Sets alternative chord (root and type) for bass phrases. Bass phrases will reproduce 
+this alternative chord only. 
+
+For a full chord listing, refer to the QY700 Reference Listings. 
+
+[Setting values]
+Chord root:
+C, C sharp, D, E flat, E, F, F sharp, G, A flat, A, B flat, B 
+Chord type: 
+M, M7, 6, 7, m, m7, m6, mM7, m7 (5), dim, aug, sus4, add9, m7 (9), 6 (9), 7 (9), madd9, m7 (9), m7 (11), 7 (5), 7 (5), 7 (9), 7 (9), 7 (13), 7 (13), 7sus4, 7 (11), --- (equal THRU) 
+
+[Procedure]
+If you do not want to use fingered chording: 
+1. Set the fingered-chord switch to OFF. (See Section 7., below.) 
+2. Move the cursor to the chord root/type area on the screen. 
+3. Select the root by pressing a microkeyboard key from E2 to D sharp 3. 
+4. Select the type by pressing a key from E3 to F4. 
+5. To set an on-bass : Hold down the left-side [OCT DOWN] key and press a key from E2 to D3. 
+To set an original bass : Hold down the left-side [OCT UP] key and press a key from E3 to F4. 
+6. Press the [ENTER] to register your entry. 
+
+
+If you want to use fingered chording:  1. 
+1.Go to UTILITY mode and set up the fingered-chord zone. (-> p.299) 
+2.Return to the SONG PLAY screen. Move the cursor to the fingered-chord switch area, and set the value to FINGRD (see Section 7 below). 
+Leave the cursor in this area as you proceed.
+3. Press down the keys for the appropriate chord, using either the QY700 microkeyboard or a remote MIDI keyboard. Be sure that all the keys you press are within the fingered-chord zone.The QY700 will automatically detect and register the root and type values.
+
+To select the on-bass or original bass value: Continue to hold down the chord notes within the fingered-chord zone, while pressing one note (for the on-bass setting) or multiple notes (for the original-bass setting) in the keyboard area to the left of the zone. 
+
+
+[Supplementary comments] 
+For information about how to enter chords, refer to Chapter 1. (-> p.42) 
+
+7. Fingered-chord switch 
+This setting enables or disables the fingered-chord feature. 
+If you enable this feature (by setting the value to FINGRD), you will be able to enter chord values directly by playing the appropriate chord either at the microkeyboard or at a remote MIDI keyboard. Specifically, you can enter the root and type by playing the keys within the keyboard's fingered chord zone (-> p.299),and you can enter the on-bass or original-bass value by playing the appropriate key(s) in the area to the left of the zone. See the procedure given in Section 6., directly above. 
+
+For general information about the fingered chord feature, refer to Chapter 1. (-> p.42)
+
+[Setting values]
+OFF, FINGRD 
+
+[Procedure]
+1.Move the cursor to the fingered-chord switch area. 
+2. Use the data dial or the [Decrement] key/[Increment] key to select the setting.
+
+[Supplementary comments] 
+You can use the fingered-chord feature to set up an auto-accompaniment for live-action keyboard play. First set the fingered-chord switch to FINGRD, and then select an empty song. You can then play the chord notes (for the accompaniment) in the fingered-zone area (-> p.299), while using the area to the right of the zone for normal play. The QY700 will produce your performance in the keyboard track's current voice. (But note that the area to the left of the zone is not available.) 
+
+
+8. Keyboard image 
+[Explanation]
+This area presents an animated display of the playback of the keyboard track's recorded data. 
+Black markings appear on the keyboard graphic to indicate notes as they are replayed.
+Note that the entire keyboard image does not fit on the screen. But you can shift the displayed area of the image up or down an octave by pressing the [OCT UP] or [OCT DOWN].
+
+The pitch wheel image moves in accordance with the track's pitch events.
+
+The control-wheel image moves in accordance with control change events recorded on the track.
+
+[Supplementary comments] 
+The [OCT UP] and [OCT DOWN] keys apply both to the keyboard image and to the QY700's microkeyboard. This means that you can use the image as a reference to check the microkeyboard's current octave range, the third C on the keyboard image (counting from the left) corresponds to the first C key on the microkeyboard. 
+
+
+9. Measure and beat 
+[Explanation]
+The measure value sets the start point for song playback. 
+The measure and beat values increment during playback, indicating the current song location.
+[Setting values]
+Measure: 	001 to 999
+Beat: 	View only
+
+[Procedure]
+1. Press [D1] to move the cursor to the measure setting area.
+2. Set the measure value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad.
+
+[Supplementary comments] 
+You can change the measure value while song playback is in progress. Playback will immediately jump to the new location. 
+There are three ways to change the measure during play back, as follows. 
+Press [D1] to move the cursor to the measure display area, and then change the value as described above. 
+Rotate the shuttle dial, or press [Rewind] or [Forward]. 
+Press [TOP] to return to the top of the song (measure 1, beat 1). 
+When you select a new song, the measure value automatically switches to 001. 
+
+
+10. Loop switch; locations 1 and 2 
+[Explanation]
+Set the loop feature ON when you want to repeatedly play a specific area of the selected song. 
+When loop play is in effect, locations 1 and 2 set the start and end points of the loop (by measure number). Even when loop play is not in effect, you can jump to location 1 or 2 at any time by pressing 1 or 2, respectively. 
+[Setting values]
+Loop on LOOP
+Loop off OFF
+Locations 1/2 001 to 999
+[Procedure]
+1. Press [D2] as necessary to move the cursor to the loop-switch area or either of the location values. 
+2. Switch the value using the data dial or [Decrement] key/[Increment] key . 
+[Supplementary comments] 
+To set location 1 or 2 equal to the value of the current measure, hold down [SHIFT] and press [LOC 1] or [LOC 2]. 
+
+
+11. Tempo and meter 
+[Explanation]
+The tempo value sets the tempo for recording or playback of the song. 
+Each song stores its own tempo value. 
+The meter setting area shows the meter for the current measure. 
+[Setting values]
+Tempo 	25.0 to 300.0 ( equal Quarter note )
+Meter 	View only
+[Procedure]
+1. Press d [D3] to move the cursor to the tempo area. 
+2. Set the appropriate value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+[Supplementary comments] 
+The meter values are set in Song Recording. (-> p.111) 
+
+
+12. Click mode, click beat, and count 
+[Explanation]
+These parameters set up the sequencer's click sound. 
+The beat value sets the click interval. 
+The mode setting determines when the click feature is used. 
+The count value sets the number of preliminary measures used at start of realtime recording. 
+
+[Setting values]
+Click mode: 
+Off 	Disables the click feature. 
+Rec 	Use click for realtime and punch recording only. 
+Ply 	Use click for realtime recording, punch recording, and playback. 
+All 	Always use click. 
+Click beat: 
+16th note, Eighth note triplet, Quarter note, half note, whole note 
+Count: 
+Off, 1 to 8Ms 
+
+[Procedure]
+1. Press d [D4] as necessary to move the cursor to the appropriate click parameter. 
+2. Set the value using the data dial or [Decrement] key/[Increment] key. 
+[Supplementary comments] 
+If the QY700 fails to produce a click sound even when the mode setting is All, you may need to change the click setting within UTILITY mode. See page 297 for details. 
+
+
+13. Transposition 
+[Explanation]
+You use this feature to transpose the song being played. 
+The transposition is set in semitone increments. 
+The setting operates on pattern tracks as well as sequence tracks. 
+Transposition has no effect on drum voices and SFX kits. 
+Transposition does not operate on bypassed pattern phrases (that is, on phrases whose type is set to Bypass). 
+[Setting values]
+24 to plus 00 to plus 24
+[Procedure]
+1. Press [D5] to move the cursor to the transposition area. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+2. Play Effects 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F1] Groove Quantize 
+	[F4] Groove View 
+[F2] Clock Shift, Gate Time, and Velocity 
+[F3]Transpose 
+	[F4] Drum Table Edit 
+Chapter 2. SONG MODE 
+
+[Explanation]
+The Play Effects submode allows you to adjust various song-play parameters, including quantizing, gate timing, and velocity. This makes it possible to control and adjust timing and articulation while playback is in progress. Note that these adjustments do not cause changes in your recorded 
+data. 
+Song playback remains available while you are in the Play Effects submode. In particular, the [Play],[STOP], [TOP], [Rewind], and [Rewind] keys continue to function normally. 
+If you want to modify the actual recorded data to reflect your Play Effects adjustments, you can do so using the Normalize Play Effects song job. (-> p.163.) 
+Each song stores its own Play Effect settings. When you change to a different song, the new song's settings automatically become effective. 
+The Play Effects submode comprises three main pages together with two supplementary pages. You access the main pages by pressing the appropriate function keys ([F1], [F2], [F3]). You can access the supplementary page (where available) by pressing [F4]. 
+[F1](Groove) displays the "Groove Quantize" page. You use this page to set up the rhythm quantizing for each track. 
+[F2](Shf|GT|Vel) selects the "Clock Shift, Gate Time, and Velocity" page. You use this page to set the corresponding values. Again, values are set separately for each track. 
+[F3](Transpose) selects the "Transpose" page. You use this page to set transposition values for each track. You also use it to access the "Drum Table Edit" page; see below. 
+[F6]{(TR1 to 16) or (TR17 to 32)} switches the tracks displayed on the current page. 
+[F4](GrovView), accessible only from the "Groove Quantize" page, switches the display to the "Groove View" page. You use the "Groove View" page to view the groove templates, and to view or adjust your user templates. 
+[F4](DrTabEdit), accessible only from the "Transpose" page, switches you to the "Drum Table Edit" page. You can then use this page to adjust drum table settings. 
+
+[Procedure]
+1. At the SONG PLAY screen, press [F1] (PlayFx). 
+The QY700 enters the Play Effects submode. 
+2. If necessary, change the page by pressing the appropriate function key: [F1] (Groove), [F2] (Shf|GT|Vel), or [F3] (Transpose). 
+Note that the screen only has room to display 16 tracks (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing [F6]. 
+3. After making the necessary settings, press [EXIT] to return to the main SONG PLAY screen. 
+
+[Supplementary comments] 
+Editing Shortcut 1: You can simultaneously adjust values for all 32 tracks by an equal amount by holding down the [SHIFT] key while rotating the data dial or pressing [Decrement] key or [Increment] key . 
+Editing Shortcut 2: You can set all values for all 32 tracks to the same value by holding down [SHIFT], then entering the value at the numeric keypad. 
+
+
+Groove Quantizing 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F1] Groove Quantize 
+[F4] Groove View 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.84 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	1 to 32 	Selects track for editing. 
+2 Measure 	001 to 999 	Sets location (measure) for beginning of song playback, and indicates current playback location. 	P.85 
+3 Voice program 	View only	Identifies the voice program, as selected under VOICE mode. 	P.85 
+4 THRU setting 	none, T 	Sets the play effects ON or OFF for each track. 	P.85 
+5 Groove template 	-- ( equal off),1 to 100,US 	Sets the groove template, for each track. 	P.86 
+6 Quantizing value 	-- ( equal off)32nd note, sixteenth note triplet, sixteenth note, Eighth note triplet, Eighth note, Quarter note triplet, Quarter note, 16th and 16th triplet, 8th and 8th-triplet.	Timing interval used as basis for quantization. (Selectable in Groove View screen only if template type  equal  US.) 	P.86 
+7 Quantize strength 	000 percent to 100 percent 	Sets degree by which notes are pulled toward nearest quantizing line. 	P.86 
+8 Groove timing 	000 percent to 200 percent 	Sets degree by which performance data's original timing is affected by the groove template. 	P.87 
+9 Groove gate time 	000 percent to 200 percent 	Sets degree by which performance data's gate timing is affected by the groove template. 	P.87 
+10 Groove velocity	000 percent to 200 percent 	Sets degree by which performance data's velocity values are affected by the groove template. 	P.88 
+11 Grid 	View only 	Sets the dimensional unit for the groove template's parameter settings. The grid changes to match the selected quantization value. 	P.88 
+12 Clock shift 	Setting range varies according to quantization value.	Sets/shows final time shift applied after quantizing by template is completed. (Value is in clock cycles.) 	P.88 
+13 Gate-time multiplier 	000 percent to 200 percent 	Sets gate-time adjustment at each interval, by percent. 	P.89 
+14 Velocity offset 	minus 99 to plus 00 to plus 99 	Sets velocity offset at each interval. 	P.89 
+(Table End)
+
+[Explanation] 
+You use the groove quantize (rhythm quantization) feature to impart a swing, or "groove," to the song data as it is played back. The feature operates by making specified adjustments in note-event timing, velocities, and gate times. Effective use of this feature makes it possible to convert mechanical-sounding song data into driving, meaningful music. 
+The QY700 comes equipped with 100 preset groove templates, each corresponding to a different musical genre:swing, beat rock, acid jazz, and so on. The QY700 also allows you to create your own, customized templates (called user templates).
+
+Each template contains data for quantizing one measure of recorded data. Quantizing is executed by reapplying the template values to each measure of the recorded track. 
+
+Because you can select a different template for each track, you can combine a wide variety of different rhythms within a single song. You can also select how strongly each track's template will act on the track's data -- so that it is possible to get a wide range of different "grooves" even when using the same template. 
+You use the Groove View page to view the preset templates,  and to view or create your own user templates. The page displays the template settings in an easy-to-follow graphical form. 
+
+Each groove template is divided into equal quantizing intervals: eighth-note intervals, eighth-note triplet intervals, sixteenth-note intervals, or some other such value. On the Groove View page, these intervals are represented by a grid pattern. 
+The quantizing template sets separate adjustment values for each interval, allowing for subtle but swinging nuances. For example, the template might increase the gate times and velocities in the first half of the first beat, while delaying the timing of notes that occur in the second half of the second beat. 
+You can create your own user templates by copying any of the preset templates, then adjusting the various values to create your own customized variations. 
+
+[Procedure]
+Setting the Groove Quantize Parameters 
+1. From the SONG PLAY screen, press [F1] (PlayFx). 
+The QY700 enters the Play Effects submode. 
+2. Press [F1] (Groove). 
+The Groove Quantize page appears. 
+3. Press [TRACK UP] / [TRACK Down] as necessary to select the track you want to work on. 
+Note that a single screen can only display 16 tracks (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing 6. 4. Move the cursor to the TEMPLATE line. 
+5. Select the template using the data dial, the [Decrement] key/[Increment] key, or the numeric keypad. 
+6. Move the cursor to each of the parameters you want to change, and set the new value using the data dial, the [Decrement] key/[Increment] key, or the numeric keypad. 
+7. When you have finished making changes, press [ENTER to return to the SONG PLAY screen. 
+
+Viewing or Creating a Groove Template 
+1.From the Groove Quantize page, press [F4] (GrovView). 
+The QY700 displays the Groove View page. 
+2. Press [TRACK UP]or [TRACK DOWN] as necessary to select the appropriate track. 
+Each screen displays 16 tracks (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing [F6]. 
+3. Move the cursor to the TEMPLATE setting. Select the template using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+4. If you have selected the user template (US), you can now set the desired quantizing interval. To do so, move the cursor to the QNT VALUE line, then set the interval using the data dial, or [Decrement] key/[Increment] key. 
+Note that it is not possible to change the Quantize Value on the preset templates (templates 1 to 100). 
+5. Now move the cursor to any parameter line or (if US template) to any of the parameters in the grid area, and adjust as necessary using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+6. When you have finished making changes, press the [EXIT] to return to the Groove Quantize page. 
+7. Press the [EXIT] again to return to the SONG PLAY screen. 
+
+[Supplementary comments] 
+You can change the template and the template parameter values even while song playback is in progress. 
+
+1. Track numbers, track name, and keyboard-track setting 
+[Explanation]
+Each sequence track is identified by a track number. 
+The highlighted track number selects the track for quantization editing. It also selects the keyboard track -- the track that connects internally to the QY700's keyboard/ controller section. 
+The upper right of the screen indicates the selected track, both by its number and by its name. You can set up your own track names from within SONG EDIT mode. (-> p.132) 
+
+[Setting values]
+1 to 32 
+[Procedure]
+Press [TRACK UP] or [TRACK DOWN] until the track number for the desired track is highlighted. 
+Note that the screen only shows tracks 1 to 16 or tracks 17 to 32.You can toggle between these two groupings by pressing [F6].
+
+
+2. Measure and beat 
+[Explanation]
+The measure value sets the start point for song playback. 
+The measure and beat values increase during playback, indicating the current song location. 
+
+[Setting values]
+Measure: 001 to 999 
+
+[Procedure]
+1. Press [D1] to move the cursor to the measure display area. 
+2. Set the measure value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad -> [ENTER]. 
+
+[Supplementary comments] 
+You can change the measure value while song playback is in progress. Playback will immediately jump to the new location. 
+There are three ways to change the measure during playback, as follows. 
+Press [D1] to move the cursor to the measure display area, and then change the value as described 
+above. 
+Rotate the shuttle dial, or press [Rewind] or [Forward]. 
+Press [TOP] to return to the top of the song (measure 001, beat 1). 
+When you select a new song, the measure value automatically switches to 001. 
+
+3. Voice program 
+[Explanation]
+The icons indicate the voice program assigned to each track. 
+You select the voices using VOICE mode. (-> p.168) 
+
+4. Play-effects THRU setting 
+You use this setting to determine whether or not to apply the play effects to the corresponding track. If you set the value to [T], the QY700 will play the track without using the play effects. 
+The QY700 memorizes the THRU settings separately for each song 
+[Setting values]
+Apply play effects to the track.
+Do not apply play effects to the track.
+[Procedure]
+1. Move the cursor to the P.FX.THRU line for the track you want to set. 
+2. Change the setting using the data dial or the [Decrement] key or [Increment] key . 
+
+ 
+5. Groove template 
+[Explanation]
+You use groove templates to set up the basic rhythm quantization settings for each track. Use of these templates allows you to impart a swing, or "groove," to the song data as it is replayed. 
+Each template contains quantizing parameters for one measure of the recorded data. Quantizing is executed by reapplying the values to each successive measure of the recorded track. 
+Note that each template actually contains parameter values sufficient to cover eight beats. If the song's time signature calls for less than eight beats per measure, the excess template values are not used. If the time signature is 4/4, for example, the template values for beats 5 to 8 are meaningless. 
+The QY700 comes equipped with 100 preset templates, each corresponding to a different musical genre, such as swing, beat rock, and acid jazz. For a full template listing, refer to the QY700 Reference Listings (separately bound). 
+The QY700 also allows you to create your own, customized templates (called user templates). (-> p.84)
+You can use the Groove View page to view the preset templates, and to view or create our own user templates. (-> p.84) 
+
+[Setting values]
+--	No template 
+1 to 100 	Preset template 
+US 	User template 
+
+[Procedure]
+1. Move the cursor to the TEMPLATE line for the track you want to set. 
+2. Select the template icon using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+6. Quantizing value (Accessible only on user templates) 
+[Explanation]
+The quantizing value sets the interval between the quantizing lines. (If you select an eighth-note as the value, for example, then a quantizing line will exist at every eighth-note interval, with the first line at the very beginning of the measure). 
+Quantization is carried out by shifting note timing toward the nearest quantizing line. The STRENGTH parameter determines how strongly note-event timing is adjusted in this manner; again, see below. 
+The quantizing interval sets the scale of the groove-tem-plate grid (as viewable on the Groove View page). Each template provides separate adjustment values (such as gate-time and velocity adjustment values) for each interval. Refer also to page 88. 
+You can use the "Groove View" page to edit the quantizing value for the user template. Note that it is not possible to change the values for the 100 preset templates. 
+[Setting values]
+off 
+32nd 
+16th-triplet 
+16th 
+8th-triplet 
+8th 
+Quarter-triplet 
+Quarter note 
+16th and 16th triplet 
+8th and 8th-triplet 
+
+
+7. Strength 
+[Explanation]
+This value sets the degree by which performance events (note events) are pulled toward the nearest quantizing line. (For more information about quantizing lines, refer to page 88, and also to page 142.) 
+
+A setting of 100 percent produces the strongest quantizing, so that all notes are pulled directly onto the nearest line. A setting of 0 percent effectively switches off all quantizing. 
+[Setting values]
+000 percent to 100 percent 
+
+[Procedure]
+1. Move the cursor to the GROOVE TIMING line for the Original (recorded) data track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+8. Groove timing 
+[Explanation]
+This value sets the effectiveness of the groove template's CLOCK SHIFT settings. 
+The formula for the timing adjustment at each interval is as follows: 
+Adjusted timing  equal  original timing  plus  (CLOCK SHIFT times GROOVE TIMING). 
+A GROOVE TIMING value of 100 percent will therefore apply the template's clock shift value without change. A value of 200 percent will double the clock shift, while a setting of 0 percent will cancel it completely. 
+[Setting values]
+000 percent to 100 percent to 200 percent
+[Procedure]
+1. Move the cursor to the STRENGTH line for the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+9. Groove gate time 
+[Explanation]
+This value determines how strongly the groove template's "gate-time multiplier" (see Section 13 below) affects the note gate timing. 
+The formula for the applied gate-time adjustment at each interval is as follows: 
+
+Adjusted gate time  equal  original gate time times (100  plus  (gatetime multiplier minus 100) times GROOVE GATETIME). 
+If GROOVE GATETIME is 100 percent, the QY700 will adjust the note gate times for each interval exactly in accordance with the template's multiplier value for that interval. If GROOVE GATETIME is 0 percent, the original gate times will be reproduced without change. If GROOVE GATETIME is 200 percent, the original gate times will be adjusted by double the template's multiplier. 
+If the adjusted gate time is less than 1, the QY700 automatically uses a value of 1. 
+[Setting values]
+000 percent to 100 percent to 200 percent
+[Procedure]
+1. Move the cursor to the GROOVE GATETIME line for the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+10. Groove velocity 
+This value determines how strongly the groove template's interval-specific offset values (see section 14 below) affect the recorded note velocities. 
+The formula for the applied adjustment is as follows: 
+
+Adjusted velocity  equal  original velocity  plus  (template's velocity offset times GROOVE VELOCITY). 
+A GROOVE VELOCITY value of 100 percent will therefore apply the template's offset values without change. A value of 200 percent will applies twice the offset, while a setting of 0 percent leaves the original velocity unchanged. 
+If the adjusted velocity is less than 1, the QY700 automatically uses a velocity of 1. 
+If the adjusted velocity is greater than 127, the QY700 uses 127. 
+[Setting values]
+000 percent to 100 percent to 200 percent
+[Procedure]
+1. Move the cursor to the GROOVE VELOCITY line for the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+11. Grid
+[Explanation]
+The grid display shows the quantization timing scheme. The graphic area (with the diamonds and the lines) shows the quantization intervals, while the numerical values show the currently selected grid position (by measure, beat, and clock cycle). 
+
+The diamond-shaped figures along the top of the grid indicate the position of the quantizing lines. If the quantizing value is "eighth-note," then there will be 16 quantizing lines across the screen, each spaced one eighth-note apart. The first line will be at Measure 1, Beat 1; the second line (not drawn) will be halfway between Beat 1 and Beat 2; the third line will be directly on Beat 2; and so on. 
+All templates contain parameter values sufficient to cover eight beats (1:1 to 1:8). If the song's time signature selects less than eight beats per measure, the excess template values are not used. If the signature is 4/4, for example, the template values for beats 5 to 8 are meaningless. 
+The template parameters determine the adjustments carried out at each quantizing interval. The template may call for increased velocities and strong timing adjustments in the first interval, with decreased velocities and weaker adjustment in the second interval, and so on. You can use the grid to view the template's parameter values at each interval, so that you can see what the template is actually doing. 
+Note that it is not possible to edit the interval-specific parameters of the preset templates. But it is possible to set or edit these values on the user templates. 
+[Setting values]
+Interval-line positions: 1:1:000 to 1:8:420 
+
+
+12. Clock shift 
+[Explanation]
+The clock-shift value sets the number of cycles that notes are shifted after initial quantization is completed. In other words, the QY700 will first quantize the notes (pulling them toward the nearest quantizing line) in accordance with the STRENGTH setting. It will then shift the notes by the specified number of clock cycles, in accordance with the clock-shift setting. Note that the clock-shift value may be different for each quantizing interval. 
+If you are using a preset template, you will not be able to change these values (although you can view them). If you are using a user template, you can edit the values as described below. 
+[Setting values]
+The maximum clock shift displacement is equal to half the quantize interval in either direction. The range can be given as follows: 
+minus 1/2 times (interval time) to 000 to plus 1/2 times (interval time) 
+
+where "interval time" refers to the number of clock cycles between interval lines. Note that positive values shift notes toward the end of the song, while negative values shift them toward the beginning. 
+[Procedure]
+1. Move the cursor to the clock-shift setting (in the grid area) for the appropriate interval. 
+2. Adjust the value using the data dial, [Decrement] key/[Increment] key , or the numeric keypad. 
+
+13. Gate-time multiplier 
+[Explanation]
+This value adjusts the gate times for each interval. 
+If you are using a preset template, you can not change these values. If you are using a user template, you can edit the values as described below. 
+The multiplier is only one of the factors determining the final gate-time adjustment. Specifically, the gate time is adjusted by the combined action of the multiplier and the GROOVE GATETIME setting (see Section 9 above). 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+[Procedure]
+1. Move the cursor to the gate-time multiplier setting (in the grid area) for the appropriate interval. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+14. Velocity offset 
+[Explanation]
+This value applies offsets to the velocity values. Again, offsets can be different for each interval. 
+If you are using a preset template, you can not change these values. If you are using a user template, you can edit the values as described below. 
+This offset is only one of the factors determining the final velocity adjustment. Specifically, the velocity is adjusted by the combined action of the offset and the GROOVE VELOCITY setting (see Section 10 above). 
+[Setting values]
+minus 99 percent to ,00 percent to plus 99 percent 
+[Procedure]
+1. Move the cursor to the velocity-offset setting (in the grid area) for the appropriate interval. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+[F5](CopyTmp) Copy template 
+[Explanation]
+This function copies the currently selected groove template into the user template for a designated song or style. 
+You can set up one user template for each song, and one for each style. 
+The values in the window select the destination. 
+(Figure)
+Currently selected groove template 
+Copy 
+User template for selected destination 
+(song or style) 
+[Setting values]
+Destination: Song 01 to 20; Patt 01 to 64
+[Procedure]
+1. At the "Groove View" page, select 5 (CopyTmp). 
+The screen displays the Copy to User Template window. 
+2. Select the destination values (Song or Patt in the left box, and the appropriate number in the right box) using the data dial, [Decrement] key/[Increment] key, and numeric keypad. 
+
+
+Clock Shift, Gate Time, and Velocity 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F2] Clock Shift, Gate Time, and Velocity 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.84 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	1 to 32 	Selects track for editing. 
+2 Measure; beat 	001 to 999 	Sets location (measure) for start of song playback, and monitors current playback location. 	P.85 
+3 Voice program 	View only	Identifies the voice program, as selected under VOICE mode. 	P.85 
+4 THRU setting	none , T 	Sets the play effects ON or OFF for each track. 	P.85 
+15 Clock shift 	minus 999 to plus 999 	Shifts playback timing, in clock-cycle increments.	P.91 
+16 Gate-time modifier 	000 percent to 200 percent 	Gate-time modifier, used to adjust the original gate times. 	P.91 
+17 Velocity rate 	000 percent to 200 percent 	Velocity modifier, used to adjust the original velocity values. 	P.92 
+18 Velocity offset 	minus 99 to plus 99 	Offset value, applied to the original velocities. 	P.93 
+(Table end)
+
+[Explanation]
+You use this page to set the following play-effect parameters: clock shift, gate-time modifier, velocity rate, and velocity offset. 
+Settings are different for each track. Use of this feature therefore allows you to adjust note-event timing, gate times, and velocities separately for each track. 
+[Procedure]
+1. At the SONG PLAY screen, press 1 (PlayFx). 
+The QY700 enters the Play Effects submode. 
+2. Press 2 (Shf|GT|Vel). 
+The "Clock Shift, Gate Time, and Velocity" page appears. 
+3. Press [TRACK UP] or [TRACK DOWN] as necessary to select 
+the track whose values you want to set. 
+Note that the screen only has room to display 16 tracks (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing 6. 
+4. Move the cursor to the line corresponding to the parameter that you want to set. 
+5. Change the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+6. When you have finished making changes, press [EXIT]to return to the SONG PLAY screen. 
+[Supplementary comments] 
+You can change these parameter values even while song playback is in progress. 
+
+The first four parameters listed in the table above are identical to those on the "Groove Quantize" page, and are explained on pages 84 and 85. The remaining parameters are described below. 
+
+
+15. Clock shift 
+[Explanation]
+You use this parameter to shift the playback timing by a specified number of clock cycles. 
+On the QY700, one clock cycle is equivalent to 1/480 quarter note. 
+A negative value shifts the timing backward (toward the beginning of the song), while a positive value shifts the timing forward. A setting of  plus 480, for example, will effectively delay the playback timing by one beat. 
+For more information about clock usage, refer to page 131. 
+[Setting values]
+minus 999 to 000 to plus 999 
+[Procedure]
+1. Move the cursor to the CLOCK SHIFT line of the track you want to set. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+[Supplementary comments] 
+It is not possible to shift the playback timing backwards past the song's original start point. If you set the value to .300, for instance, all song data in the first 300 clock cycles of the recording will be shifted back exactly to the start point. 
+
+16. Gate-time modifier 
+[Explanation]
+This value adjusts the gate times of the notes on the track. Adjustment is made by multiplying the original gate time by the modifier value (percentage). 
+
+The gate time denotes the length of time that a note is held. For non-percussive voices, the gate time is equal to the actual playback time span.
+If you set this value to 100 percent, the original gate times will be used. Setting the value below 100 percent will lower the gate times, while higher values will increase them. 
+If an adjusted gate-time value is less than 1, the QY700 will use a value of 1. 
+
+[Setting values]
+000 percent to 100 percent to 200 percent
+[Procedure]
+1. Move the cursor to the GATETIME setting of the track you want to adjust.
+2. Set the value using the data dial, [Decrement] key/[Increment] key , or the numeric keypad.
+
+
+17. Velocity rate 
+[Explanation]
+You use this parameter to apply a proportional change to the track's original velocity values.  
+If you set this value to 100 percent, playback will be at the original velocities. If you set this value below 100 percent, velocities will be adjusted downward at playback. If you set the value above 100 percent, velocities will be adjusted upward. 
+
+[Setting values]
+000 percent to 100 percent to 200 percent
+[Procedure]
+1. Move the cursor to the VELOCITY RATE setting of the track you want to adjust.
+2. Set the value using the data dial,[Decrement] key/[Increment] key, or the numeric keypad.
+
+[Supplementary comments] 
+In electronic music applications, velocity indicates how forcefully a note is struck. (The term "velocity" is used because, in keyboard instruments, the force is determined by measuring the speed at which the key is depressed). Changing the velocity may affect both the loudness and the timbre, although the relationship varies according to the voice. 
+The VELOCITY RATE (described here) and the VELOCITY OFFSET (described below) work together to determine the actual adjustment applied to the track's velocities.The relation is as follows: 
+
+Playback velocity  equal  (original velocity times VELOCITY RATE)  plus  VELOCITY OFFSET. 
+
+If an adjusted velocity is less than 1, the QY700 automatically uses a velocity of 1. 
+If an adjusted velocity is greater than 127, the QY700 uses  127. 
+
+
+18. Velocity offset 
+[Explanation]
+You use this parameter to apply an offset to the track's rate-adjusted velocity values. Note that the offset is applied after the VELOCITY RATE adjustment described above. 
+Positive values increase the playback velocity, while negative values decrease it. 
+
+[Setting values]
+minus 99 to plus 00 to plus 99 
+[Procedure]
+1. Move the cursor to the VELOCITY OFFSET line of the track you want to set. 
+2. Set the value using the data dial, the [Decrement] key/[Increment]key, or the numeric keypad. 
+[Supplementary comments] 
+The VELOCITY OFFSET (described here) and the VELOCITY RATE (described above) work together to determine the actual adjustment applied to the track's velocities. The relation is: 
+
+Playback velocity  equal  (original velocity times VELOCITY RATE)  plus  VELOCITY OFFSET. 
+
+If an adjusted velocity is less than 1, the QY700 automatically uses a velocity of 1. 
+If an adjusted velocity is greater than 127, the QY700 uses 127. 
+
+
+
+Transposition 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F3] Transpose 
+[F4] Drum-Table Edit 
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.84 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	1 to 32 Selects track for editing. 
+2 Measure; beat 	001 to 999 	Sets location (measure) for start of song playback, and monitors current playback location. 	P.85 
+3 Voice program 	View only	Identifies the voice program, as selected under VOICE mode. 	P.85 
+4 THRU setting 	none, T 	Sets the play effects ON or OFF for each track. 	P.85 
+19 Drum table 	-- ( equal none),1 to 8 	Selects the drum table. 	P.95 
+20 Transposition 	minus 99 to plus 99 	Sets track transposition, in semitone increments. 	P.95 
+(Table End)
+
+[Explanation]
+You use this page to select the drum table and transposition used for track playback. 
+You can access and edit the drum-table data by pressing [F4] (DrTabEdit). 
+[Procedure]
+1. At the SONG PLAY screen, press 4 (PlayFx). 
+The QY700 enters the Play Effects submode. 
+2. Press [F3] (Transpose). 
+The Transpose page appears. 
+3. Press [TRACK UP] [TRACK DOWN]or d as necessary to select the track you want to work on. 
+The screen can only display 16 tracks at one time (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing [F6]. 
+4. Move the cursor to the appropriate parameter setting for the track you want to adjust. 
+5. Change the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+6. If you wish to view or edit the drum-table values, press [F4] (DrTabEdit). 
+7. When you have finished making changes, press the [EXIT] to return to the SONG PLAY screen. 
+
+[Supplementary comments] 
+You can change these parameter values even while song playback is in progress. 
+
+The first four parameters listed in the table above are identical to those on the "Groove Quantize" page, and are explained on pages 84 and 85. The remaining parameters are described below. 
+
+
+19. Drum table
+[Explanation] 
+Drum tables are required to handle sequence data produced by drum machines that are not XG or GM compatible. As these machines may use different numbering arrangements to identify the various rhythm instruments, it becomes necessary to make appropriate substitutions when playing back the recorded data. Failure to make these substitutions will cause the "wrong" instruments to be produced. 
+Each drum table therefore contains a list of rhythm-instrument substitutions. You can select the table separately for each track. 
+The QY700 provides eight different tables. To view or edit the contents of a drum table you must press [F4] (DrTabEdit) to move into the Drum-Table Edit page (-> 
+p.98). 
+[Setting values]
+-- ( equal none),1 to 8 
+[Procedure]
+1. Move the cursor to the DR TABLE setting for the appropriate track. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+2 
+
+
+20. Transposition 
+[Explanation]
+You can use this feature to change the key (alter the pitch) of any track. You can set transposition separately for each track. 
+Transposition is in semitone increments. Setting the value to  plus 12, therefore, will raise the pitch of all notes on the track by exactly one octave. A setting of minus 12 would drop the pitch by exactly one octave. 
+[Setting values]
+minus 99 to  plus 99 
+[Procedure]
+1. Move the cursor to the TRANSPOSE setting for the track you want to transpose. 
+2. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+
+Drum Table Edit 
+
+[SONG] SONG PLAY 
+[F1] Play Effects 
+[F3] Transpose 
+[F4] Drum-Table Edit 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Track number 	View only 	Shows track number. 	P.84 
+Track name 	View only 	Shows name of selected track. 
+Keyboard track 	1 to 32 	Selects track for editing. 
+2 Measure 	001 to 999 	Sets location (measure) for start of song playback, and monitors current playback location. 	P.85 
+Beat 	View only  
+3 Voice program 	View only	Identifies the voice program, as selected under VOICE mode. 	P.85 
+4 THRU setting 	none, T 	Sets the play effects ON or OFF for each track. 	P.85 
+19 Drum table 	-- ( equal none),1 to 8 	Selects the drum table. 	P.95 
+21 Replacement list 		List of drum-voice replacements. 	P.98 
+22 Velocity rate 	000 percent to 100 percent to 200 percent 	Adjusts the velocity of the replacement voice. This parameter allows you to correct for volume imbalance that may be caused by the replacement. 	P.98 
+(Table End)
+
+[Explanation]
+You use this page to edit the selected drum table. This feature is useful when you need to set the QY700 to replay rhythm-instrument data generated by a machine that was not compatible with the XG or GM protocol. 
+You can use the Velocity Rate parameter to adjust the loudness balance. 
+[Procedure]
+1. At the SONG PLAY screen, press 1 (PlayFx). 
+The QY700 enters the Play Effects submode. 
+2. Press [F3] (Transpose). 
+The Transpose page appears. 
+3. Press [F4] (DrTabEdit). 
+The Drum-Table Edit page appears. 
+4. Press [TRACK UP] or [TRACK DOWN] as necessary to select the appropriate track. 
+The screen can only display 16 tracks at one time (tracks 1 to 16, or tracks 17 to 32). You can toggle between these two groupings by pressing [F6]. 
+5. With the cursor on the DR TABLE line, select the desired drum table. 
+6. Move the cursor to the list entry or Velocity Rate value that you want to set. 
+7. Set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+8. When you have finished making changes, press the [EXIT] to return to the Transpose screen. 
+
+[Supplementary comments] 
+You can change these parameter values even while song playback is in progress. 
+
+The first five parameters listed in the table above (numbered 1, 2, 3, 4, and 19) are identical to those on the "Transpose" page; see page 94. The remaining parameters are described below. 
+
+
+21. Replacement List 
+[Explanation]
+This list sets up the rhythm-instrument replacements. 
+If this drum table is selected for a track during replay, the QY700 will replace any rhythm instrument designated in the From column (when encountered in the performance data for that track) with the instrument named in the corresponding To line. 
+A "No" entry in the From column actually means "All but". A "No Snares" entry, for example, instructs the QY700 to substitute the to instrument for all voices other than snare voices. 
+An "All" specification in the From column (for example, "All Shakers") tells the QY700 to replace all instruments of the specified type with the item named in the To entry. 
+If different lines contain contradictory specifications, the lower line is effective. 
+[Setting values]
+[From] 
+No Shakers, No Congas&Bongos, No Crash Sym., No Ride Sym., No Hi-Hat, No Tom, No Brush Snare, No Kick, No Snare, All Shakers, Congas&Bongos, All Crash Sym., All Ride Sym., All Hi-Hat, All Tom, All Brush Snare, All kick, All Snare, All drum Kit, All Perc., C5 Bell Tree  to  C sharp 1 Surdo Mute 
+[To] 
+C5 Bell Tree to  C sharp 1 Surdo Mute 
+
+[Procedure]
+1. Move the cursor to the parameter you want to set (From entry, To entry, or Velocity Rate). 
+2. Set the value using the data dial, the [Decrement] key or [Increment] key, or the numeric keypad. 
+3. When you have finished making changes, press the [EXIT] to return to the Transpose screen. 
+
+
+22. Velocity rate 
+[Explanation]
+This Velocity Rate parameter adjusts the velocity of the re-placement rhythm instrument (the instrument named in the To column). 
+To calculate the adjusted velocity, the QY700 multiplies the original velocity value by the Velocity Rate value. A Velocity Rate of 100 percent produces no adjustment, while larger values increase the velocity and lower values reduce it. 
+This parameter allows you to adjust for loudness imbalances that may occur when you replace one instrument with another. 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+[Procedure]
+1. Move the cursor to the Velocity Rate icon for the list entry you want to adjust. 
+2. Set the value using the data dial, the [Decrement] key or [Increment] key, or the numeric keypad. 
+
+[F1] (Clear) 
+[Explanation]
+Press [F1](Clear) to delete the entry on the selected line of the table. 
+If you press [F1] while the cursor is in the From column, the QY700 will delete both the From and the To entries for that line. 
+If you press 1 while the cursor is in the To column, only the To item will be deleted. (If the To entry is left blank, the "From" instrument will be muted.) 
+[Procedure]
+1. Move the cursor to the appropriate entry. 
+2. Press 1 (Clear). 
+
+[F2] (Default) 
+[Explanation]
+Press 2 (Default) to reset the drum table to its default values. All of the From, To, and Velocity Rate settings will return to their defaults. 
+[Procedure]
+Press 2 (Default). 
+The table resets to its defaults. 
+
+
+This is the end of the file.

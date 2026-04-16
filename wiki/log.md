@@ -2,6 +2,294 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-25d | Dense drum encoding elimination, tempo GT verification
+
+### Tempo GT Verification
+- Executed `verify_summer_tempo.py` against captured MIDI timing
+- **RHY1 inter-note interval = 0.250s** = exactly one 8th note at 120 BPM
+- **CHD1 at 120 BPM**: avg deviation from 8th grid = **1.5ms** (near-perfect alignment)
+- **Conclusion**: GT capture plays at 120 BPM (external clock default), NOT at 155 BPM (internal)
+- This is expected: QY70 in MIDI SYNC=External follows the clock rate, not internal tempo
+
+### Dense Drum Encoding: Comprehensive Model Elimination
+Exhaustive computational analysis of Summer RHY1 (4 events/bar, 12 hits/bar GT):
+
+1. **All cumulative R models fail** (tested mult=1-55, global/per-bar/offset):
+   - Best global: mult=11, 4/20 hits (20%)
+   - Best per-bar: mult=9, 5/20 hits (25%)
+   - No multiplier exceeds chance level
+
+2. **Header-derived R fails**: no formula R=f(header_field[k], event_idx) gives 4/4 per bar
+
+3. **Structural impossibility**: note 38 (snare) UNREACHABLE from Seg 2 events at ANY R (0-55)
+   - F0[6:0] cannot equal 38 for any rotation of the 56-bit values
+   - Yet GT confirms snare plays in every bar (beats 1.0 and 3.0)
+
+4. **8×7-bit beat-pattern model**: moderate correlation (max 0.979) but wrong absolute values
+   - Shape preserved (ranking of velocities matches GT), magnitudes unrelated
+   - Best correlation requires different R per bar AND per instrument
+
+5. **Instrument reordering**: "stable core" bytes (`ae8d81` = snare) move between event slots
+   - Em bar (Seg 3): snare core appears in e3 slot instead of e1
+   - Core bytes identify similar events across bars but don't predict decode success
+
+6. **XOR between working bars**: applying Seg1⊕Seg4 key to Seg2 doesn't make note 38 reachable
+
+### Key Conclusions
+- **Barrel rotation model is WRONG for dense patterns** — not a matter of finding correct R
+- Three encoding regimes confirmed: sparse user (proven), dense user (unsolved), factory style (unsolved)
+- **Simple hardware test patterns are the only path forward** — computational analysis exhausted
+
+### Files Created
+- `midi_tools/verify_summer_tempo.py` — multi-BPM GT timing verification
+- `midi_tools/analyze_summer_seg_failure.py` — per-segment note reachability analysis
+- `midi_tools/analyze_summer_beat_pattern.py` — 8×7-bit beat-pattern hypothesis test
+- `midi_tools/analyze_summer_cumulative_r.py` — 7 rotation model variants + XOR + stable core
+
+### Wiki Updates
+- `wiki/2543-encoding.md` — instrument lane model rewritten with elimination table, structural impossibility
+- `wiki/open-questions.md` — updated with Session 25d progress
+- `wiki/header-section.md` — tempo confirmed (previous session)
+- `wiki/log.md` — this entry
+
+## [2026-04-16] session-25c | Header track deep analysis, chord transposition solver
+
+### Header Track (AL=0x7F) Structure Discovery
+- **640 bytes**, 5 SysEx messages, ~76% constant across all patterns
+- **Byte 0x000**: format type marker (`0x03`=user pattern, `0x4C`=loaded style, `0x2C`=empty)
+- **Byte 0x004**: section index (0=MAIN-A, 1=MAIN-B) — CONFIRMED
+- **0x046-0x07C**: per-track data configuration
+  - `0x048-0x04B`: [48,32,20,12] correlate with track sizes/8 (RHY1=384/8=48✓, CHD1=256/8=32✓)
+- **Walking zero pattern** `BF DF EF F7 FB FD FE`: empty/unused marker (27% of header)
+  - Each byte has ONE bit clear (bit 6→bit 0), 7 zero bits in 56-bit value
+- **Structural marker** `40 10 88 04 02 01 00`: empty track slot (5-8 occurrences per file)
+- **Universal constant** `64 19 8C C6 23 11 C8` at 0x1A2-0x1AF: present in ALL 4 test files
+
+### Cross-File Header Comparison (4 files)
+- Summer, MR. Vain, GT_style, GT_A compared
+- ~100-113 bytes differ between any pair (~16%)
+- GT_A (empty pattern) has all-zero variable positions → clean baseline
+- MR_Vain and GT_style share global config (0x006-0x00D) except 1 byte
+- Summer has completely different global config (user-created pattern)
+
+### Chord Transposition Solver (8 approaches, all FAILED)
+Exhaustive combinatorial search on CHD1 header fields vs GT chord notes:
+1. Single field + offset → NO match
+2. Field pair operations (add, sub, XOR, avg, mod128) → NO match  
+3. Root extraction (pitch class, MIDI note, bass note) → NO match
+4. Field differences as intervals → sporadic matches, no consistency
+5. Header as lookup key → all 11 fields change, no obvious structure
+6. Raw header byte search → no GT notes found in bytes
+7. Nibble extraction → coincidental match only (F#4 in bar 3)
+8. Changing field pattern with scale factors → NO root diff correlation
+
+### Key Structural Finding: Shared Fields Between Tracks
+- **F0, F5**: ALWAYS identical between CHD1 and PHR1 for same bar
+  - F0: bar 0=429, bars 1-3=53 (constant after init bar!)
+  - F5: bar 0=84, bars 1-2=77 (changes at bar 3)
+- **F1, F6, F10**: shared for bars 1-3, different in bar 0
+- **F3, F4, F8, F9**: different between tracks AND between bars → per-track pattern data
+- Raw header bytes: bars 1-2 share 9/13 bytes (only 4 bytes encode C major→E minor difference)
+
+### Tempo Formula CONFIRMED
+- Initial search for 110 BPM (assumed Summer tempo) found nothing
+- **CORRECTION**: Summer is actually **155 BPM** (not 110!) — wrong assumption was the blocker
+- Formula `BPM = msg.data[0] × 95 - 133 + msg.data[1]` from raw SysEx payload: **VERIFIED**
+  - MR. Vain: data[0]=2, data[1]=76 → **133 BPM** ✓ (Culture Beat confirmed)
+  - Summer: data[0]=3, data[1]=3 → **155 BPM**
+  - GT_style: data[0]=2, data[1]=76 → 133 BPM
+  - GT_A (empty): data[0]=2, data[1]=44 → 101 BPM
+- data[0] serves dual purpose: 7-bit encoding group header AND tempo range selector
+
+### Files Created
+- `midi_tools/analyze_summer_header_track.py` — full hex dump, byte distribution, pattern search
+- `midi_tools/analyze_header_deep.py` — walking zero analysis, active regions, cross-file comparison
+- `midi_tools/analyze_header_diff.py` — 4-file byte-by-byte diff, variable/constant classification
+- `midi_tools/analyze_header_tempo_chord.py` — focused tempo and chord root search
+- `midi_tools/solve_chord_transposition.py` — 8-approach combinatorial chord formula solver
+
+## [2026-04-16] session-25b | Dense encoding deep analysis, groove template discovery
+
+### Ground Truth Capture SUCCESS
+- Summer MIDI playback captured via `capture_playback.py`: **395 notes** across 4 channels
+  - RHY1 (ch9): 156 notes — 3 instruments: HH(42)×~8/bar, Snare(38)×2/bar, Kick(36)×2/bar
+  - BASS (ch12): 100 notes
+  - CHD1 (ch13): 39 notes
+  - PHR1 (ch15): 100 notes
+- Pattern repeats with period 4 (13 bars = 3 repeats + partial)
+- PATT OUT=9~16 required (physically set on QY70)
+
+### Instrument Lane Model (Partially Confirmed)
+- Summer RHY1: **6 segments** after init, each with 4 events (except seg 5: 16 events with 8 padding `bfdfeff7fbfdfe`)
+- **Fixed per-position R values** [R=9, R=22, R=12, R=53] decode correctly for segs 3,4 (4/4 instruments)
+- Segs 0,1: 3/4 correct (one event fails per bar)
+- **Segs 2,5: 0/4 correct** — completely different encoding or structure
+- Seg 2 e0: NO R value (0-55) gives target notes 36/38/42 — fundamentally different data
+- **Cumulative R=9×(i+1) FAILS on Summer** (1/4 per bar) — lane model is better but not universal
+
+### GROOVE TEMPLATE Discovery (Major Finding)
+- **Per-beat velocities are NOT stored in the RHY1 track data**
+- GT HH velocities (112-127) NOT found anywhere in 384 bytes, even with ±2 tolerance
+- known_pattern: velocities are exact vel_code×8 multiples (127, 119, 95) → no groove
+- Summer: velocities deviate ±5-15 from quantized levels → groove template active
+- **Conclusion**: QY70 playback engine applies groove quantization on top of stored coarse vel_code
+- Bitstream stores: note, beat pattern, coarse velocity (4-bit), gate time
+- Fine velocity variation = runtime groove template, NOT in bitstream
+
+### Velocity Decomposition Attempts (All Failed)
+- 8×7-bit (56 bits = 8 velocities): No correlation with GT (sum diffs 400+)
+- Inverted/shifted: No consistent mapping
+- F1-F4 as beat-pairs: No match
+- Header fields as velocity source: All values outside GT range (112-127)
+- Derotated bytes as velocities: No matches even with tolerance
+
+### Segment Structure Details
+- Track-level header: 24 bytes metadata + 4 bytes preamble
+- Init segment: 14 bytes (13B header + 1B trailing 0xF4)
+- Normal bars: 41-43 bytes (13B header + 28B events + 0-2B trailing)
+- Seg 5 (fill?): 127 bytes (13B header + 114B = 16×7B events + 2B trailing)
+- Trailing bytes: `1e20`, `1e40` in normal bars; `bfc0` in fill
+
+### Cross-Bar Event Similarity
+- e0 position: 2-7 bits differ between bars (stable = HH)
+- e2 position: 2-5 bits differ (stable = HH2?)
+- e1, e3 positions: 5-25 bits differ (more variable = Snare/Kick)
+- Segs 0≈3, 1≈4 (paired structure), segs 2≈5 (different type)
+
+### Multi-Track GT Validation
+- **CHD1 (preamble 2D2B, ch13)**: 39 GT notes → chord progression **G - C - Em - D**
+  - Bar 0: G4+B4+D5 = G major, Bar 1: G4+C5+E5 = C major
+  - Bar 2: E4+G4+B4 = Em, Bar 3: D4+F#4+A4 = D major
+  - Decoder header notes WRONG (A2/F0/F#3 vs G/B/D) → transposition layer unresolved
+- **PHR1 (preamble 303B, ch15)**: 100 GT notes → same chords ARPEGGIATED (8 notes/bar, all vel=127)
+- **BASS auto-generated**: NO BASS track in SysEx (AL=0x02 absent) but ch12 has 100 notes
+  - Plays chord roots: G1(31), C2(36), E1(28), D1(26) matching G-C-Em-D progression
+  - Implies QY70 auto-generates bass from chord track data
+- **CHD2/PAD**: data in SysEx but 0 GT notes → muted or different channel mapping
+- **Groove template ONLY on drums**: chord/phrase tracks all vel=127 (no variation)
+
+### QY70→QY700 Converter Audit
+- All 3 safety fixes confirmed in place
+- Voice writes to 0x1E6/0x1F6/0x206 disabled
+- Pan bounds check correct, post-conversion validation active
+
+## [2026-04-16] session-25 | Decoder verification, Summer analysis, converter audit
+
+### Decoder Verification
+- **decode_drum_event() on known_pattern: 7/7 CONFIRMED** — all fields (note, velocity, tick, gate) match perfectly
+- Previous session's reported failure was an invocation error (wrong indices), not a decoder bug
+- R=9×(i+1) cumulative rotation remains PROVEN correct for sparse user patterns
+
+### Blockers Resolved
+- PATT OUT enabled physically on QY70 → capture now works
+- Summer playback capture completed (see session-25b above)
+
+## [2026-04-16] session-24 | Q7P event format decoded, QY700→QY70 converter built
+
+### Q7P 5120-byte Event Format — FULLY DECODED
+- **D0 [vel] [GM_note] [gate]** = 4-byte drum note (GM standard numbering!)
+- **E0 [gate] [param] [GM_note] [vel]** = 5-byte melody note (NOT 4 bytes as previously assumed)
+- **C1 [note] [vel]** = 3-byte short/arpeggio note
+- **Delta time: A(n) dd = (n-0xA0)×128+dd ticks** at ppqn=480
+- **BA/BB [value]** = control events with small delta timing
+- Chord patterns have no delta events — groups separated by BE (note off)
+- Verified on DECAY.Q7P: all drum notes map to correct GM instruments (BD1=36, HH=42/46, Toms=41/47/48, SideStick=37)
+- Melody notes confirmed: piano pad = C major (48,52,55) → F major (48,53,57), bass = C2/F2
+
+### QY700→QY70 Converter Built
+- `midi_tools/q7p_to_midi.py` — Q7P → standard MIDI file (all 12 phrases, correct timing)
+- `midi_tools/q7p_playback.py` — real-time MIDI playback through any connected synth
+- `midi_tools/convert_decay.py` — DECAY-specific conversion pipeline (MIDI + QY70 SysEx)
+- `qymanager/converters/qy700_to_qy70.py` — fixed: no longer sends incompatible Q7P events to QY70
+- Output: DECAY.mid (1906B, 12 tracks) + DECAY_qy70.syx (2072B, 8 tracks with voice headers)
+
+### DECAY Musical Analysis
+- 12 phrases: tom, piano pad, bass, rim, hi hats, dream bells, deepnoisetim, kick, piano tik, guitarpaddy, bells, brum noise
+- Chord progression: C major → F major (2 chords over 4 bars)
+- 120 BPM, 4/4 time
+- Mapped to QY70 tracks: RHY1=kick, RHY2=hihats, BASS=bass, CHD1=piano pad, CHD2=guitar, PAD=dream bells, PHR1=piano tik, PHR2=bells
+
+### Wiki Updates
+- Updated [q7p-format.md](q7p-format.md) with complete 5120-byte event format documentation
+- Added delta time formula, verified note mapping table, chord pattern structure
+
+## [2026-04-16] session-23 | QY700 MIDI protocol, Q7P analysis, QY70 dump structure
+
+### QY700 MIDI Connection
+- Connected QY700 via USB Midi Cable (IN-A/OUT-A)
+- **Computer → QY700 works**: note on ch1 heard on QY700
+- **QY700 → Computer not yet working**: zero data received (even MIDI Clock), cable issue or MIDI Control Out=Off
+- Identity Request: no response yet (return path needed)
+
+### QY700 Protocol from PDF (QY700_REFERENCE_LISTING.pdf)
+- **Model ID = `4C` (XG)**, NOT `5F` like QY70
+- Identity Reply: `F0 7E 0n 06 02 43 00 41 01 19 00 00 00 01 F7`
+- Dump Request: `F0 43 2n 4C AH AM AL F7`
+- Parameter Change: `F0 43 1n 4C AH AM AL dd F7`
+- Section Control: `F0 43 7E 00 ss dd F7` (can trigger pattern sections!)
+- Created wiki page: [qy700-midi-protocol.md](qy700-midi-protocol.md)
+
+### QY70 Real Dumps Analyzed (data/qy70_sysx/)
+- **"A" dump** (9713B, 65 msgs): ALL dump with 4 patterns + voice data
+  - AM=0x00-0x03: 4 saved pattern slots
+  - AH=0x01: voice/system data (6 msgs, 882B)
+  - AH=0x03: unknown (1 msg, 37B)
+- **"P" dumps** (MR.Vain, Summer): single patterns from edit buffer (AM=0x7E)
+- **Section encoding in AL**: section_index × 8 + track_index
+  - Summer uses AL=0x00-0x06 (Main A), MR.Vain uses AL=0x08-0x0E (Main B)
+- **Empty tracks omitted**: only tracks with data appear in dump
+
+### Q7P File Format (Confidence: High)
+- **Magic header**: `YQ7PAT     V1.00` (all 7 files confirmed)
+- **Variable sizes**: 3072, 4096, 4608, 5120, 5632, 6144 bytes
+- **Section pointers at 0x100**: 16-bit BE, 0xFEFE = inactive
+- **TXX vs VUOTO diff**: only 102 bytes differ (section pointers, phrase data, track config)
+- Name/tempo at fixed offset from end for some files, but not consistent across all sizes
+- Track/phrase names embedded as ASCII strings in phrase data area
+
+### New Data Available
+- 7 Q7P files from QY700 floppy (VUOTO, TR4, SUMMEROG, WINDY, DECAY, PHONE, SGT)
+- 3 QY70 SysEx dumps (A=all, P=MR.Vain, P=Summer)
+- QY700 Reference Listing PDF (voice list, MIDI protocol, implementation chart)
+
+## [2026-04-16] session-22 | Pipeline B end-to-end funzionante, drum output confermato
+
+### Pipeline B fix e prima cattura completa
+- **Bug fix critico**: `mi.ignore_types(timing=False)` catturava gli echo del MIDI Clock (0xF8), mascherando le note reali. Fix: `timing=True`.
+- **SysEx timing conservativo**: Secondo esemplare QY70 richiede 1s init / 300ms tra messaggi (vs 500ms/150ms del primo).
+- **Cattura riuscita**: 851 note_on + 851 note_off, 6 canali, 20s a 151 BPM
+- **Quantizzazione**: 322 note su 6 tracce, 6 battute — consistente con vecchia cattura (ratio 1.5:1 per durata diversa)
+- **Output generati**: SMF (10.1s, 7 tracce), Q7P (3072B metadata), D0/E0 phrases (1746B)
+
+### DRUM OUTPUT FUNZIONA (corregge finding Session 17)
+- Ch9 (RHY1): 455 note_on raw → 161 quantizzate
+- Ch10 (RHY2): 114 note_on raw → 47 quantizzate
+- Il finding Session 17 "drums don't output via PATT OUT" era **FALSO** — causato dal clock echo che mascherava le note, non da mancata emissione.
+
+### Script migliorati
+- `auto_capture_pipeline.py`: fix timing bug, fix `args` globale, aggiunto `--skip-send`, diagnostica per-canale, abort se 0 note
+- Default SysEx timing portato a 1s/300ms per compatibilità con entrambe le unità QY70
+
+### SCOPERTA CRITICA: Init Handshake per Dump Request
+Il QY70 **richiede un Init message** (`F0 43 10 5F 00 00 00 01 F7`) prima di rispondere alle Dump Request. Senza Init: silenzio totale. Con Init: dump completo e immediato.
+- Protocollo: Init → 500ms → Dump Request(s) → Close
+- Testato: 115 messaggi SysEx, 18170 bytes (tutti 8 track + header)
+- **Tutte le sessioni precedenti (1-21) avevano erroneamente concluso "non supportato"**
+- Anche XG Parameter Request funziona (`F0 43 30 4C 08 pp xx F7`) senza handshake
+
+### Anche scoperto: XG Parameter Request
+- `F0 43 30 4C 08 pp xx F7` → risposta immediata con parametro XG
+- Dà accesso a voci, volume, pan, effetti del tone generator
+- Ma NON ai dati pattern interni (per quelli serve il Bulk Dump)
+
+### Wiki Changes
+- Aggiornato [conversion-roadmap.md](conversion-roadmap.md): drum capture non più bloccato
+- Corretto finding drum PATT OUT
+- Aggiornato tutti i docs con Init handshake
+- Aggiornato README.md con sezione MIDI completa
+
+---
+
 ## [2026-04-15] session-21 | Pipeline B: Capture → Quantize → SMF + Q7P + D0/E0
 
 ### Capture Quantizer (`quantizer.py`)

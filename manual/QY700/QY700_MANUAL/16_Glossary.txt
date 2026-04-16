@@ -1,0 +1,300 @@
+4. Glossary 
+A 
+Aftertouch: 
+MIDI messages which are transmitted when additional pressure is applied to the keyboard after notes are played. 
+Attack time: 
+The time over which the volume rises from 0 when a note is played until the maximum volume is reached. AWM2 tone generation: 
+A method of generating sound developed by Yamaha which is based on digitally recorded waveforms. Since it generates the complex waveform of actual acoustic instruments, it provides extremely realistic sounds. Digital filtering is also built-in, allowing precise control over the tone. AWM2 is an acronym for Advanced Wave Memory 2. 
+
+B 
+Bank number: 
+A number which selects a variation voice from an XG extension bank, relative to the voice selected by the Program Number from the 128 voices of the XG basic bank (GM system level 1) 
+Beat: 
+When playing back or recording a song, one "beat" (a rhythmic subdivision of a measure). 
+Beat graph: 
+When using step recording on the QY700 to input notes, a graphic display that indicates the input location. 
+Brilliance: 
+A control or parameter that regulates the brightness of the tone. The cutoff frequency of the QY700's filters can be controlled to adjust the brilliance. 
+Bulk data: 
+A type of System Exclusive message which contains a collection of data for the internal settings of a device. 
+Bus line: 
+A route (line) that carries audio signals from each part or block. The bus lines of the QY700 include "SendVar -> Cho," "SendVar R Rev" and "SendCho -> Rev," and the stereo bus line that collects the stereo output of each block. 
+Bypass: 
+An alternative to the usual route. When the QY700's effects are used with a setting of Variation Mode  equal  System, "bypass" refers to the bus line that allows the outputs of the chorus and variation effects to be re-input into a different effect. 
+C
+Channel: 
+The means by which the receiver receives only those MIDI messages that are sent from the specified transmitter. 
+Chord conversion table: 
+The section which contains data that specifies how the 12 types of Chord Root x 28 types of Chord Type will modify the notes in the scale. 
+Chord root: 
+An alphabetical letter which indicates the root of a chord. The QY700 lets you specify 12 different chord roots. 
+Chord track:
+A track that lets you record and playback Chord Roots and Chord Types. 
+Chord type: 
+A symbolic or numerical indication of how a chord is composed. The QY700 allows you to select from 28 chord types. 
+Chorus: 
+A type of effect that adds richness and depth to the sound, similar to what happens when multiple sound sources are heard simultaneously. 
+Click: 
+A metronome that is sounded when playing back or recording on a sequencer. 
+Clock: 
+A unit of timing resolution. On the QY700, one clock is a length of 1/480th of a quarter note. 
+Control change: 
+A group of MIDI messages that are output when a controller (modulation wheel, foot controller etc.) s operated. Each controller has its own control number. 
+Cutoff frequency: 
+Filters work by allowing the portion of the signal lower than a given frequency to pass, and cutting the portion of the signal above that frequency. This frequency is referred to as the cutoff frequency. 
+D 
+Decay time: 
+The time from when the maximum volume of a note is reached until it falls to the sustain level. 
+Delay: 
+An effect (or device) that delays an audio signal. The QY700's Variation effect allows a delay to be applied. 
+Depth: 
+The amount or degree of a setting or effect. 
+Dry sound: 
+The audio signal that is not processed by an effect. Normally when using an effect, not all of the audio signal is passed through the effect. Rather, the degree of the effect is adjusted by mixing the sound that passes through the effect (the wet sound) with the sound that bypasses the effect (the dry sound). 
+Dump out: 
+The process of transmitting bulk data as MIDI System Exclusive messages. 
+
+E 
+Echo back:
+ The action or process in which data received at the MIDI IN connector is re-transmitted from the MIDI OUT connector. 
+Edit: 
+The action of modifying or editing data. 
+Effect: 
+A block (device) that processes the sound to add various effects. The QY700 provides two system effects (reverb and chorus), and one effect (variation) which can be used either as a system effect or as insertion effect. 
+Element: 
+A block within the AWM2 tone generator that generates a sound. The voices of the QY700 consist of 1 to 2 elements. 
+Envelope Generator (EG): 
+A block that modifies the level of the tone generator from the moment that a note is played until the sound decays to silence. The AEG controls the volume, the PEG controls the pitch, and the FEG controls the filter. 
+ESEQ: 
+A sequence data file format developed by Yamaha. ESEQ-compatible products can exchange sequence data via floppy disk. 
+(Disks commercially available for Clavinovas and piano players are exceptions.) 
+Event: 
+A single piece (such as Note On/Off or Program Change messages) of the data which makes up a sequence. 
+Exclusive: 
+See the entry for System Exclusive. 
+Expression: 
+A MIDI control change message used to control the volume of a part. 
+
+F 
+Filter: 
+A block which modifies the tone by cutting the output of a specific frequency portion of the sound. The QY700 has low pass filters for each element of a voice, allowing the tone to be made more mellow by cutting the higher overtones, or brighter by allowing them to pass. 
+Fingered chord: 
+A function that automatically detects chords based on the combination of notes that are played on the keyboard, and converts the playback of patterns or phrases to the chords that are detected. 
+Floppy disk: 
+A type of data storage media, available in varieties such as 2DD and 2HD. In order for a device to be able to write and read data to/from a floppy disk, the disk must be formatted appropriately for that device. 
+Foot controller: 
+A control device that can be used to control tone, volume or effects etc. during a performance. 
+Formatting: 
+The action of initializing a floppy disk so that it can be used by a specific device. 
+
+G 
+Gate time: 
+The length of time that a note actually sounds. 
+GM: 
+A specification approved by the MIDI Standards Committee, standardizing 
+the basic functionality of a tone generator, and defining the number of voices and sounds, etc. 
+
+H 
+Hexadecimal: 
+A system of numbering based on 16, in which the digits increment in units of n-th powers of 16. The alphabetical characters A to F are used to express the numbers 10 to 15. 
+
+I 
+IBM-PC/AT series: 
+This is a type of personal computer manufactured and sold by the International Business Machine Corporation. Compatible computers are manufactured and sold by many companies. 
+Insertion (effect): 
+An effect used in Voice mode as a major factor in the character of a sound. In Song mode, an insertion effect will apply only to the specified part (unlike a system effect), meaning that you can use the insertion effect "aggressively." 
+Instrument: 
+One of the individual instruments such as snare or bass drum that makes up a drum voice. In a drum voice, a different instrument is assigned to each note of the keyboard. 
+Instrument category: 
+A classification of voice by type of instrument or playing technique. 
+Interval time: 
+A delay time that is inserted at regular intervals when transmitting bulk data that was recorded in a sequence track. 
+
+L 
+Length: 
+On the QY700 this indicates the number of measures in the selected phrase. 
+LFO: 
+An acronym for Low Frequency Oscillator, a block that produces a signal at a low frequency. The signal from the LFO can be used to modulate pitch, volume or tone to produce effects such as vibrato, tremolo and wah. 
+Load: 
+The process of reading data from floppy disk into internal memory. 
+Location: 
+The place within a song at which notes will be input or playback will be started, indicated as measure, beat, and clock. 
+Low pass filter: 
+A type of filter which cuts the high frequencies. The sound can be brightened by raising the cutoff frequency of the filter, or darkened by lowering it. 
+LSB: 
+An acronym for Least Significant Byte, referring to the lower byte of data when MIDI control change data is divided into two bytes for transmission. 
+
+M 
+Master tune: 
+A parameter that adjust the overall tuning of the entire device. 
+Maximum polyphony: 
+The maximum number of notes that can be played at once. The QY700 can produce 32 simultaneous notes (counted in 1-element units). If MIDI messages are received requesting more notes than the maximum polyphony allows, currently sounding notes will be turned off, and the later-received notes will be 
+played. 
+MDF2: 
+The product name of a MIDI data filter. This device receives data for the internal settings of a MIDI device in the form of System Exclusive messages, and stores them to floppy disk. 
+Measure: 
+A unit of musical duration consisting of several beats. 
+MIDI: 
+An acronym for Musical Instruments Digital Interface, a standard for transferring data between musical instruments. Most electronic musical instruments today implement the MIDI specification and provide MIDI connectors. Such instruments can be connected together to create remote performance or automatic performance systems. 
+MIDI data filer: 
+A MIDI device that receives data for the internal settings of a MIDI device in the form of System Exclusive messages, and stores them to floppy disk. An example is the Yamaha MDF2 MIDI data filer. 
+Mixer: 
+On the QY700, the display page in which you can make settings such as voice, pan, effect and volume etc. for the voice of each part, when recording or playing back. 
+Modulation wheel: 
+A controller that can be used to smoothly modify the volume, tone or pitch while you perform. 
+MSB: An acronym for Most Significant Byte, referring to the upper byte of data when MIDI control change data is divided into two bytes for transmission. 
+Multi-timbral tone generator: 
+A tone generator that can simultaneously produce more than one type of sound. 
+Mute: 
+A function that temporarily silences a track or reduces its volume. 
+
+N 
+Note name: 
+The name which specifies the pitch of a note, expressed as a character, a sharp or flat symbol, and a number indicating the octave. 
+NRPN: 
+An acronym for Non Registered Parameter Number. These are a type of MIDI control change message, and are used to edit sounds via MIDI, allowing you to edit filter or EG settings, or adjust the pitch or level for each instrument of a drum voice. 
+
+O 
+Offset (Relative) editing: 
+A type of editing in which data is added without 
+changing the actual setting; 
+the added data is referred to as the "offset value." 
+On bass: 
+A function that lets you specify a root note for the bass independently of the chord, so that the playback of a phrase whose Phrase Type is Bass will be fixed on that root note. 
+Original bass: 
+A function that lets you specify the Chord Root and Chord Type for the bass, so that only a phrase whose Phrase Type is Bass will playback using the bass chord. 
+Oscillator: 
+A block or device that produces the waveform on which the sound is based, or a frequency that modulates the sound. 
+Overdub: 
+A method of realtime recording in which new material is recorded without erasing previously recorded tracks. 
+
+P 
+Pan: 
+The parameter that sets the stereo location of a sound when it is played back in stereo. ("Pan" or "panpot" are abbreviations of "panoramic potentiometer.") The pan parameters found in Voice Edit, song play Multi, and Effect Edit are linked. 
+Parameter: 
+A setting or data item which you can modify in the various mode and sub-mode displays. 
+Patch: 
+A screen page in Pattern mode that allows you to select and playback patterns, and to create patterns by assigning phrases to each track of the pattern. 
+Pattern: 
+An accompaniment pattern consisting of drums, bass and chord backing, created by connecting phrases end-to-end or by vertically stacking up to16 parts. 
+Pattern track: 
+The track which records and plays back pattern data. 
+Phrase: 
+A unit of musical accompaniment played by a accompaniment 
+part; 
+e.g., a rhythm pattern for the rhythm part, a bass line for the bass part, or chord backing for the guitar part. Phrases are the smallest unit from which the accompaniment of a song is created. 
+Piano roll: 
+When using step recording to input notes, a graphic display that indicates the pitch and gate time of the notes, with pitch represented by the vertical axis, and measures and beats as the horizontal axis. 
+Pitch bend: 
+A type of MIDI message that smoothly modifies the pitch. 
+Pitch wheel: 
+A controller that smoothly changes the pitch. The PITCH wheel of the QY700 can be assigned to control aspects of the sound other than pitch, such as volume or tone. 
+Portamento: 
+An effect that smoothly changes the pitch from one note to another note. Higher settings of Portamento Time will produce a slower change, and there will be no effect with a setting of 0. 
+Preset: 
+A type of memory that is built into a device. The QY700 has preset memories for voices, phrases, and patterns. 
+Program change: 
+A MIDI message that selects a voice. 
+Program number: 
+On the QY700, a number specifying one of the GM-defined sounds. 
+Punch recording: 
+A method of realtime recording in which the uses specifies the punch-in and punch-out points, so that recording takes place only in that area. 
+
+Q 
+Quantization: 
+A function which "tightens up" the inexact timing of notes or other events that were entered in realtime. 
+
+R 
+Rate: 
+A type of parameter that controls EG or scaling. For example in the case of an EG on the QY700, two rates can be adjusted. 
+Realtime recording: 
+A method of recording in which your performance is recorded just as you play, similar to a conventional multi-track recorder. Since the performance is recorded as you play, the musical expression and nuances of your performance will be accurately recorded. 
+Release time: 
+The time over which the volume falls from the sustain level (beginning at the moment a note is released) until it reaches silence. 
+Replace: 
+A method of realtime recording or punch recording in which previously recorded data is erased (replaced) as new material is recorded. 
+Resonance: 
+A parameter that boosts the level of the signal in the area of the cutoff frequency. By emphasizing the overtones in this area, this can produce a distinctive "peaky" tone, making the sound brighter and harder. 
+Reverb: 
+An effect that simulates the acoustical reverberance of a room or space. The sound that reaches our ear usually includes not only the direct sound, but also sound that was reflected off the walls or ceiling. Reverb creates these indirect reflections artificially. Although some reflections can be perceived individually as distinct echoes, the term "reverb" usually refers only to the indistinct "wash" of reflected sound. 
+RPN: 
+An acronym for Registered Parameter Number. These MIDI messages are used to set Part settings such as Pitch Bend Sensitivity or Tuning. 
+
+S 
+Save: 
+The process of saving data or songs from internal memory to floppy disk. 
+Section: 
+A term referring to each of the eight types of patterns that comprise a style. Patterns are selected by specifying the style and the section. 
+Send level: 
+The amount of signal that is sent to a specified bus line for processing by an effect. The amount of signal that is returned from the effect is the "return level." 
+Sensitivity: 
+The degree to which an aspect of the sound (e.g., volume) responds to a control (e.g., note velocity). 
+Sequencer: 
+A block (or device) that records, edits, modifies, and plays back a musical performance in the form of MIDI messages. 
+Sequence tracks: 
+Tracks which record and playback normal MIDI sequence data. 
+SMF: 
+See the entry for Standard MIDI File. 
+Song: 
+A musical composition created by recording performance data on one or more tracks. 
+Standard MIDI File (SMF): 
+SMF is an acronym for Standard MIDI File; a format that allows easy exchange of song data between 
+different sequencers. Most of today's software and hardware manufacturers provide software/hardware that can read and write Standard MIDI Files. 
+Step recording: 
+The method of recording in which music is input by entering notes once by one, specifying the note length, velocity, and pitch etc. of each note. 
+Stereo location: 
+The location within the stereo field from which a sound is heard. This can be modified by the Pan setting. 
+Store: 
+In Voice mode, the process in which a voice created in the edit buffer is saved to internal memory. 
+Style: 
+The collective name for a set of eight sections (intro, fill-in, ending, etc.). Sections are put together to create a backing pattern. 
+Synchronization: 
+The function or process of matching the playback or recording tempo of a device with a separate, external device such as another sequencer or a rhythm machine. 
+Sync: 
+See Synchronization. 
+System (effect): 
+An effect which can be applied to all parts by adjusting the Send Levels and Return Level. System effects allow reverb or chorus etc. to be applied to the overall music. The QY700 provides Reverb and Chorus as system effects. The Variation effect can also be used as a system effect. 
+System exclusive message: 
+A type of MIDI message used to exchange data unique to a specific model or type of device. 
+
+T 
+Tempo track: 
+The track containing data that determines the playback tempo of the song. 
+Track: 
+A location where musical performance data is recorded. 
+Transpose: 
+Shifting the pitch in semitone steps. 
+Tremolo: 
+An effect produced by cyclically modulating the volume. 
+Tuning: 
+The process of matching the pitch of two or more instruments when playing in an ensemble. Normally, A3 is tuned to 440 Hz. 
+
+U 
+Utility mode: 
+A mode on the QY700 in which system or MIDI settings can be made. 
+Variation effect: 
+One of the QY700's effects. In Voice mode, this effect can be used aggressively as a major component of a sound. The Variation effect can function either as an insertion effect or as a system effect, and provides a wide variety of effect programs such as delay, rotary speaker, auto pan, amp simulation and auto wah in addition to reverb and chorus. 
+Velocity: 
+A numerical value indicating the speed (force) with which a note was played. 
+Vibrato: 
+A performance effect produced by cyclically modifying the pitch. 
+Voice: 
+A sound that is built into the tone generator that can be selected and played. 
+Voice category: 
+On the QY700, a broad classification of voices that groups them as Normal voices, Drum voices, SFX voices etc. 
+Volume: 
+A parameter or control that adjusts the volume. Track Volume adjusts the volume of each track, and Master Volume adjusts the overall volume. 
+
+W 
+Wah effect: 
+An effect that cyclically modulates the tone. The QY700 produces this effect by using an LFO signal to modulate the cutoff frequency of the filter. 
+Waves: 
+Digitally recorded waveforms of various instruments, which are the basis for AWM2 tone generation. 
+Wet sound: 
+The audio signal that is processed by an effect. Normally when using an effect, not all of the audio signal is passed through the effect. Rather, the degree of the effect is adjusted by mixing the sound that passes through the effect (the wet sound) with the sound that bypasses the effect (the dry sound). 
+
+X 
+XG: 
+A tone generator format developed by Yamaha which expands the GM specification to provide the richer expressiveness and upward data compatibility that is demanded by today's more sophisticated computer peripheral environment. 
+
+This is the end of the file.

@@ -674,11 +674,12 @@ class QY700ToQY70Converter:
 
         # Get the phrase if it exists
         if phrase_idx < len(self._phrases):
-            phrase = self._phrases[phrase_idx]
-            # TODO: QY70 uses a DIFFERENT packed bitstream format (not Q7P commands).
-            # Returning raw Q7P data here is INCORRECT — needs format conversion.
-            # See midi_tools/parse_events.py for analysis (16.8% coverage = failure).
-            return phrase.raw_data
+            # QY70 uses a DIFFERENT packed bitstream format (not Q7P D0/E0 commands).
+            # Sending raw Q7P data here would corrupt the QY70's track storage.
+            # Until the QY70 bitstream encoder is implemented, return empty data
+            # so the QY70 gets correct track headers (voice/pan/channel) but no events.
+            # Use midi_tools/q7p_to_midi.py to generate a standard MIDI for reference.
+            return b""
 
         return b""
 

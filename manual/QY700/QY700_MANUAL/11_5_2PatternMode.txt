@@ -1,0 +1,1927 @@
+3. Pattern Voice submode 
+
+[PATTERN] PATCH 
+[F2] Voice 
+	[F1] Mixer 
+	[F2] Voice Edit 
+	[F3] Drum Setup-3 Edit 
+[Explanation]
+You use the Pattern Voice submode to assign voices to your patterns, and to edit the various voice settings. 
+You can set pattern-voice values separately for each style. 
+The values apply to all sections (Sections A to H) of the style. 
+These settings are effective during all PATTERN-mode operation. You can choose whether or not to apply them during SONG-mode operation by setting the PATTERN SETUP switch (on the SONG PLAY screen). See Chapter 1, page 47 for more information. 
+The illustration at right shows how sequencer-block tracks correspond to "parts" in the tone generator block. You can set up the TO TG assignments using the SONG mode's 
+Output Channels function. Before making your pattern-voice settings, it is a good idea to go to SONG mode to review (or revise) these settings. (-> p.103) 
+When you change the pattern or the voice settings for a track, the new voice settings overwrite the voice parameters for the corresponding tone generator part. (You can see the new settings reflected in the VOICE-mode screens; see Chapter 3.)
+
+The Pattern Voice submode consists of three pages. You access these pages using function keys [F1], [F2], and  [F3] . 
+[F1] (Mixer) selects the Mixer page. You use this page to set voice, pan, volume, and other such parameters for each track. (-> p.227) 
+[F2] (VoicEdit) selects the Voice Edit page. You can use this page to edit (redesign) the sound of the selected voice. (-> p.232) 
+[F3] (DrS3Edit) selects the "Drum Setup-3 Edit" page. 
+You can use this page to edit the drum-set voices. (-> p.235) Note that this submode is available only for tracks whose voice category is set to "Drum Setup-3". 
+[Procedure]
+1. At the PATCH screen, press 2 (Voice). 
+The Pattern Voice Setup page appears. 
+2. Press [F1] (Mixer), [F2] (VoicEdit), or [F3] 
+(DrS3Edit) to move to the page you want to work on. 
+3. Move the cursor to any parameter you need to change, and set the value using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+4. When you have finished working at these pages, press [EXIT] to return to the PATCH screen. 
+
+
+Mixer 
+
+[PATTERN] PATCH 
+[F2] Voice 
+	[F1] Mixer 
+	[F2] Voice Edit 
+	[F3] Drum Setup-3 Edit 
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	View only 	Shows data values for selected track. 	P.228 
+2 Location 	001 to 256 	Shows current playback position, by measure. 	P.228 
+3 Track numbers 	1 to 16 	Highlighted track number indicates track currently selected for editing. 	P.228 
+4 Track status 	[M]: MUTE [S]: SOLO 	Indicates/selects track SOLO or track MUTE. 	P.228 
+5 Voice select	 Phr, Pat 	Selects which voice to use: either the phrase setting voice, or else the voice selected at this screen. 	P.229 
+6 Voice category 	[Normal Voice], [SFX Voice], [SFX Kit], [Drum Voice], [Drum setup-1], [Drum setup-2] 	Selects the voice category 		P.229 
+7 Program number 	001 to 128 	Selects the voice (voice number). 	P.230 
+8 Bank number 	001 to 101 	Selects the voice bank. 	P.230 
+9 Reverb send level 	000 to 127 	Sets signal level to reverb-effect block. 	P.230 
+10 Chorus send level 	000 to 127 	Sets signal level to chorus-effect block. 	P.230 
+11 Variation switch (if mode equal insertion) 	On, Off 	Selects use/nonuse of variation effect. 	P.230 
+Variation send level (if mode equal system) 	000 to 127 	Sets signal level to variation-effect block. 
+12 Pan Random, 	Left equal 63 to Center to Right equal 63	Sets sound positioning for stereo playback. 	P.230 
+13 Volume 	000 to 127 	Sets sound volume. 	P.231 
+(Table End)
+
+[Explanation]
+You use the Mixer page to set various parameters (such as voice, effects, pan, and volume) for each of the pattern tracks. 
+[Procedure]
+1. At the PATCH screen, press 2 (Voice). 
+The Pattern Voice Setup page appears. 
+2. If necessary, press [F1] (Mixer) to select the Mixer page. 
+3. Press [TRACK UP]/[TRACK DOWN] or cursor keys as necessary to select the track (part) that you want to work on. 
+4. Move the cursor to the appropriate parameters, and set the values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+5. When you have finished, press [EXIT] to return to the PATCH screen. 
+[Supplementary comments]
+The playback keys ([Play],[Stop],[Top], [Rewind]/[Forward]) continue to function while you are adjusting the settings, so that you can monitor the results of your changes as you make them. 
+Adjustment shortcut 1: To adjust the cursor-selected parameter by an equal amount for all parts, hold down [SHIFT] while rotating the data dial or pressing [Decrement] key or [Increment] key. 
+Adjustment Shortcut 2: To set the cursor-selected parameter to the same value on all parts, hold down [SHIFT] and enter the value at the numeric keypad. 
+
+1. Data display 
+[Explanation]
+The upper line of this area identifies the voice for the currently selected track (by voice category, program number, bank number, and voice name). 
+The second line of the area shows the current numerical value of the cursor-selected parameter. 
+
+2. Location 
+[Explanation]
+The location area shows the pattern's current playback location. 
+You can jump to a different location during playback by changing this value: Press [D1] to move the cursor into this area, then select the new location using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+3. Track number 
+[Explanation]
+The highlighted track number, and the track number at the top right of the screen, indicate the pattern track currently selected for editing. 
+[Setting values]
+1 to 16 
+
+4. Track status 
+[Explanation]
+You can choose to mute out one or more tracks, or to set one or more tracks for SOLO play. An [M] mark appears to indicate that a track is muted; an [S] mark indicates that it is set to SOLO. 
+If you set one or more tracks to SOLO, the QY700 automatically switches off playback from all other tracks. (The track-number borders change appearance to indicate the tracks that are temporarily switched off.) 
+During playback, the track-status area operates as a velocity meter, indicating the playback level of each track in real time. 
+
+[Procedure]
+1. Select a non-empty track using [TRACK UP]/[TRACK DOWN] or the left or right cursor key. 
+2. To mute the track : Press [MUTE] key once, so that an [M] appears.
+To release a mute : Press [MUTE] once again.
+3. To set the track to SOLO : Press [SOLO], so that an [S] appears. 
+To deselect SOLO: Press [SOLO] once again. 
+
+You can easily use this feature to listen to your tracks one by one. Begin by playing one of the tracks solo, then move the cursor to select the next track, then press [SOLO] again. 
+Note that each time you press [SOLO], any previous SOLO selection is automatically canceled. 
+4. You can also use the solo feature to select multiple tracks for "solo" play, so that only the selected tracks are produced (with all other tracks silent). Begin by setting one of the tracks to SOLO as described above. Then move the cursor to another track and then [SHIFT] plus [SOLO]. 
+
+To cancel all of these solo selections at once : Move the cursor to any one of the tracks, and press [SOLO]. 
+To switch off only one of the solo selections : Move to the corresponding track, and press [SHIFT] plus [SOLO]. 
+
+5. Voice select 
+[Explanation]
+This parameter determines whether each phrase on the track uses its own voice, or whether all phrases on the track use the voice selected at this Mixer page. 
+If you set the value to Phr (Phrase), then each phrase is produced in its own voice, and the mixer's voice settings (voice category, program-number, and bank-number settings) are disabled . and are blanked out on the screen. 
+If you set the value to Pat (Pattern), then all phrases on the track are produced using voice selected by the mixer's voice-category, program-number, and bank-number settings (see below). 
+[Setting values]
+Phr, Pat 
+
+6. Voice category 
+[Explanation]
+This value selects the general voice category, as given by the bank-select MSB (the most significant byte of the two-byte bank value). Available choices are as follows. 
+The Normal Voiceicon selects the "normal voice" category (MSB 000). 
+The SFX Voice icon selects the "SFX voice" category (MSB 064). 
+(Note that SFX is an acronym for "sound effects".) 
+Each voice in this category produces a single effect-type sound over the full range of the keyboard, with different keys producing the sound in different pitches (as with a normal voice). 
+The SFX kit icon selects the "SFX kit" category (MSB 126). 
+Each voice in this category provides a full range of effect-type sounds, with a different sound assigned to each key of the keyboard (as with a drum voice). 
+The Drum Voice icon selects the "drum voice" category. Each voice in this category consists of a "drum kit" of percussion sounds. This gives you access to multiple drum kits -- so that you can assign a different kit to each of your drum tracks. 
+The Drum setup-3 icon selects the special "drum setup-3" category. 
+This is a special category that allows you to implement note-by-note editing for any one of your drum kits. (You edit the sound using the Drum-Setup Edit screen; see page 235.) 
+The category consists of a single voice only (as selected and edited by you); all tracks set to this category will therefore produce the same voice. 
+[Setting values]
+Normal Voice 
+SFX Voice 
+SFX Kit 
+Drum Voice 
+Drum setup-3 
+Off (No selection) 
+
+
+7. Program number 
+[Explanation]
+This number selects the voice within the category. (Note that the voice selection is determined by all three values: category, program number, and bank number.) 
+To change this value, you must move the cursor to the PROGRAM line. Notice that the PROGRAM line displays the selections in icon form; you must look up at the data display line (at the top of the screen) to view the actual program number and voice name. 
+Available selections vary according to the voice category. 
+During playback, the program setting changes in accordance with program change messages recorded on the track. 
+[Setting values]
+001 to 128 
+[Supplementary comments]
+For general information about voice selection, refer to Chapter 1. (-> p.43) 
+For a full listing of voice names and numbers, refer to the QY700 Reference Listings. 
+
+8. Bank Number 
+[Explanation]
+This is the third and last parameter used in selecting the voice. This parameter gives the bank LSB for the voice (the least significant byte of the bank-select argument). 
+Remember that the voice selection is determined by the combination of the three values: the category (bank MSB), the program number, and the bank number (bank LSB). 
+The bank number is meaningful only with voices in the normal category ( ). For all other categories, the number is fixed at 0. 
+[Setting values]
+000 to 101 (but many values unavailable)
+[Supplementary comments] 
+For general information about bank selection, refer to Chapter 1. (-> p.44) 
+For a full bank listing, refer to the QY700 Reference Listings. 
+
+9. Reverb send level 
+[Explanation]
+This value sets the level of the signal sent to the reverb block. 
+Use this value in conjunction with the PATTERN EFFECTS 
+"reverb return" setting. (-> p.241, 242) 
+[Setting values]
+000 to 127 
+
+10. Chorus send level 
+[Explanation]
+This value sets the level of the signal sent to the chorus block. 
+. Use this value in conjunction with the PATTERN EFFECTS "chorus return" setting (-> p.241, 242). 
+[Setting values]
+000 to 127 
+
+11. Variation switch/variation send level 
+[Explanation]
+The type of setting you can make here depends on whether the variation mode is set to "insertion" or "system." 
+If the mode is "insertion," then this setting is an ON/OFF switch. The switch determines which one (if any) of the parts receives the variation effect. Note that you can set the switch ON for one part (track) only. (When you set the value to ON, any other ON setting automatically changes to OFF. 
+If the mode is "system," then this setting sets the signal level to the variation. In this case, you can set the level separately for each track (part). 
+Use this value in conjunction with the PATTERN EFFECTS "variation return" setting. (-> p.241, 243) 
+[Setting values]
+Variation switch (if variation mode  equal  "insertion") 
+Off, On 
+Variation send level (if variation mode  equal  "system") 
+000 to 127 
+
+12. Pan 
+[Explanation]
+This value sets the sound positioning for stereo playback. 
+The pan value changes during replay in accordance with the track's MIDI pan data. . If the track is set for a drum voice, the pan setting that you make here is applied as an offset to the pan value set internally for each of the voice's instrument sounds. 
+Left equal 63 sets the position all the way to the left; Right equal 63 sets it all the way to the right. 
+If you set the pan to Random, the position changes at random each time a new note is sounded. 
+[Setting values]
+Random [0], Left equal 63 [1] to Center [64] to Right equal 63 [127] 
+
+13. Volume 
+[Explanation]
+This parameter sets the volume for the part. 
+During replay, the volume changes in accordance with the track's MIDI volume data. 
+[Setting values]
+
+
+Voice Edit 
+
+[PATTERN PATCH 
+[F2] Voice 
+	[F1] Mixer 
+	[F2] Voice Edit 
+	[F3] Drum Setup-3 Edit 
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	View only 	Shows data values for selected track. 	P.228 
+2 Location 	001 to 256 	Shows current playback position, by measure. 	P.228 
+3 Track number 	1 to 16 	Indicates track currently selected for editing. P.228 
+4 Filter 	P.233 
+Cutoff 	minus 64 to  plus 00 to  plus 63 	Sets part's filter cutoff frequency. 
+Resonance 	minus 64 to  plus 00 to  plus 63 	Sets part's filter resonance. 
+	 P.234 
+Attack 	minus 64 to  plus 00 to  plus 63 	Sets time from note strike to peak volume. 
+Decay 	minus 64 to  plus 00 to  plus 63 	Sets level-drop time: from peak volume to sustain level. 
+Release 	minus 64 to  plus 00 to  plus 63 	Sets time that sound continues after note is released. 
+(Table End)
+
+[Explanation]
+You use this page to edit the sound characteristics of the voice(s) played on the selected track. You can make separate edit settings for each track. 
+Settings do not apply to the voices themselves, but only to the track. If the track's voice changes, the settings operate on the new voice. If you use the same voice on different tracks with different edit settings, the sound characteristics may be quite different. 
+These settings are applied as offsets to the voice's original, internal settings. 
+[Procedure]
+1. At the PATCH screen, press 2 (Voice). 
+The Pattern Voice Setup page appears. 
+2. If necessary, press 2 (VoicEdit) to select the Voice Edit page. 
+3. Press [TRACK UP] or   as necessary to select the track. 
+4. Move the cursor to the parameter values you want to change, and set the values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+5. When you have finished editing, press e to return to the PATCH screen. 
+[Supplementary comments]
+The playback keys ([Play],[Stop],[Top], [Rewind]/[Forward]) continue to function while you are adjusting the settings, so that you can monitor the results of your changes as you make them. 
+
+The first three parameters listed in the table above ("data display," "location," and "track number") are the same as on the Mixer page; refer to page 228. The remaining parameters are described below. 
+
+4. Filter cutoff, and filter resonance 
+[Explanation]
+The CUTOFF value sets the cutoff frequency for the QY700's low-pass filter. Adjusting this value changes the voice's timbre. Settings are stored separately for each track. 
+Note that the filter is a low-pass type: it filters out the frequencies above (higher than) the cutoff point. 
+Setting the cutoff to a high value will allow the high-frequency harmonics (overtones) to pass, producing a relatively bright sound that is true to the voice's waveform. 
+. Setting the cutoff to a low value will block out the higher harmonics, producing a darker and smoother sound. 
+
+The RESONANCE value sets the resonance for the lowpass filter. As with the CUTOFF value, the RESONANCE setting affects the voice's timbre. Again, you can set the value separately for each track. 
+The term resonance here refers to the amplification (boost) applied to the frequencies in the vicinity of the cutoff point. A boost to the overtones within this range can have a significant impact on the sound. With careful adjustment, you can get very effective resonance characteristics -- such as the body resonance of a string instrument, or the distinctive slur of an analog synthesizer. 
+[Setting values]
+Filter cutoff 	minus 64 to  plus 00 to  plus 63
+Resonance 	minus 64 to  plus 00 to  plus 63
+
+
+5. EG attack, decay, and release times 
+[Explanation]
+These values control how volume changes over time, starting with the initial note strike and ending at the point where the sound dies out. (Note that "EG" stand for envelope generator.) 
+The attack time sets the time it takes for the sound to climb to its peak volume, starting from its initial level of 0 (at the moment when the "key" is first "struck"). Low values produce a rapid volume rise, while higher values produce a 
+more gradual climb. 
+The decay time sets the time it takes for the volume to drop from its peak level to its "sustain" level. Lower values produce crisper, clearer sounds. 
+The release time sets the time it takes for the volume to fall to 0 following the "physical" release of the note. The lower the value, the faster the sound will go off. 
+[Setting values]
+EG attack time 	minus 64 to  plus 00 to  plus 63 
+EG decay time 	minus 64 to  plus 00 to  plus 63 
+EG release time 	minus 64 to  plus 00 to  plus 63 
+
+
+Drum-Setup Edit 
+
+[PATTERN PATCH 
+[F2] Voice 
+	[F1] Mixer 
+	[F2] Voice Edit 
+	[F3] Drum Setup-3 Edit 
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	View only 	Shows data values for selected track. 	P.236 
+2 Location 	001 to pattern length 	Shows current playback position, by measure. 	P.236 
+3 Note 	C sharp -1 to C5 	Selects note (instrument) for editing. 	P.236 
+4 Drum kit 	001 StandKit, 002 Stnd2Kit, 009 Room Kit, 017 Rock Kit, 025 ElectKit, 026 AnalgKit, 033 Jazz Kit, 041 BrushKit, 049 ClascKit, 001 SFX1 Kit, 002 SFX2 Kit 	Selects voice (drum kit) for editing. 	P.237 
+5 Reverb send level 	000 to 127 	Sets signal level to reverb block. 	P.237 
+6 Chorus send level 	000 to 127 	Sets signal level to chorus block. 	P.237 
+7 Variation send level 	000 to 127 	Sets signal level to variation-effect block. 	P.237 
+8 Pan 	Random, Left equal 63 to Center to Right equal 63 	Sets instrument positioning for stereo playback. 	P.237 
+9 Level 	000 to 127 	Sets sound volume for instrument. 	P.237 
+10 Pitch fine-tuning 	minus 64 to  plus 00 to  plus 63 	Fine-tunes instrument's pitch. 	P.237 
+11 Pitch coarse-tuning 	minus 64 to  plus 00 to  plus 63 	Coarse-tunes instrument's pitch. 	P.237 
+12 Filter Cutoff 	minus 64 to  plus 00 to  plus 63 	Sets filter cutoff frequency for instrument. 
+Resonance 	minus 64 to  plus 00 to  plus 63 	Sets filter resonance for instrument. 	P.238 
+13 EG 	
+Attack 	minus 64 to  plus 00 to  plus 63 	Sets time from note strike to peak volume. 
+Decay-1 	minus 64 to  plus 00 to  plus 63 	Sets drop time from peak level to decay level. 
+Decay-2 	minus 64 to  plus 00 to  plus 63 	Sets drop time from decay level to 0 level. 
+(Table End)
+
+[Explanation]
+This Drum-Setup Edit feature lets you select one drum voice for note-by-note (instrument by instrument) editing. You can edit the sound characteristic of each instrument by adjusting its filter values, EG values, pitch, and so on.
+This Drum Setup Edit page is available only for tracks whose the voice category has been set to "drum setup-3." (On the Voice and Mixer pages, the [F3] (DrS3Edit) switch appears only while the cursor is at a track that is set to this category.) 
+The "drum setup-3" category consists of one voice only the voice you create at this Drum Setup Edit page. If two or more tracks are set to this category, all of these tracks will play the same voice. If you change the edit values at the Drum Setup Edit page, the changes will apply to all of these tracks. 
+A drum voice (or "drum kit") consists of a collection of different "instruments," with each instrument assigned to a different key on the keyboard, starting at key C-1 and extending to C5. (This is in contrast with a "normal voice," where a single instrument applies across the entire keyboard.) For a listing of the various drum voices and their instrument arrangements, refer to the QY700 Reference Listings. 
+When you work at the Drum Setup Edit page, you work on a single drum-voice only. If you change the drum-voice selection while you are editing, all of the edit settings return to their defaults. Be sure that you have selected the correct drum kit before you begin your editing. 
+Note that the filter and EG settings made at this page are applied as offsets to the voice's internal filter/EG settings. The other settings that you make at this page (PITCH, CHORUS, and so on) are used as replacements for the voice's original settings. 
+[Procedure]
+1. At the PATCH screen, press 2 (Voice).Then press [F1] (Mixer) to display the Mixer page. 
+2. Move the cursor to a track whose voice category is set to "drum setup-3." (If necessary, move the cursor to the VOICE CAT. line and set the category to this value.) The [F3] (DrS3Edit) switch appears (on the bottom line of the screen).
+3. Press [F3] (DrS3Edit) to move to the Drum Setup Edit page.
+4. Move the cursor to the drum-kit setting and select the  
+drum voice you want to use. 
+5. Now edit each of the instruments in the kit by repeating the following steps. 
+a) Press the appropriate key on the microkeyboard to select the instrument (note) that you want to edit.
+b) Move the cursor to each of the parameter values that you want to change.
+c) Enter your change using the data dial, [Decrement] key/[Increment] key, or the numeric keypad.
+
+6. When you have finished, press [EXIT] to return to the PATCH screen, or press one of the function buttons to move to a different screen. 
+[Supplementary comments]
+The playback keys ([Play], [Stop], [Top], [Rewind]/[Forward]) continue to function while you are adjusting the settings, so that you can monitor the results of your changes as you make them. 
+
+
+1. Data display 
+[Explanation]
+The top line of the data-display area shows the name of the instrument currently selected for editing. This value changes each time you press a different key on the microkeyboard. 
+The lower line shows the program number of the selected drum voice. 
+
+2. Location 
+[Explanation]
+This location area shows the pattern's current playback location (measure).
+You can jump to a different location during playback by changing this value: Press d [D1] to move the cursor into this area, then select the new location using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+[Setting values]
+001 to pattern length
+
+3. Note
+[Explanation]
+This area shows the currently selected note. (You select the  note by pressing the appropriate key on the microkeyboard.) 
+Each note corresponds to a different instrument in the kit. 
+The note/instrument correspondence is different for each  drum voice. For complete listings of the instrument arrangements within each voice, refer to the QY700 Reference Listings.
+[Setting values]
+C-1 to C5 
+
+4. Drum kit 
+[Explanation]
+This area selects the drum voice (drum kit) to be edited. 
+Each voice consists of a kit of instruments, with each instrument assigned to a different note on the keyboard. 
+As explained above, you can apply editing to one drum kit only. If you change the kit setting (either purposely or by accident), all editing parameters on this page immediately return to their defaults. Be sure to select the correct kit before making your editing changes; do not change the kit unless you wish to restart the entire editing process. 
+[Setting values]
+001 StandKit, 002 Stnd2Kit, 009 Room Kit, 017 Rock Kit, 025 ElectKit, 026 AnalgKit, 033 Jazz Kit, 041 BrushKit, 049 ClascKit, 001 SFX1 Kit, 002 SFX2 Kit
+
+5. Reverb send level 
+[Explanation]
+This value sets the signal level to the reverb block. Raising this value increases the amount of reverb applied to the instrument. 
+Keep in mind that total reverb application depends also on the mixer's reverb send level (-> p.230) and the PATTERN EFFECTS reverb return level. (-> p.241, 242) 
+[Setting values]
+000 to 127 
+
+6. Chorus send level 
+[Explanation]
+This value sets the signal level to the chorus block. Raising this value increases the amount of chorus effect applied to the instrument. 
+Note that total chorus-effect application depends also on the mixer's chorus send level (-> p.230) and the PATTERN EFFECTS chorus return level. (-> p.241, 242) 
+[Setting values]
+000 to 127 
+
+7.Variation send level 
+[Explanation]
+This value sets the signal level to the variation-effect block. 
+The numerical setting is effective only if the variation mode (-> p.242) is set to "system" (see below). Provided that the mode is "system", you can use this feature to set a different variation-effect level for each instrument in the kit. 
+Note that the actual effect application depends also on the EFFECT mode's variation-return setting. 
+If the variation mode is "system," then the level to the variation-effect block varies according to the numerical value you set here. If the mode is "insertion," however, then a setting of 000 switches the variation-effect off, while any other value (from 001 to 127) switches the effect on. (See page 242 for information about the variation-mode setting.) 
+[Setting values]
+000 to 127 
+
+8. Pan 
+This value sets the instrument position for stereo playback. 
+(The position is determined relative to the left and right speakers.) 
+You can get the most natural effect by setting instrument positions to match the arrangement of a true drum set. 
+[Setting values]
+Random, Left equal 63 to Center to Right equal 63 
+(where Random causes the instrument's position to change at random each time it is played.) 
+
+9. Level 
+[Explanation]
+This value sets the instrument's volume. 
+[Setting values]
+000 to 127 
+
+10. Pitch fine-tuning 
+[Explanation]
+This setting fine-tunes the instrument's pitch, in 1-cent increments (where 1 cent corresponds to 1/100 semitone). 
+[Setting values]
+minus 64 to  plus 00 to  plus 63 
+
+11. Pitch coarse-tuning 
+[Explanation]
+This setting coarse-tunes the instrument's pitch, in semitone increments. 
+A value of 00 retains the instrument's original pitch (the pitch recorded when the instrument was sampled). 
+You can use this adjustment to set up melodic toms or other kinds of pitched drum play. Note that changes to the pitch may cause changes in the instrument's sound characteristics. 
+After setting the coarse pitch, you can apply fine tuning by adjusting the "pitch fine-tuning" value described above. 
+[Setting values]
+minus 64 to  plus 00 to  plus 63 
+
+
+12. Filter cutoff, and filter resonance 
+[Explanation]
+The CUTOFF value sets the cutoff frequency for the QY700's low-pass filter. Adjustments to this value general cause the sound to become brighter or darker. 
+The RESONANCE value sets the filter's resonance. You can use this adjustment to accentuate (or suppress) the overtones in the vicinity of the cutoff point. The value is particularly effective on the attack part of the sound. 
+[Setting values]
+Filter cutoff 	minus 64 to  plus 00 to  plus 63
+Filter resonance 	minus 64 to  plus 00 to  plus 63
+
+13. EG attack, EG decay-1, and EG decay-2 
+[Explanation]
+These values determines how the instrument's loudness changes over time. Loudness development is controlled by the envelope generator (EG). The following graph shows the development sequence. 
+
+ATTACK 
+This value sets the time it takes for the sound to rise to its peak volume, starting from its initial level of 0 (at the moment when the "drum" is first "struck"). Note that excessively high values can produce an unnatural sound, since the peak may be delayed until after the waveform has reached its end. 
+DECAY-1 
+This value sets the time it takes for the sound to fall from its peak level to the internally set "decay level." (The decay level itself cannot be edited.) 
+DECAY-2 
+This value sets the time it takes for the sound to fall from the decay level to the 0 level. Higher values cause the sound to linger for a longer time. 
+Note that some of these settings are ineffective on certain instruments. 
+Although it is possible to select an SFX-kit voice for editing, the edit settings are not effective on these voices. 
+[Setting values]
+EG attack 	minus 64 to  plus 00 to  plus 63 
+EG decay-1 	minus 64 to  plus 00 to  plus 63 
+EG decay-2 	minus 64 to  plus 00 to  plus 63 
+
+
+4. Pattern Effects 
+[PATTERN] PATCH 
+[F3] Pattern Effects 
+	[F1] Effect Connection Setup 
+	[F2] Reverb Edit 
+	[F3] Chorus Edit 
+	[F4] Variation Edit 
+[Explanation]
+You use the Pattern Effects submode to select and set up the effects applied to the pattern. 
+The Pattern Effects submode comprises four pages. You access these pages by pressing the corresponding function keys ([F1], [F2], [F3],[F4]). Note that you can exit to a different submode by pressing [F5] or [F6]. 
+[F1] (Connect) displays the "Effect Connection Setup"page. You use this page to set up the effect conection connfiguration: the variation mode, the effect type, the return level, and so on. (-> p.241) 
+[F2] (Reverb) calls the "Reverb Edit" page. This page selects the reverb type and sets the various reverb parameters. (-> p.244) 
+[F3] (Chorus) calls the "Chorus Edit" page. This page selects the chorus-effect type and sets the various chorus parameters. (-> p.244) 
+[F4] (Vari.) calls the "Variation Edit" page. This page selects and sets up the variation effect. (-> p.244) 
+[f5](-> PlayFx) switches you into Play Effects submode, where you can set up the playback effects applied to each style. (-> p.212) 
+[F6](-> Voice) switches you into Pattern Voice submode, where you can set up the voicing for each style. (-> p.225) 
+
+[Supplementary comments]
+The variation mode setting (accessible from the Effect Connection Setup screen) determines how the QY700 handles effects processing. The illustration on the next page shows the two possibilities. For more information, refer to Chapter 1. (-> p.48) 
+The playback keys ([Play], [Stop], [Top], [Rewind]/[Forward]) continue to 
+ function while you are adjusting the settings, so that youcan monitor the results of your changes as you make them. 
+
+Where variation mode  equal  Insertion: 
+(Figure)
+
+Where variation mode  equal  System: 
+(Figure)
+Offers much greater control, but more difficult to set up. 
+
+
+Connection 
+[PATTERN] PATCH 
+[F3] Pattern Effects 
+	[F1] Effect Connection Setup 
+	[F2] Reverb Edit 
+	[F3] Chorus Edit 
+	[F4] Variation Edit 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Data display 	View only 	Shows name and value of cursor-selected parameter. 	P.242 
+2 Variation mode 	Insertion, System 	Selects handling of variation effect. 	P.242 
+3 Reverb type 	Any of 11 types. 	Selects the reverb-effect type. 	P.242 
+4 Reverb return 	000 to 127 	Sets return level from reverb block. 	P.242 
+5 Reverb pan 	Left equal 63 to Center to Right equal 63 	Sets stereo positioning of signal from reverb block. 	P.242 
+6 Chorus type 	Any of 11 types. 	Selects the chorus-effect type. 	P.242 
+7 Chorus return 	000 to 127 	Sets return level from chorus block. 	P.242 
+8 Chorus pan 	Left equal 63 to Center to Right equal 63 	Sets stereo positioning of signal from chorus block. 	P.242 
+9 Chorus-to-reverb 	000 to 127 	Sets level on bus from chorus block to reverb block. 	P.243 
+10 Variation type 	Any of 43 types. 	Selects the variation effect type. 	P.243 
+11 Variation return 	000 to 127 	Sets return level from variation-effect block. 	P.243 
+12 Variation pan 	Left equal 63 to Center to Right equal 63 	Sets stereo positioning of signal from variation-effect block. 	P.243 
+13 Variation-to-chorus 	000 to 127 	Sets level on bus from variation-effect block to chorus block. 	P.243 
+14 Variation-to-reverb 	000 to 127 	Sets level on bus from variation-effect block to reverb block. 	P.243 
+(Table end)
+
+[Explanation]
+The Effect Connection Setup page selects the variation mode, and the pan and transmission levels for each of the three effects (variation, chorus, and reverb). You can also use it to set the effect types themselves, although these settings are also accessible from the corresponding edit pages (-> p.244). 
+[Procedure]
+1. At the PATCH screen, press [F3] (Effect). 
+The QY700 enters the Pattern Effects submode. 
+2. If necessary, press [F1] (Connect) to move to the Effect Connection Setup screen. 
+3. Move the cursor to the parameters that you need to set, and change the values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+4. When you are ready to return to the PATCH screen, press [EXIT]. 
+. The playback keys ([Play], [Stop], [Top], [Rewind]/[Forward]) continue to function while you are adjusting the settings, so that you can monitor the results of your changes as you make them. 
+
+1. Data display 
+[Explanation]
+The data-display area shows the name and value of the currently selected parameter. 
+
+2. Variation mode 
+[Explanation]
+This setting determines whether the variation effect is handled as an insertion effect or as a system effect. (See the illustrations on page 240.) 
+If you set this value to Insertion, then you can apply the variation effect to no more than a single part. In this case, you can also use an assignable controller to control one of the parameters for the effect in real time. 
+If you set the value to System, then the variation effect operates in the same way as the chorus and reverb effects . 
+so that you can apply it to all parts, and set values for the send and return levels. But in this case you can not use a 
+controller to control the effect. 
+[Setting values]
+Insertion, System 
+Insertion: Variation effect is handled as an insertion effect. 
+System: Variation effect is handled as a system effect. 
+
+
+3. Reverb type 
+[Explanation]
+This parameter selects the reverb effect type. 
+[Setting values]
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM 3, STAGE 1, STAGE 2, PLATE, WHITE ROOM, TUNNEL, 
+BASEMENT 
+
+4. Reverb return 
+[Explanation]
+This parameter sets the signal level returned from the reverb block. You use this setting to adjust the reverb level for all 
+parts at the same time. 
+[Setting values]
+000 to 127 
+
+5. Reverb pan 
+[Explanation]
+This parameter sets the stereo positioning of the signal from the reverb block.
+[Setting values] 
+Left equal 63 to Center to Right equal 63 
+
+6. Chorus Type 
+[Explanation]
+This parameter selects the chorus effect type. 
+[Setting values]
+NO EFFECT, CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, CELESTE 2, CELESTE 3, CELESTE 4, 
+FLANGER 1, FLANGER 2, FLANGER 3 
+
+7. Chorus return 
+[Explanation]
+This parameter sets the signal level returned from the chorus block. You use this setting to adjust the chorus level for 
+all parts at the same time. 
+[Setting values]
+000 to 127 
+
+8. Chorus pan 
+[Explanation]
+This parameter sets the stereo positioning of the signal from the chorus block. 
+[Setting values]
+Left equal 63 to Center to Right equal 63 
+
+9. Chorus-to-reverb 
+[Explanation]
+The Send Chorus to Reverb parameter sets the signal level on the bus from the chorus block to the reverb block. 
+[Setting values]
+001 to 127 
+
+10. Variation Type 
+[Explanation]
+This parameter selects the variation effect type. 
+[Setting values]
+NO EFFECT, HALL 1, HALL 2, ROOM 1, ROOM 2, ROOM3, STAGE 1, STAGE 2, PLATE, DELAY LCR, DELAY L, R, ECHO, CROSSDELAY, ER1, ER2, GATE REV, REVRS GATE, KARAOKE 1, KARAOKE 2, KARAOKE 3, THRU,CHORUS 1, CHORUS 2, CHORUS 3, CHORUS 4, CELESTE 1, CELESTE 2, CELESTE 3, CELESTE 4, FLANGER 1,FLANGER 2, FLANGER 3, SYMPHONIC, ROTARY SP, TREMOLO, AUTO PAN, PHASER 1, PHASER 2, DISTORTION, OVERDRIVE, AMP SIM, 3-BAND EQ, 2-BAND EQ, AUTO WAH
+
+11. Variation return 
+(Available only if variation mode  equal  System) 
+[Explanation]
+. This parameter sets the signal level returned from the variation-effect block. You use this setting to adjust the variation-effect level for all parts at the same time.
+[Setting values]
+000 to 127 
+
+12. Variation pan 
+(Available only if variation mode  equal  System) 
+[Explanation]
+This parameter sets the stereo positioning the signal from the variation-effect block.
+[Setting values]
+Left equal 63 to Center to Right equal 63 
+
+13. Variation-to-chorus 
+(Available only if variation mode  equal  System) 
+[Explanation]
+The Send Variation to Chorus parameter sets the signal level on the bus from the variation-effect block to the chorus block.
+[Setting values]
+000 to 127 
+
+14. Variation-to-reverb 
+[Explanation]
+The Send Variation to Reverb parameter sets the signal level on the bus from the variation-effect block to the reverb. 
+[Setting values]
+000 to 127
+
+
+Reverb Edit, Chorus Edit, and Variation Edit 
+
+[PATTERN] PATCH 
+[F3] Pattern Effects 
+	[F1] Effect Connection Setup 
+	[F2] Reverb Edit 
+	[F3] Chorus Edit 
+	[F4] Variation Edit 
+
+
+(Table)
+Parameter 	Values 	Function 	See page 	 
+1 Data display 	View only 	Shows name and value of cursor-selected parameter. 	P.245 
+2 Effect type 	Selects the effect type. 	P.245  
+3 Effect parameters 	Various parameter values for the selected effect. 	P.245 
+4 Dry/wet balance (On Variation Edit page, if mode equal Insertion) 	D63>W to D=W to D<W63 	Sets balance between wet sound (sound passed through variation effect) and dry (non-effected) sound. Setting appears only if variation mode is set to Insertion.	P.245 	 
+5 Controllable parameter (On Variation Edit page, if mode equal Insertion)	View only 	Appears beside parameter that can be controlled with AC1 (Assignable Controller 1).	P.245 	 
+6 AC1 control depth (On Variation Edit page, if mode equal Insertion)	minus 64 to plus 0 to plus 63 	Sets AC1 control depth for the controllable parameter. 	P.246 
+(Table End)
+
+[Explanation]
+These three pages set the various parameters for the reverb effect, chorus effect, and variation effect. 
+[Procedure]
+1. At the PATCH screen, press [F3] (Effect). 
+The QY700 enters the Pattern Effects submode. 
+2. Press [F2] (Reverb), [F3] (Chorus), or [F4](Vari.) to move to the editing page for the effect that you need to edit. 
+3. Move the cursor to the parameters you need to set, and enter the values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+4. When you are ready to return to the main PATCH screen, press [EXIT]. 
+[Supplementary comments]
+The playback keys ([Play], [Stop], [Top], [Rewind]/[Forward]) continue to function while you are adjusting the settings, so that you can monitor the results of your changes as you make them. 
+
+1. Data display 
+[Explanation]
+The data-display area shows the name and current value of the parameter selected by the cursor. 
+
+2. Effect type
+[Explanation]
+This parameter selects the effect type. Note that you can also view or change these values at the Effect Connection Setup screen. (-> p.241) 
+[Supplementary comments]
+If the variation mode is Insertion and the variation effect type is NO EFFECT, the QY700 will not produce any sound at all for the part whose variation switch is turned ON. 
+
+3. Effect parameters 
+[Explanation]
+These values adjust the operation of the selected effect type. 
+Available parameters vary according to the type. 
+
+4. Dry/wet balance 
+(Only on Variation Edit page; only if mode is Insertion) 
+[Explanation]
+. This parameter sets the balance between the wet sound (the sound that receives the variation effect) and the dry sound (the sound that does not). 
+This parameter appears only if the variation mode is set to Insertion. The dry/wet balance for System-mode operation is fixed at D32>W. 
+[Setting values]
+D63>W to D equal W to D<W63 
+
+5. Controllable parameter 
+(Only on Variation Edit page; only if mode is Insertion) 
+[Explanation]
+The mark identifies the parameter that can be controlled in real time with AC1 (Assignable Controller 1). 
+This type of control is available only if the variation mode is set to Insertion, and applies only to the part whose variation switch is set on. 
+
+6. AC1 control depth 
+(Only on Variation Edit page; only if mode is Insertion) 
+[Explanation]
+This parameter determines how strongly AC1 (Assignable Controller 1) affects the value of the controllable parameter. 
+If you set the depth to 0, then AC1 has no effect. Higher magnitudes increase the sensitivity of the AC1 control. The sign of the setting determines the AC1 directionality: a positive sign means that upward displacement of AC1 raises the value of the controllable parameter, while a negative sign means that upward displacement reduces the value. 
+Note that an assignable controller is a controller (such as a control wheel) whose function can be set by the user. The QY700 provides two assignable controllers, AC1 and AC2. (You select the function by assigning the appropriate "control number" to the controller. You make these assignments by issuing System Exclusive messages.) 
+Note that this setting appears only if the variation mode is set to Insertion. 
+[Setting values]
+minus 64 to  plus 0 to  plus 63
+
+
+5. Phrase Recording 
+[PATTERN] PATCH 
+[Recording] Recording Standby 
+	[F4] Replace 
+	[F5] Overdub 
+	[F6] Step Recording 
+[Explanation]
+Although the QY700 comes equipped with many preset phrases, it also allows you to record your own user phrases. You use the Phrase Recording submode to make these recordings. 
+The QY700 offers two general recording methods: realtime recording and step recording. 
+With realtime recording, the QY700 operates as a tape recorder, recording the performance data as it is played. This allows you to catch all the nuances of an actual performance. 
+With step recording, you input the phrase one note at a time, almost as if you were writing the notes down on a music sheet. This allows you to create complex phrases without having to play them in real time at the keyboard. 
+[Procedure]
+1. Go to the PATCH screen (-> p.200) and select the phrase number for the user phrase that you want to record. (The "phrase number" consists of the prefix US followed by a sequential number). 
+2. Go to the Recording Standby screen, and set the necessary recording parameters. (-> p.248) 
+3. Record the phrase, using either realtime recording (-> p.252) or step recording. (-> p.253) 
+4. Edit or otherwise modify the results using Phrase Edit (-> p.254) and pattern jobs. (-> p.256) 
+5. When you are satisfied with the results, save the recorded phrase to disk. (-> p.307) 
+
+
+Recording Standby 
+
+[PATTERN] PATCH 
+[Recording] Recording Standby 
+[F4] Replace 
+[F5] Overdub 
+[F6] Step Recording 
+
+(Table)
+Parameter 	Values 	Function 	See page 
+1 Phrase number, name 	View only 	Identifies the currently selected phrase. 	P.249 
+2 Length 	001 to 256 	Sets phrase length, in measures. (Phrase length cannot exceed the pattern length.) 	P.249 
+3 Phrase type 	Mldy1, Mldy2, Chrd1, Chrd2, Bass, Bypas, Para 	Selects phrase type. (The type setting determines how chord conversions are handled.) 	P.249 
+4 Retrigger 	OFF, ON 	Selects whether phrase will modulate and continue if chord change occurs while phrase is playing. 	P.249 
+5 Low and high limits 	Low: C-2 to G8 High: C-1 to G8 	Pitch range for chord-converted phrase playback. (Notes outside this range are shifted by octave as necessary.) 	P.250 
+6 High key 	C to B 	Highest key for upward transposition of root.(Applies to Mldy1, Chrd1, and Bass phrase types only.) 	P.250 
+7 Voice category 	[Normal Voice ], [SFX Voice ], [SFX Kit ], [Drum Voice ], [Drum setup-1], [Drum setup-2 ] 	Selects the voice to be used for playing the phrase. 	P.250 
+
+Program number 	001 to 128 
+Bank number 	000 to 127
+Voice name 		Shows name of selected voice. 
+8 Source chord 	Chord root and type Phrase's original key (chord). 	P.250 
+9 Recording mode 	[F4](REPLACE), [F5](OVERDUB), [F6](STEP) 	Selects the recording method. 	P.251 
+(Table end)
+
+
+
+[Explanation]
+Before starting actual recording, you must set the relevant recording parameters at the Recording Standby screen. 
+[Procedure]
+1. Go to the PATCH screen (-> p.200) and select the phrase number for the user phrase that you want to record. (The "phrase number" consists of the prefix US followed by a sequential number.) 
+2. Press [Recording] to move to the Recording Standby screen. 
+3. Set the recording parameters (phrase length, retrigger, and so on) and select the recording mode ([F4](REPLACE), [F5] (OVERDUB), or [F6] (STEP)). 
+4. Press [Stop] to begin recording. 
+The PLAY indicator comes on (either solid or blinking). 
+5. When you are finished, press s to stop recording and return to the PATCH screen. 
+6. Edit or otherwise manipulate the recording results using Phrase Edit (-> p.254) and pattern jobs (-> p.256). 
+7. When you are satisfied with the results, store the recorded phrase to disk. (-> p.307) 
+[Supplementary comments] 
+If you press e while in Recording Standby, the QY700 returns to the PATCH screen. 
+
+1. Phrase number; phrase name 
+[Explanation][Explanation]
+The phrase is identified by its phrase number. You select the number at the PATCH screen. (-> p.200) 
+You can use the Phrase Name pattern job to assign the phrase an arbitrary phrase name. (-> p.279) 
+2. Length 
+[Explanation]
+This parameter sets the length (in measures) for the phrase. 
+The maximum phrase length is equivalent to the length of the currently selected pattern (the "of" value appearing in the upper right box area on the display.) 
+[Setting values]
+001 to pattern length 
+(where maximum pattern length  equal  256) 
+
+
+3. Phrase type 
+[Explanation]
+The TYPE value selects the kind of chord conversion used when modulating (transposing) the phrase. Different type settings result in different conversion results, as follows. 
+The "Melody" types (Mdly1, Mldy2) generate relatively slight, subtle changes in the playback sound. 
+The "Chord" types (Chrd1, Chrd2) generate relatively large changes in the playback sound. 
+For Mldy1 and Chrd1 transpositions, the QY700 first converts the original phrase line according to the chord type, and then transposes according to the chord root. For Mldy2 and Chrd2 transpositions, the QY700 remains closer to the original sound, so that chord changes are somewhat smoother. 
+The Bass type is designed for bass phrases. For these phrases, the QY700 always produces the root note at the start of any chord change. In addition, transposition is always according 
+to the target chord's on-bass or original-bass setting (if any). 
+Use the Bypas (Bypass) setting if you do not want the phrase to be converted at all. In this case, the phrase bypasses the conversion process and plays out in its original sound. 
+The Para (parallel) type transposes by root only; the chord type is ignored. This is useful for phrases that contain implicit internal chord changes, since type conversion in this case may produce unpredictable or clashing results. 
+[Setting values]
+Mldy1, Mldy2, Chrd1, Chrd2, Bass, Bypas, Para 
+
+4. Retrigger 
+[Explanation]
+This setting determines how the phrase responds to chord changes that occur while the phrase is already playing. If the setting is OFF, the phrase switches off when the chord change occurs. If ON, the QY700 transposes the phrase (in accordance with the chord-conversion parameters) and continues the playback. 
+[Setting values]
+OFF, ON 
+
+
+5. Low and high limits 
+[Explanation]
+These values select the highest and lowest pitches that can be used for replay of a transposed phrase. If transposition produces a note that is outside the limit, the QY700 shifts the note (by octave) to bring it into range. 
+[Setting values]
+Low limit C-2 to G8
+High limit C-1 to G8
+
+6. High key 
+[Explanation]
+This setting determines the highest key that the chord root can take following transposition. The setting applies only to phrases of the following types: Mldy1, Chrd1, and Bass. 
+To transpose any of these phrase types, the QY700 normally shifts the root upwards by the number of semitones separating the source chord's root and the new chord's root. Because too large a shift upward can cause the phrase to lose its original character, however, the QY700 will automatically shift downward, by one octave, any transposition that would move to a root higher than the value set here. 
+[Setting values]
+C to B 
+
+7. Voice category, program number, bank number, and voice name 
+[Explanation]
+The first three values (voice category, program number, and bank number) select the voice used to play the phrase. The screen also displays the selected voice's name. 
+The voice category selects the general voice class, as given by the Bank Select MSB (the most significant byte of the Bank Select value). 
+The program number selects the voice within the category. 
+The bank number(or Bank Select LSB) can be used to select one of the alternative voices assigned to the program number. This value is effective only with respect to voices in the "normal" category; the value is fixed at 000 for all other categories. 
+[Setting values]
+Voice category 
+Normal voice (Bank Select MSB  equal  000). 
+SFX voice (Bank Select MSB  equal  064). This type of SFX voice (sound-effects voice) has the same character over the full range of the keyboard, but different keys produce the sound in different pitches (as with a normal voice). 
+SFX kit (Bank Select MSB  equal  126). This type of voice exists as a collection of different sounds, so that each key produces a different kind of sound effect. 
+Drum voice (Bank Select MSB  equal  127). As with the SFX kit, each key produces a different type of drum sound. Note that these sounds cannot be changed directly by editing. 
+Program number 
+001 to 128 
+Bank number 
+000 to 127 
+[Supplementary comments] 
+For more information above voice and bank settings, refer to Chapter 1. (-> p.43) 
+For a listing of voice names, voice numbers, and bank settings, refer to the QY700 Reference Listings. 
+
+8. Source chord 
+[Explanation]
+This value sets the phrase's original key (the key and chord value under which the phrase was originally played). The QY700 takes this value into account when executing chord conversions on the phrase. 
+You can set this value only when recording a new user phrase. Be sure to set the value correctly; an incorrect setting may make it impossible for the QY700 to transpose the phrase. 
+[Setting values]
+Chord root
+C, C sharp, D, E flat, E, F, F sharp, G, A flat, A, B flat, B 
+(Where C sharp is equivalent to D flat, etc.)
+Chord type
+M, M7, 6, 7, m, m7, m6, mM7, m7(5), dim, aug, sus4, add9, M7(9), 6(9), 7(9), madd9, m7(9), m7(11), 7(5), 7(5), 7(9), 7(9), 7(13), 7(13), 7sus4, 7(11), --- (THRU) 
+
+[Supplementary comments] 
+For information about setting up chords, refer to Chapter 1. (-> p.61) 
+
+9. Recording mode 
+[Supplementary comments] 
+The QY700 offers three different phrase recording modes: two realtime modes and one step mode. 
+The [F4] (REPLACE) mode records performance data in real time, overwriting any data already present in the destination user phrase. The new data replaces the previous data. This is the mode to use when you wish to redo a phrase that you are not satisfied with or that you no longer need. (See next page.)The [F5] (OVERDUB) mode . the second realtime mode . records onto the selected phrase while leaving its previous data in place. The phrase continues to loop while recording is in progress, so that you can add a new layer of performance data with each round, while listening to the results as they accumulate. This is the method to use when you need to create a complex, multiplayer phrase. (See next page.) 
+The [6F] (STEP) mode lets you compose your performance by "writing" it down one event at a time. This is a nonrealtime, step recording method . similar to the process of writing musical notations onto music paper. (-> p.253) This method supports "overdubbing," since events are not removed unless you explicitly erase them. 
+[Setting values]
+[F4] (REPLACE) 
+[F5] (OVERDUB) 
+[F6] (STEP) 
+[Procedure]
+Press [F4] (REPLACE), [F5] (OVERDUB), or [F6] (STEP) to select the recording mode. 
+
+
+Realtime Recording 
+[PATTERN] PATCH 
+[Recording] Recording Standby 
+[F4] Replace 
+[F5] Overdub 
+
+[Explanation]
+You use this recording method when you want to input your phrase in real time. You can input the phrase directly either at the microkeybaord, or else through a remote MIDI keyboard or other such MIDI device. Or you can record (copy) a phrase from a computer or from another sequencer. 
+ The QY700 offers two realtime phrase recording methods: [F4] (REPLACE) and [F5] (OVERDUB). 
+You use the [F4] (REPLACE) method when you want to create a entirely new phrase or overwrite an existing phrase. 
+This method erases any data already existing in the selected phrase. 
+You use [F5] (OVERDUB) when you want to overdub new data onto the phrase's existing data. This allows you to build up a complex, multilayered phrases. 
+[Procedure]
+1. Starting from the PATCH screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F4] (REPLACE) or [F5] (OVERDUB) to select the recording method. 
+3. Press the [Play] to begin recording. 
+The PLAY indicator begins flashing. The QY700 counts out the specified number of lead-in measures (as set by the COUNT parameter; see page 78), and then starts recording. 
+The QY700 loops over the recording area until you press [Stop] to stop, so that you can record multiple layers in a single session. The QY700 starts recording at measure 1, continues to the final measure of the phrase, then jumps back to measure 1 and begins another round. If you input an incorrect note, you can remove it on a subsequent round by holding down [SHIFT] together with the same note key . hold both of these keys down as the recording passes the point where the original (bad) note was entered. 
+
+4. When you have finished recording, press s to return to the PATCH screen. 
+[Supplementary comments] 
+You can use pattern job 00 (UNDO/REDO) to cancel a recording that you have just made. This allows you to recover data that you have inadvertently over-recorded. (-> p.259) 
+Remember to set other appropriate parameters (such as tempo, click beat, click mode, and count; see page 78) before beginning the recording. 
+If you input your recording using the microkeyboard, the velocity for each note is set to 88( f ). If you want true recording of velocity values, enter the data from a remote MIDI keyboard. 
+
+
+Step Recording 
+
+[PATTERN] PATCH 
+[Recording] Recording Standby 
+[F6] Step Recording 
+
+[Explanation]
+You use this recording mode to create a recording one note at a time, setting appropriate values for each note's length, velocity, and so on. 
+[Procedure]
+1. Starting from the PATCH screen, press [Recording]. 
+The QY700 displays the Recording Standby page. The RECORDING indicator comes on. 
+2. Press [F6] (STEP) to select step recording. 
+3. Press [Play]. 
+The PLAY indicator comes on. The screen displays the step recording page. 
+4. Move the location pointer to the location where you want to enter a note, using [Decrement] key/[Increment] key, the data dial, or the shuttle dial. (To jump to a distant measure: Press [D1] to move the cursor to the location-setting area, then enter the measure number with the numeric 
+keypad.) 
+5. Set the step time, velocity, and gate time. To set each value, press the corresponding key (d [D2] for step time, d [D3] for velocity, d [D4] for gate time) to move the cursor to the entry area, then enter the value using the data dial, [Decrement] key/[Increment] key, or numeric keypad. 
+6. Now enter the note itself. You can select the note using either the microkeyboard or an external MIDI keyboard. If you want to enter a rest, press the [MUTE](REST) key. If you want to enter a tie, press the [SOLO] (TIE) key. 
+7. If you make an incorrect entry, you can delete it as follows. 
+To delete the last note you entered, press [F5](BkDelete). 
+The location pointer moves back to position it had just before you entered that note. 
+To delete some other note: Move the location pointer to the note's location and press [F6] (Delete). The QY700 deletes all notes that start at that position. 
+8. When you have finished making your entries, press [Stop] to terminate the session and return to the PATCH screen. 
+Under step recording, note registration occurs when you release the key(s), rather than when you press them. This makes it easy to enter a block chord: you can pick out the notes one by one and then release them all at the same time. 
+You may want to enter rough velocity values only (using only the f, p, and mp selections from the numeric keypad, for example). You can then use one of the pattern jobs (such as Crescendo or Modify Velocity) to adjust the values later. (See explanations starting on page 256.) 
+Step recording supports entry of note data only. You can add other types of data using the Phrase Edit Insert function. 
+
+Step recording of phrases (PATTERN mode) is essentially the same as step recording of songs (SONG mode). In particular, the recording procedures and screen parameters are the same. For more detailed operational information, refer to the explanation of song recording that begins on page 106. 
+
+
+6. Phrase Editing 
+
+[PATTERN] PATCH 
+[EDIT] Phrase Edit 
+[F1] Graphic 
+[F1] Event list 
+[F2] XG View 
+[F4] View Filter 
+[F5] Delete 
+[F6] Insert 
+(Table)
+Parameter 	Values 	Function 	See page 
+1 View Filter mark 	View only 	Mark appears if View Filter is ON. 	P.132 
+2 Location 	001 to 999 	Shows/sets cursor location (by measure). 	P.130 
+3 Measure 	001 to  999 	Shows/changes time of indicated note event. P.131 
+Beat 	1 to 8 
+Clock count 	000 to 239 
+4 Event name 	Note, Bend, PC, CC, ChAT, KeyAT, Excl, Tmp 	Shows/sets MIDI event. 	P.131 
+5 Event parameters 	Varies by event type 	Event parameter values. 	P.131 
+(Table End)
+
+[Explanation]
+You use the PHRASE EDIT submode to edit the contents of a user phrase. You can adjust or delete any of the MIDI events that constitute the phrase, and you can add new events. 
+The QY700 offers two different editing screens: an event list and a graphic display. You can toggle between these screens by pressing [F1]. 
+The event list presents a listing of the track's MIDI events, in order of their occurrence. Each entry shows an event's location in time, its name, and its numerical arguments. You are free to adjust the location or any of the argument values. You can delete any of the events, or insert new ones. 
+The graphic display consists of a piano-roll section and a point-graph section. You can edit the event values on this screen, but you cannot insert or delete events. (-> p.135) 
+[Procedure]
+1. Go to the PATCH screen and select the user phrase that you want to edit. 
+2. Press e to enter PHRASE EDIT submode (Event List screen). 
+3. Move the cursor to the event that you want to edit.You can use various methods, as follows. 
+Press [D1] to move the location entry area. Select the measure using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+Regardless of the cursor position, you can always move the cursor rapidly across the screen using the shuttle dial or the [Rewind]/[Forward] keys. If you move the cursor more slowly with the shuttle dial, the QY700 will play out note events as the cursor passes. 
+You can move up or down one event at a time by pressing cursor [up]/[down]. Again, the QY700 will reproduce note events when the cursor lands on them. 
+4. When you reach an event that you want to edit, use cursor [left]/[right] to move the cursor along the event line to each value you want to change. Enter your changes using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. Regardless of the entry method, you must press e to register the value. 
+The new settings will blink on the screen until you press [ENTER] to register them. If you move the cursor before you press e, the original values will remain in effect. 
+5. When you have finished editing, press e to return to the PATCH screen. 
+
+[Supplementary comments] 
+If you make an error during editing, you can undo all editing changes by executing the UNDO pattern job (job No.00). (-> p.259) 
+For detailed explanation of the editing procedures, refer to the discussion of the SONG EDIT function, starting on page 129. Phrase editing is essentially identical to song editing, with the following restrictions: (a) the phrase is recorded onto one track only, (b) the phrase cannot be longer than the pattern, and (c) phrase editing does not offer tempo-change settings. 
+
+
+7. Pattern Jobs 
+[PATTERN] PATCH 
+[JOB] PATTERN JOB 
+00 Undo/Redo 
+30 Style Icon 
+
+(Table)
+Pattern Job 	Purpose 	See page 
+00 Undo/Redo 	If UNDO: Cancel the last operation. If REDO: Cancel the last UNDO 	P.259 
+Quantize 	Quantize note events within selected segment of selected user phrase. 	P.260 
+Modify Velocity 	Change velocities in selected segment of selected user phrase. 	P.261 
+Modify Gate Time 	Change gate times in selected segment of selected user phrase. 	P.262 
+Crescendo 	Gradually increase/decrease velocity over selected segment. 	P.263 
+Transpose 	Transpose all notes over selected segment. 	P.263 
+Shift Note 	Replace all instances of specified note with specified replacement note, over designated segment. 	P.264 
+Shift 	Clock Shift all data (within specified segment) by specified number of clock cycles. 	P.265 
+Chord Sort 	Sort each chordal note event (within specified segment) by pitch. 	P.265 
+Chord Separate 	Break each chordal note event (within specified segment) into individual notes, separated by designated delay time. 	P.266 
+Shift Event 	Replace all occurrences of selected event type (within specified segment) with some other type. 	P.267 
+Copy Event 	Copy all events in specified segment to designated destination. 	P.268 
+Erase Event 	Erase all events over selected segment (and replaces with rests). 	P.269 
+Extract Event 	Move events of specified type from specified segment of one phrase to same segment in another. 	P.269 
+Thin Out 	Reduce repetitions of specified event type (within specified segment). 	P.271 
+Time Stretch 	Expand or compress timing over specified segment. 	P.272 
+Copy Phrase 	Copy phrase into specified destination. 	P.272 
+Mix Phrase 	Mix one phrase into another. 	P.274 
+Append Phrase 	Append one phrase to another. 	P.275 
+Split Phrase 	Split phrase into two phrases. 	P.276 
+Get Phrase 	Create user phrase from selected song data. 	P.277 
+Put Phrase 	Copy user phrase into song. 	P.278 
+Clear Phrase 	Delete all data from user phrase.	P.279 
+Phrase Name 	Assign name to user phrase.	P.279 
+Clear Track 	Delete all data from selected track, cancel voice setting, and reinitialize play effects. 	P.280 
+Copy Pattern 	Copy data from selected pattern track into destination pattern track. 	P.281 
+Append Pattern Append one pattern to another. 	P.282 
+Split Pattern 	Split pattern into two patterns. 	P.283 
+Clear Pattern 	Delete all data from selected pattern. 	P.284 
+Pattern Name 	Assign style and section names. 	P.284 
+Style Icon 	Assign icon to currently selected style. 	P.285 
+(Table End)
+
+
+[Explanation]
+You use the QY700's pattern jobs to perform various operations on phrases and patterns. 
+You select the job from the job menu using cursor [up],[down], or the data dial. As an alternative, you can select a job by entering the job number at the numeric keypad. You can also make your selection using the function keys, as described below. 
+Note that the job menu is too large to fit entirely on the screen. But you can scroll through the list using cursor [up],[down], or the data dial. 
+The menu is divided into four groupings, in accordance with job type: event-related, phrase-related, track-related, and pattern-related. You can jump the cursor to the first job in any of these grouping by pressing the corresponding key on the side of the screen. 
+[D1](Event) ............ jumps to 01 Quantize. 
+[D2](Phrase) .......... jumps to 16 Copy Phrase. 
+[D3](Track) ............ jumps to 24 Clear Track. 
+[D4](Pattern) .......... jumps to 25 Copy Pattern. 
+As the factory default, function keys 1 to 6 on the menu page automatically switch you into the job execution screens for jobs 00 to 05, respectively. But you can reassign each function key so that it accesses a job of your choice: just move the cursor to the job you want to assign, then hold down s and press the function key. Note that the function key assignments are displayed along the bottom line of the screen. 
+[Procedure]
+1. Go to the PATCH screen and select the pattern or phrase you want to work on. 
+2. Press [JOB]. 
+The screen displays the job menu. 
+3. Move the cursor to the job you want to execute, or else enter the job number using the numeric keypad. 
+Then press e to open the job-execution screen. 
+Note that you can use keys [D1] to [D4] to jump the cursor to different areas on the menu. 
+4. Move the cursor to the various entry spaces on the job execution screen, and enter the required values using the data dial, [Decrement] key/[Increment] key, or the numeric keypad. 
+
+CAUTION.
+Do not press the [ENTER] key until you are ready to execute the job. Be especially careful when using the numeric keypad: do not press e until you have finished inputting all values. 
+5. When you have entered all the values and are ready to execute the job, press [ENTER]. 
+The QY700 executes the job. The screen displays "Executing...," and then "Completed." 
+6. Press [EXIT] twice to return to the PATCH screen. 
+[Supplementary comments] 
+If you attempt to execute a job on an empty phrase or segment, the screen returns the "No Data" error message. If you see this message, press [EXIT] to clear it. 
+You can use job 00 (Undo/Redo) to undo the results of a job that you have just executed (see next page). This allows you to recover from an incorrect job operation. Once you have "undone" a job, you can then "redo" it. In some cases you may find it useful to successively "undo" and "redo" a job so that you can compare the pre-job and post-job versions of your data. (-> p.259.) 
+If you select a job that requires you to enter a segment designation, the screen will display boxes in which you can set the start point and end point (with a  to  character between the boxes). If you want the operation to begin at Measure 5 Beat 1 and terminate at Measure 8 Beat 4, for example, your specification would look like this: 005:1  to  008:4. 
+The number of beats per measure depends on the meter. If the meter is 4/4, for example, you can use a beat value of 1 to 4 when specifying the segment. If the meter is 8/4, then (since there are eight beats per measure) you can set the beat to any value between 1 and 8. 
+Note that the beat setting is linked to the measure setting. If you continuously increment (or decrement) the beat setting, the measure setting changes accordingly. 
+CAUTION.
+Do not switch off the power while a job is executing (while the "Executing..." message is on the screen), as this may cause destruction of your recorded data. 
+
+
+Job 00 Undo/Redo 
+[Explanation]
+The UNDO job cancels the changes you made in your most recent patch session, recording session, editing session, or job, restoring the data to its previous state. This allows you to recover from accidental data loss. 
+The REDO job, which becomes available only after you execute an UNDO, cancels the UNDO and restores the changes. 
+The UNDO/REDO job is effective on PATTERN-mode patch sessions, and on PATTERN-mode and SONG-mode recording sessions, editing sessions, and jobs (with the exception of the SONG NAME and PHRASE NAME jobs). 
+The UNDO job is effective only on the most recent data changes. If you run a recording session and then an editing session, for example, the UNDO will be available only for the editing session. (But note that if you move to a recording, editing, or job screen and then quit without making any changes, this does not count as a session.) 
+As soon as you execute an UNDO, the job name changes to REDO. The REDO will remain available until you change data again. 
+You can undo and then redo the same change as many times as you like (provided that you don't make any other changes in between). This can be useful when you want to compare two versions of your data. 
+[Procedure]
+Check the JOB 00 Undo/Redo execution screen to make sure that the details are correct, and then press [ENTER] . 
+As a shortcut, it is possible to execute an UNDO/REDO job immediately -- without moving into the corresponding job screens -- by pressing s plus j. This feature is available, for example, from the PATCH screen. 
+
+1. Undo/Redo indication 
+[Explanation]
+The screen displays the word Undo or Redo to indicate the job that is currently available. 
+
+2. UNDO/REDO target 
+[Explanation]
+The two entries at the right of the screen identify the data-change currently available for UNDOing or REDOing. This will be the most recently executed patch, editing, recording, or job-related data change. (In the example above, the most recent change was a PATTERN-mode editing change.) 
+
+
+Job 01 Quantize 
+[Explanation]
+This job quantizes note events over a specified segment of the specified user phrase. Quantizing is the process of adjusting the timing of note events by pulling them closer to the nearest interval boundary (or quantizing line). You can use this feature, for example, to improve the timing of a phrase you recorded in real time. 
+For full information about this job's parameters and operation, refer to the explanation for the SONG-mode version of the job, on page 142. Note the following differences, however: the PATTERN-mode job applies to a user phrase rather than a sequence track, and the maximum segment length is 256 measures. 
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase to be quantized. 
+[Setting values]
+01 to 99 
+
+2. Segment and notes 
+[Setting values]
+Measure: beat 001:1 to 256:8
+Note range C-2 to G8
+
+3. Quantizing value 
+[Setting values]
+32nd-note intervals 
+16th-triplet intervals 
+16th-note intervals 
+8th-triplet intervals 
+8th-note intervals 
+Quarter-note-triplet intervals 
+Quarter-note intervals 
+16th-note and 16th-triplet intervals 
+8th-note and 8th-triplet intervals 
+
+4. Strength 
+[Setting values]
+000 percent to 100 percent 
+
+5. Sensitivity 
+[Setting values]
+minus 100 percent to  plus 000 percent to  plus 100 percent 
+
+6. Swing rate 
+[Setting values]
+If quantizing value is q, e, x, or r : 50 percent to 75 percent 
+If quantizing value is q3, e3, or x3 : 66 percent to 83 percent 
+If quantizing value is e plus 3, or x plus 3 : 50 percent to 66 percent 
+
+7. Swing gate time 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+8. Swing velocity 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+
+Job 02 Modify Velocity 
+[Explanation]
+This job alters the velocity values of the specified range of notes (pitches) in the specified segment of the designated user phrase. Remember that velocity refers to the force with which a note is struck. The precise effect of a velocity change varies according to the voice: in most cases a higher velocity produces a louder sound. 
+Using this job, you can choose to set all targeted notes to an identical velocity value, or you can apply a relative (linear) adjustment to the original velocity values. 
+If making a relative adjustment, you use two parameters: the Rate and the Offset. The Rate value applies a proportional change to the velocity value, while the Offset value (which is applied after the Rate adjustment) adds a fixed value. The relation is as follows: 
+Adjusted velocity  equal  (original velocity times Rate)  plus  Offset. 
+If the adjustment result is less than 1, the QY700 sets the value to 1. If the result is higher than 127, the QY700 sets the value to 127. 
+For full information about this job's parameters and operation, refer to the explanation for the SONG-mode version of the job, on page 145. But note that the PATTERN-mode job applies to a user phrase rather than a sequence track, and that maximum segment length for a phrase is 256 measures. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase to be adjusted. 
+[Setting values]
+01 to 99
+
+2. Segment and notes 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+Note range C-2 to G8 
+
+3. Set all 
+[Setting values]
+Off (0), 001 to 127 
+
+4. Rate 
+[Setting values]
+000 percent to 100 percent to 200 percent 
+
+5. Offset 
+[Setting values]
+minus 99 to  plus 00 to  plus 99 
+
+
+Job 03 Modify Gate Time 
+[Explanation]
+This job alters the gate times of the designated range of notes (pitches) in the specified segment of the selected user phrase. The gate time refers to the length of time that a note is held. For non-percussive voices, the gate time is equal to the actual playback time span. 
+Using this job, you can choose to change all targeted notes to some fixed gate time, or you can apply a relative (linear)adjustment to the original gate times.
+If making a relative adjustment, you use two parameters:the Rate and the Offset. The Rate value applies a proportional change to the gate time, while the Offset value (which is applied after the Rate adjustment) adds a fixed value. The relation is as follows: 
+Adjusted gate time  equal  (original gate time X Rate)  plus  Offset. 
+If the adjustment result is less than 1, the QY700 sets the value to 1.
+For full information about this job's parameters and operation, refer to the explanation for the SONG-mode version of the job, on page 147. But note that the PATTERN-mode job applies to a user phrase rather than a sequence track, and that maximum segment length for a phrase is 256 measures.
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase to be adjusted. 
+[Setting values]
+01 to 99 
+
+2. Segment and notes (M and Note equal ) 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+Note range C-2 to G8 
+
+3. Set all
+[Setting values]
+Off (0), 0001 to 9999
+
+4. Rate 
+[Setting values]
+000 percent to 100 percent to 200 percent
+
+5. Offset
+[Setting values]
+minus 9999 to  plus 0000 to  plus 9999
+
+
+Job 04 Crescendo 
+[Explanation]
+You use this job to apply a crescendo or decrescendo to the specified range of notes (pitches) in the specified user phrase. The QY700 produces the effect by applying a slight velocity adjustment (offset) at the beginning of the segment, with the offset increasing gradually up until the end of the segment. 
+For full information about this job's parameters and operation, refer to the explanation for the SONG-mode version of the job, on page 148. But note that the PATTERN-mode job applies to a user phrase rather than a sequencer track, and that maximum segment length for a phrase is 256 measures. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase to be adjusted. 
+[Setting values][Setting values]
+01 to 99 
+
+2. Segment and notes 
+[Setting values]
+Measure: beat 001:1 to 256:8
+Note range C-2 to G8
+
+3. Range 
+[Setting values]
+minus 99 to  plus 00 to  plus 99 
+
+
+Job 05 Transpose 
+[Explanation]
+You use this job to transpose a specified range of notes (pitches) within a specified segment of a designated user phrase. You set the transposition level in semitone increments. 
+
+1. Phrase 
+[Explanation]
+This Phrase value selects the user phrase. 
+[Setting values]
+
+2. Segment and notes (M and Note equal ) 
+[Explanation]
+The two boxes to the right of the M select the phrase segment to be transposed. The first box sets the measure and beat for the start point; the second box sets the end point. The Note boxes select the range of notes (pitches) to be targeted: notes with pitches outside this range are not affected. 
+[Setting values]
+Measure: beat001:1 to 256:8
+Note range C-2 to G8
+
+3. Transposition amount 
+[Explanation]
+The Transpose value sets the number of transposition intervals (semitones). A value of  plus 12 would transpose all targeted notes up by exactly one octave, while a value of minus 12 would transpose down by an octave. 
+[Setting values]
+minus 99 to  plus 00 to  plus 99
+
+
+Job 06 Shift Note 
+[Explanation]
+This job replaces all occurrences of a specified pitch (within the selected segment of the selected user phrase) with some other selected pitch. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+01 to 99 
+
+2. Segment and notes (M) 
+[Explanation][Explanation]
+The two boxes to the right of the M select the phrase segment over which notes are to be changed. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+
+3. Source pitch 
+[Explanation]
+The first box to the right of "Note  equal " indicates the note (pitch) to be changed. Each occurrence of this note will be converted to an equivalent note of the destination pitch. 
+[Setting values]
+C-2 to G8 
+
+4. Destination pitch 
+[Explanation]
+The second box to the right of "Note equal " selects the new pitch for the transposed notes. 
+[Setting values]
+C-2 to G8 
+
+
+Job 07 Shift Clock 
+[Explanation]
+This job executes a time shift of all data events within the selected segment of the selected phrase. The shift is executed in clock-cycle increments. 
+ If you wish to move by one or more full beats or measures, you may find it easier to use the COPY EVENT job. (-> p.268) 
+Note that this job will never move an event past the designated segment's start or end points; any event that would otherwise move past this point is instead deposited at the segment's border. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+Note that there are 480 clock cycles per beat. 
+[Setting values]
+01 to 99 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase segment. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+
+3. Clock cycles 
+[Explanation]
+The Clock value sets the number of clock cycles for the data shift. Positive values shift events toward the end of the phrase, while negative events shift them back. 
+[Setting values]
+minus 9999 to  plus 0000 to  plus 9999 
+
+
+Job 08 Chord Sort 
+[Explanation]
+This job "sorts" chord events (simultaneous note events) by order of pitch. The sort is reflected in the EDIT page listing, and determines the separation sequence used by the CHORD SEPARATE job (see next page). 
+Sorting is by pitch. If notes E3, C3, and G3 all begin at the same time, the job adjusts the sequence to C3, E3, G3 (if the setting is Normal) to G3, E3, C3 (if Reverse). 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+01 to 99 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase segment over which chord sorts are executed. The first box sets the measure and beat for the start point; the second box sets the end point. 
+[Setting values]
+Measure: beat 001:1 to 256:8
+
+3. Type 
+[Setting values]
+Normal Sort from low pitch to high. 
+Reverse Sort from high pitch to low. 
+
+
+Job 09 Chord Separate 
+[Explanation]
+This job opens each chord formation (within the specified segment of the specified phrase) into its individual notes, inserting a specified delay between adjacent notes. 
+If the Clock value is set to 30, for example, then a block chord consisting of elements C3, E3, G3 will be played as a C3 (at the chord's original timing) followed 30 cycles later by the E3, and then another 30 cycles later by the G3. This feature is useful, for example, when you want to open up guitar chords stroking.
+Note that the QY700 will shorten chord breaks as necessary to avoid playing over the next measure boundary or into the next chord.
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+000 to 999 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase segment over which chord separations are executed. The first box sets the measure and beat for the start point; the second box sets the end point.
+[Setting values]
+Measure: beat001:1 to 256:8
+
+3. Clock cycles 
+[Explanation]
+The Clock value sets the number of clock cycles inserted  between adjacent chord notes. 
+Note that there are 480 clock cycles per beat. 
+[Setting values]
+01 to 99 
+
+
+Job 10 Shift Event 
+[Explanation]
+This job replaces all occurrences of a specified event type (within the selected segment of the selected phrase) with some other designated event type. Although the event type itself is replaced, its accompanying argument (parameter value) is retained and applied to the new event type. 
+As an example, you can use this function to change every breath-controller event into a channel-aftertouch event, while leaving the magnitude of the event unchanged. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+01 to 99 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase segment over which the substitutions are executed.
+[Setting values]
+Measure:beat 001:1 to 256:8
+
+3. Source event 
+[Explanation]
+The two boxes at the center select the event type to be replaced. 
+[Setting values]
+CC 001 to 031,033 to 127 	Control-change event 
+CAT 	Channel aftertouch 
+PB MSB 	Pitch bend MSB 
+Note -Note (Velo equal 64)	Note event (where the note number argument is retained.) 
+Note Velo# (Note equal C3)	Note event (where the velocity argument is retained.) 
+
+4. Destination event 
+[Explanation]
+The two boxes at the bottom select the event type that replaces the "source" event. 
+[Setting values]
+CC 001 to 031,033 to 127 Control-change event 
+CAT 	Channel aftertouch 
+PB MSB 	Pitch bend (With the LSB argument set to 00.) 
+Note Note (Velo equal 64) 	Note event (where original argument gives the new note number; velocity is set to 64; and gate time is set to 108.) 
+Note Velo# (Note equal C3)	Note event (where original argument gives the new velocity; the new note becomes 
+C3; and gate time is set to 108.)
+
+
+Job 11 Copy Event 
+[Explanation]
+This job copies a specified segment of a selected user phrase into a different area of the same phrase. 
+You can choose to copy more than one iteration of the segment. 
+If you select three iterations, for example, the segment will be copied three times, with the copies placed one after the other. 
+
+1. Style 
+[Explanation]
+The Style value selects the style containing the desired phrase. 
+[Setting values]
+01 to 64 
+
+2. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+01 to 99 
+
+3. Source segment 
+[Explanation]
+The upper "M" values select the phrase area that you want to copy. 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+
+4. Start point of destination 
+[Explanation]
+The lower "M" value selects the start point of the copy destination. 
+[Setting values]
+Measure: beat 001:1 to 256:8 
+
+5. Copy iterations 
+[Explanation]
+The final entry on the page sets the number of times the segment is copied. 
+[Setting values]
+01 to 99
+
+
+Job 12 Erase Event 
+[Explanation]
+This job clears all data from the specified segment of the designated user phrase, and replaces the data with "rests" (so that the segment becomes silent). 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the user phrase. 
+[Setting values]
+01 to 99
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase segment to be erased. 
+[Setting values]
+Measure: beat001:1 to 256:8
+
+
+Job 13 Extract Event 
+[Explanation]
+This job moves all instances of specified event data from a selected segment of a user phrase to the same segment on a different user phrase. Following the operation, the targeted events no longer exist in the source segment. 
+You can use the Spot Clock setting to target only those events that occur within a certain interval of each of the segment's measures. For example, you can choose to extract only events that fall between the second and third beats of each of the targeted measures. 
+If data already exist at the destination side, the extracted data and existing data are mixed. 
+You can also use this job to delete the specified event data from the source segment, without transferring it to any destination. 
+(You can do this by setting the second Phrase value to "Off.") 
+
+1. Source phrase 
+[Explanation]
+The first Phrase value selects the source phrase (user phrase). 
+[Setting values]
+01 to 99 
+
+
+2. Source segment 
+[Explanation]
+The two boxes to the right of the M select the source segment. 
+[Setting values]
+Measure: beat001:1 to 256:16 .
+
+3. Spot clock 
+[Explanation]
+The Spot Clock value selects the interval of each measure from which data are to be extracted. 
+The interval is set by clock cycles, where each measure starts at cycle 0000. There are 480 cycles per quarter note. 
+For example, assume that the meter is set to 4/4. In this case, if you want to extract data only from the first half of each measure, you would set the range to 0000 to 0959. If you wanted to copy only those events that fall exactly on the fourth beat, you would set the range to 1440 to 1440. 
+[Setting values]
+0000 to 3840
+
+4. Destination phrase 
+[Explanation]
+The second Phrase value selects the destination phrase (user phrase).
+[Setting values]
+Off, 01 to 99
+Off No destination. (Erase only.)
+01 to 99 Selects destination phrase.
+
+5. Event 
+[Explanation]
+The third pair of boxes (at the center of the screen) selects the event type to be extracted.
+[Setting values]
+Note, PC, PB, CC (000 to 127, All), CAT, PAT, EXC
+Note 	Note events (C-2 to G8, All)
+PC 	Program change
+PB 	Pitch bend
+CC(000 to 127,All) 	Control change (Any single controlchange message type 000 to 127, or all control-change messages)
+CAT 	Channel aftertouch
+PAT 	Polyphonic aftertouch
+EXC 	System exclusive
+
+6. Argument range 
+[Explanation]
+The lowest two boxes on the screen select the argument range. The QY700 will extract only those events whose argument falls within the specified range.  If you are extracting note events, for example, you can use this setting to limit extraction to all note events within a certain pitch range (for example, C3 to C4). If extracting program-change events, you can limit extraction to events 
+with a certain range of program numbers.
+Note that the EXC event type does not accept an argument-range value. 
+The values listed below show the maximum ranges. In all cases you can set a smaller range. Note that the first value of the range must be less than or equal to the second value. 
+[Setting values]
+C-2 to G8 	Maximum range for note events. 
+minus 8192 to  plus 8191 	Maximum range for pitchbend events. 
+000 to 127 	Maximum range for all event types other than note and pitchbend. 
+
+
+Job 14 Thin Out 
+[Explanation]
+You use this job to remove repeated occurrences of a specified non-note event within the designated segment of a selected user phrase. The purpose is to reduce the data volume and free up additional memory. 
+Specifically, the job will remove every other occurrence of the event in areas where the event recurs within 60 clock cycles. The job will not remove an event that is separated from the previous occurrence by at least 60 clock cycles. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the target phrase. 
+[Setting values]
+01 to 99 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the phrase area to be thinned. 
+[Setting values]
+Measure: beat 001:1 to 256:16 
+
+3. Event 
+[Explanation]
+The lower pair of boxes selects the targeted event type. 
+[Setting values]
+PB, CC (000 to 127, All), CAT, PAT 
+PB Pitch bend 
+CC(000 to 127,All) Control change (Any single controlchange message type 000 to 127, or all control-change messages) 
+CAT Channel aftertouch 
+PAT Polyphonic aftertouch 
+
+Job 15 Time Stretch 
+[Explanation]
+This job expands or compresses the timing over the selected segment of the selected user phrase. 
+The operation affects all event timing, note step times, and note gate times. 
+
+1. Phrase 
+[Explanation]
+The Phrase value selects the target phrase. 
+[Setting values]
+01 to 99 
+
+2. Segment 
+[Explanation]
+The two boxes to the right of the M select the target segment of the phrase. 
+[Setting values]
+Measure: beat 	001:1 to 256:8 
+
+3. Time 
+[Explanation]
+The Time value sets the magnification/compression ratio. 
+[Setting values]
+050 percent to 200 percent 
+
+
+Job 16 Copy Phrase 
+[Explanation]
+This job copies a selected phrase (either user phrase or preset phrase) to the designated user phrase.
+The source-side Style parameter is meaningful only if you are copying from a user phrase. 
+If the destination phrase does not yet exist, this job will create it. If it does exist, the job will delete its original data. 
+
+1. Source style 
+[Explanation]
+The first Style value selects the style containing the user phrase to be copied. The value is meaningful only if you are copying a user phrase; the QY700 ignores the setting if you are copying a preset phrase. 
+[Setting values]
+01 to 64 
+
+2. Source phrase 
+[Explanation]
+The first Phrase value selects the phrase to be copied. 
+[Setting values]
+Any preset phrase, or user phrase 01 to 99 
+
+3. Destination style
+[Explanation]
+The second Style value selects the style that will contain the destination phrase. 
+[Setting values]
+01 to 64 
+
+4. Destination phrase
+[Explanation]
+The second Phrase value selects the destination phrase (user phrase). 
+[Setting values][Setting values]
+01 to 99 
+
+5. Data type
+[Explanation]
+The final two items on the screen let you select the type of data to be targeted. You can select one or both types by placing a checkmark into the corresponding box(es). 
+ If you select Event, the job copies all event data from the source to the destination. 
+If you select Phrase Table, the job copies the content of the source side's phrase table into the destination's phrase table. 
+[Setting values]
+Check	Copy the corresponding data type.
+none	Do not copy this data type.
+
+
+Job 17 Mix Phrase 
+[Explanation]
+This job mixes all data from two selected user phrases into the second of these phrases. 
+
+1. Source style
+[Explanation]
+The first Style value selects the style containing the source phrase (phrase "a").
+[Setting values]
+01 to 64 
+
+2. Source phrase (Phrase "a")
+[Explanation]
+The first Phrase value selects the source phrase. This is the phrase containing the data to be mixed into the destination phrase. Following the mix, the content of the source phrase remains unchanged. 
+[Setting values]
+01 to 99 
+
+3. Destination style
+[Explanation]
+The second Style value selects the style containing the destination phrase (phrase "b"). 
+[Setting values]
+01 to 64 
+
+4. Destination phrase (Phrase "b") 
+[Explanation]
+The second Phrase value selects the destination phrase. The original content of this phrase becomes mixed with the content from phrase "a". 
+[Setting values]
+01 to 99 
+
+5. Phrase Table source 
+[Explanation]
+The final item on the screen lets you select which phrase table to use for the destination phrase. If you select "a", the QY700 copies the phrase-table data from the source phrase to the destination. If you choose "b", the phrase table at the destination side remains unchanged. 
+[Setting values]
+a, b 
+a 	Use table data from phrase "a". 
+b 	Use table data from phrase "b". 
+
+
+Job 18 Append Phrase 
+[Explanation]
+This job attaches the content of a selected user phrase (phrase "a") onto the end of another user phrase (phrase "b"). After completion of the job, phrase "a" remains unchanged. 
+If you attempt to append data such that phrase "b" would become longer than 256 measures (the maximum phrase length), the QY700 returns the "Illegal Input" message and the job does not execute. 
+
+1. Source style 
+[Explanation]
+The first Style value selects the style containing the source user phrase (phrase "a"). 
+[Setting values]
+01 to 64 
+
+2. Source phrase (Phrase "a") 
+[Explanation]
+. The first Phrase value selects the source phrase (user phrase). Following job execution, the content of the source phrase remains unchanged. 
+[Setting values]
+01 to 99 
+
+3. Destination style
+[Explanation]
+The second Style value selects the style containing the destination phrase (phrase "b").
+[Setting values]
+01 to 64 
+
+4. Destination phrase (Phrase "b") 
+[Explanation]
+The second Phrase value selects the phrase to which the source phrase is attached. 
+[Setting values]
+01 to 99 
+
+5. Phrase Table source 
+[Explanation]
+The final item on the screen lets you select which phrase table to use for the destination phrase. If you select "a", the QY700 copies the phrase-table data from the source phrase to the destination phrase. If you choose "b", the phrase table at the destination side remains unchanged. 
+[Setting values]
+a, b
+a 	Use table data from phrase "a". 
+b 	Use table data from phrase "b". 
+
+
+Job 19 Split Phrase 
+[Explanation]
+This job splits a selected user phrase into two user phrases. 
+The job splits the phrase at the first beat of the specified measure. The initial portion of the phrase (up to the split) remains in its original location, while the remainder of the phrase moves into the specified destination. 
+The job overwrites any data already existing in the destination phrase.
+The phrase table from the original phrase is copied to the destination phase. 
+
+1. Source style 
+[Explanation]
+The first Style value selects the style containing the user phrase to be split. 
+[Setting values]
+01 to 64 
+
+2. Source phrase 
+[Explanation]
+The first Phrase value selects the user phrase to be split. 
+[Setting values]
+01 to 99 
+
+3. Split point
+[Explanation]
+The M value selects the measure at which the phrase is split. This becomes the start point of the destination phrase. 
+[Setting values]
+001 to source-phrase length 
+
+4. Destination style
+[Explanation]
+The second Style value selects the destination style. 
+[Setting values]
+01 to 64
+
+5. Destination phrase
+[Explanation]
+The second Phrase value selects the split destination. 
+[Setting values]
+01 to 99 
+
+
+Job 20 Get Phrase 
+[Explanation]
+This job creates a user phrase from a specified segment of song data. Specifically, it copies a segment of sequence-track data from a song into the designated destination phrase. 
+The QY700 sets the time signature (meter) for the new phrase equal to the meter recorded in the initial measure of the source segment. (Note that meter value applies to the entire phrase. Any meter changes that occur within subsequent measures of the source segment are ignored.) 
+Maximum phrase length is 256 measures. If you attempt to copy a segment that is longer than 256 measures, the screen returns the "Illegal Input" message and the job does not execute. 
+The job overwrites any data already existing in the destination phrase. 
+The job does not copy voice and tempo settings. 
+
+1. Source song 
+[Explanation]
+The Song value selects the song containing the source data. 
+[Setting values]
+01 to 20 
+
+2. Source track 
+[Explanation]
+The Track value selects the sequence track containing the source data. 
+[Setting values]
+01 to 32 
+
+3. Segment
+[Explanation]
+The M values select the source segment, by its location (in measures) on the source track. The first value gives the initial measure; the second value gives the final measure. 
+[Setting values]
+Initial measure: 	001 to 999
+Final measure: 	001 to 999
+(where final measure - initial measure less than/equal 256, 
+and final measure more than/equal initial measure)
+
+4. Destination style
+[Setting values]
+The Style value selects the style that will contain the new user phrase. 
+[Setting values]
+01 to 64 
+
+5. Destination phrase
+[Explanation]
+The Phrase value sets the phrase number for the destination user phrase. 
+[Setting values]
+01 to 99 
+
+
+Job 21 Put Phrase 
+[Explanation]
+This job copies a selected user phrase into a specified area of a selected song. Any data previously existing in the destination area is erased. 
+You select the source phrase by its style and phrase numbers. You select the destination by song number, track number (sequence track), and measure number (location on track). 
+The job does not copy meter, voice, or tempo settings. The phrase's meter (time signature) has no effect on the copy. 
+
+1. Source style 
+[Explanation]
+The Style value selects the style containing the source phrase. 
+[Setting values]
+01 to 64 
+
+2. Source phrase 
+[Explanation]
+The Phrase value selects the user phrase to be copied. 
+[Setting values]
+01 to 99 
+
+3. Destination song
+[Explanation]
+The Song value selects the destination song. 
+[Setting values]
+01 to 20 
+
+4. Destination track 
+[Explanation]
+The Track value selects the sequence track onto which the phrase is to be copied. 
+[Setting values]
+01 to 32 
+
+5. Track location 
+[Explanation]
+The M value selects the starting measure, on the sequence track, for the copy. 
+[Setting values]
+001 to 999 
+
+
+Job 22 Clear Phrase 
+[Explanation]
+This job deletes all data from the selected user phrase, and 1. Phrase reinitializes the phrase table.
+The Phrase value selects the user phrase to be deleted. 
+[Setting values]
+01 to 99
+
+
+Job 23 Phrase Name 
+[Explanation]
+You use this job to set or change the name for a (non-empty) user phrase. The name can be up to 12 characters long. 
+
+1. Phrase
+[Explanation]
+The Phrase value selects the user phrase to be named. 
+You cannot assign a name to an empty phrase. If you select an empty phrase, a string of asterisks (************) appears in the name entry area. 
+[Setting values]
+01 to 99
+
+2. Phrase name
+[Explanation]
+Enter the phrase name into the entry space to the right of the number. 
+[Setting values]
+Supported characters: 
+0 to 9, a to z, A to Z " ' ^ ( ) < = > @ | \ _ ! ? # $ % & * + - / , . : ; space 
+
+[Procedure]
+1. Move the cursor into the entry area. 
+2. Use the numeric keypad and the microkeyboard to input each character. Use the cursor [left] and [right] keys to move the cursor left and right as necessary. 
+For information about how to input characters, refer to Chapter 1. (-> p.53) 
+3. When you have finished entering the name, press [EXIT] twice to return to the PATCH screen. Move the cursor onto the phrase entry in the matrix, and check that the name appears correctly in the data-display area. 
+Note that you do not need to press e to enter the name. 
+
+
+Job 24 Clear Track 
+[Explanation]
+This job deletes all data (of the selected type) from the selected pattern track, or from all pattern tracks. 
+
+1. Track 
+[Explanation]
+The TR setting selects the track to be cleared. 
+[Setting values]
+01 to 16, All 
+
+2. Data type
+[Explanation]
+Check the box containing the data type(s) that you want to delete. 
+If you select Patch, the job deletes all data stored in the track. 
+If you select Play Effect, the job deletes all play-effect settings for that track. 
+If you select Voice, the job deletes the track's pattern-voice setting. 
+[Setting values]
+Check	Delete the corresponding data type. 
+none	Do not delete this data type. 
+
+
+Job 25 Copy Pattern 
+[Explanation][Explanation]
+This job copies all data (of a selected type) from selected source track(s) to selected pattern track(s). You can copy track data from a single section of a selected style, or from all sections of the style. 
+The copy operation overwrites any data previously existing on the destination track(s). 
+
+1. Source style, section, and track 
+[Explanation]
+The first three settings select the source track(s). 
+If you set Section or Track to "All", the QY700 automatically sets the corresponding destination value to "All". (If you change an "All" setting to a number or letter, the QY700 automatically deselects the "All" setting at the destination side.) 
+[Setting values]
+Style 	01 to 64
+Section 	A to H, All
+Track 	1 to 16, All
+
+2. Destination style, section, and track 
+[Explanation]
+The second group of settings selects the destination track(s). 
+Again, if you set Section or Track to "All", the QY700 automatically sets the corresponding source value to "All". 
+(And if you change an "All" setting to a number or letter, the QY700 automatically deselects the "All" setting at the source side.) 
+[Setting values]
+Style 	01 to 64
+Section 	A to H, All
+Track 	1 to 16, All
+
+3. Data type
+[Explanation]
+Check the box(es) containing the data type(s) that you want to copy. 
+Select Patch to copy the phrase settings from the selected track(s). 
+Select User Phrase to copy user phrases from the selected track(s). 
+Select Play Effect to copy the track play-effect settings. 
+Select Voice to copy the pattern-voice setting(s). 
+[Setting values]
+Copy the corresponding data type. 
+Do not copy this data type. 
+
+
+Job 26 Append Pattern 
+[Explanation]
+This job attaches a copy of the selected user pattern (pattern "a") onto the end of another user pattern (pattern "b"). 
+After completion of the job, the original pattern "a" remains unchanged. 
+If you attempt to append data such that pattern "b" would become longer than 256 measures, the QY700 returns the "Illegal Input" message and the job does not execute. 
+
+1. Source pattern (pattern "a") 
+[Explanation]
+The first Style and Section settings select the source pattern. 
+[Setting values]
+Style 	01 to 64
+Section 	A to H
+
+2. Destination pattern (pattern "b") 
+[Explanation]
+The second Style and Section settings select the pattern to which the source pattern is attached. 
+[Setting values]
+Style 	01 to 64
+Section 	A to H
+
+3. Play Effect selection 
+[Explanation]
+The Play Effect entry lets you select which play-effect settings to apply to the destination pattern. If you select "a", the QY700 copies the play effects from the source phrase to the destination phrase. If you choose "b", the destination side's original play-effect settings remain in effect. 
+[Setting values]
+a, b
+a 	Use play effects from pattern "a".
+b 	Retain play effects from original pattern "b".
+
+4. Pattern Voice selection 
+[Explanation]
+The Pattern Voice entry lets you select which pattern voices to apply to the destination pattern.
+[Setting values]
+a, b
+a 	Use pattern voices from pattern "a".
+b 	Retain pattern voices from original pattern "b".
+
+
+Job 27 Split Pattern 
+[Explanation]
+This job splits a selected pattern into two patterns. 
+The job splits the pattern at the first beat of the specified measure. The initial portion of the pattern (up to the split point) remains in its original location, while the portion starting after the split point is moved and becomes the destination pattern. (If no phrases start after the split point, the destination pattern becomes empty.) 
+The job overwrites any data already existing in the destination pattern. 
+
+1. Source pattern 
+[Explanation]
+The first Style and Section settings select the pattern to be split. 
+[Setting values]
+Style 	01 to 64
+Section 	A to H
+
+2. Split point
+[Explanation]
+The M value selects the measure at which the pattern is split. This becomes the start point of the destination phrase. 
+[Setting values]
+001 to source-pattern length 
+
+3. Destination pattern
+[Explanation]
+The second Style and Section select the new location for the portion of the pattern that begins at the split point. 
+[Setting values]
+Style 	01 to 64
+Section 	A to H
+
+4. Play Effect and Pattern Voice copy 
+[Explanation]
+The last two entries on the screen let you select whether or not to copy the source's play-effect and pattern-voice settings to the destination side when making the split. 
+[Setting values]
+Check	Include the corresponding data.
+none	Do not include this data.
+
+
+Job 28 Clear Pattern 
+[Explanation][Explanation]
+This job deletes all data from the selected pattern(s). 
+If you set Style to "All", the job executes a total deletion --  removing all sections of all styles. In this case, the job also reinitializes all play-effect and pattern-voice settings for all styles. 
+Note that it is not possible to UNDO a total deletion. Be sure that you really want to delete all patterns before executing a Style equal All deletion.
+If you set Style to "All", then Section is also forced to "All", the job deletes all sections (all patterns) within the selected style. It also reinitializes all play-effect and pattern-voice settings for that style. (If you make an error with this type of deletion, however, you can recover by running an UNDO.) 
+
+1. Style and section 
+[Explanation]
+The style and section values select the pattern(s) to be deleted. 
+If you set Style to a numerical value and set Section to "All". 
+[Setting values]
+Style 	01 to 64, All
+Section 	A to H, All
+
+
+Job 29 Pattern Name 
+[Explanation]
+You use this job to set or change the style name and section names for the currently selected style. 
+Maximum length for these names is 8 characters. 
+
+1. Style name
+[Explanation]
+When the screen first appears, the Style entry shows the name of the currently selected style. You can overwrite as necessary to create the new name. 
+[Setting values]
+Supported characters: 
+0 to 9, a to z, A to Z " ' ^ ( ) < = > @ | \ _ ! ? # $ % & * + - / , . : ; space 
+
+2. Section
+[Explanation]
+You can use the Section setting (in the square box) to select the section that you want to name. 
+[Setting values]
+A to H 
+
+3. Pattern name 
+[Explanation]
+After selecting the section, move the cursor into the rectangular area to the right, and enter or change the pattern name as necessary . 
+[Setting values]
+Supported characters: 
+0 to 9, a to z, A to Z " ' ^ ( ) < = > @ | \ _ ! ? # $ % & * + - / , . : ; space 
+[Procedure]
+1. Move the cursor into the name-entry area for the name you want to set. 
+2. Use the numeric keypad and the microkeyboard to enter each character. You can use the cursor [left] and [right] keys to move the cursor left or right as necessary. 
+For information about how to enter characters, refer to Chapter 1. (-> p.53) 
+3. When you have finished entering the names, press [EXIT] twice to return to the PATCH screen. You can then check whether the names appear correctly. 
+Note that you do not need to press [ENTER] to enter the name. 
+
+
+Job 30 Style Icon 
+[Explanation]
+You use this job to change the icon for the currently selected style. You can choose from 160 icons. 
+[Procedure]
+Move the cursor to the desired icon, then press [EXIT]. 
+
+
+This is the end of the file.
