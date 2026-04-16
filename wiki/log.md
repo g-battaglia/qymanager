@@ -2,6 +2,43 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-28 | Hardware-in-the-loop Pipeline B validata
+
+### QY70 collegato, hardware I/O completo
+Utente ha collegato il QY70 via UR22C Porta 1. Verificato tutto il flusso:
+- **Identity reply**: `43 00 41 02 55 00 00 00 01` (Yamaha, XG Family, QY70 member 0x5502)
+- **Bulk dump request**: funzionante con Init handshake — pattern slot 0 = 16274B (103 messaggi)
+- **MIDI capture**: playback catturato con MIDI Start+Clock (sync External)
+- **Style send**: auto_capture_pipeline invia 105 SysEx (SGT) + cattura playback live
+
+### Pipeline B end-to-end con hardware
+`auto_capture_pipeline.py tests/fixtures/QY70_SGT.syx -b 151 -n 6 -d 12` esegue:
+1. Send 105 SysEx (16292B) → QY70 edit buffer
+2. Start MIDI + Clock 151 BPM per 12s
+3. Capture 1056 events (511 note-on, 6 canali attivi: 9/10/11/12/14/15)
+4. Quantize → 310 note in 6 tracce
+5. Build 5120-byte Q7P + SMF + phrases bin
+
+Risultato: `s28_sgt/sgt_5120_4bar.Q7P` → roundtrip 208/208 note (4-bar truncated), validator 0 warnings.
+
+### AM response mapping scoperto
+Differenza tra riferimento e dump:
+- File `.syx` di reference: header `AM=0x7E` (edit buffer write)
+- QY70 dump response: header `AM=0x00` (pattern slot 0)
+- AL parameter ignorato in dump response: QY70 restituisce sempre pattern completo (16274B) indipendentemente da AL=0x00-0x07 o 0x7F
+
+### Limite osservato
+Phrase area 2048B (0x200-0x9FF) insufficiente per 6 tracks × 6 bar SGT — PHR1 da solo serve 307B. Necessario:
+- Ridurre bar (6→4), oppure
+- Usare scaffold 6144-byte (SGT..Q7P, phrase area 3072B)
+
+Validator e builder ora segnalano il caso con `ValueError` descrittivo.
+
+### File generati Session 28
+- `midi_tools/captured/s28_current_pattern.syx` — dump pattern slot 0 (16274B)
+- `midi_tools/captured/s28_sgt/capture.json` — 1056 MIDI events
+- `midi_tools/captured/s28_sgt/sgt_5120_4bar.Q7P` — Q7P hardware-verified roundtrip
+
 ## [2026-04-16] session-27 | Q7P 5120 cross-pattern validation + phrase block header decoded
 
 ### Pipeline B validata cross-pattern
