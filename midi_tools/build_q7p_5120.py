@@ -151,11 +151,87 @@ def build_5120_q7p(
     return bytes(buf)
 
 
+def _validate_phrase_stream(data: bytes, offset: int, name: str) -> List[str]:
+    """Walk a single phrase event stream. Flag anything unrecognized."""
+    warnings = []
+    start = offset + 0x1A
+    if data[start:start+2] != b"\xF0\x00":
+        warnings.append(
+            f"Phrase {name!r} @0x{offset:04x}: missing F0 00 marker at +0x1A"
+        )
+        return warnings
+    # Tempo sanity (1-300 BPM)
+    tempo_raw = struct.unpack(">H", data[offset + 0x18:offset + 0x1A])[0]
+    bpm = tempo_raw / 10
+    if not (20 <= bpm <= 300):
+        warnings.append(
+            f"Phrase {name!r} @0x{offset:04x}: suspicious tempo {bpm} BPM "
+            f"(raw=0x{tempo_raw:04x})"
+        )
+    # Walk events
+    i = start + 2
+    saw_f2 = False
+    unknown_cmds = set()
+    while i < len(data):
+        b = data[i]
+        if b == 0xF2:
+            saw_f2 = True
+            break
+        elif 0xA0 <= b <= 0xAF:
+            i += 2
+        elif b == 0xD0:
+            if i + 3 >= len(data):
+                warnings.append(f"Phrase {name!r}: truncated D0 at 0x{i:04x}")
+                break
+            # Validate ranges
+            vel = data[i+1]; note = data[i+2]; gate = data[i+3]
+            if vel > 0x7F or note > 0x7F or gate > 0x7F:
+                warnings.append(
+                    f"Phrase {name!r}: D0 @0x{i:04x} bad bytes "
+                    f"(vel={vel}, note={note}, gate={gate}) — expected 0-127"
+                )
+            i += 4
+        elif b == 0xE0:
+            if i + 4 >= len(data):
+                warnings.append(f"Phrase {name!r}: truncated E0 at 0x{i:04x}")
+                break
+            gate = data[i+1]; note = data[i+3]; vel = data[i+4]
+            if vel > 0x7F or note > 0x7F or gate > 0x7F:
+                warnings.append(
+                    f"Phrase {name!r}: E0 @0x{i:04x} bad bytes "
+                    f"(gate={gate}, note={note}, vel={vel}) — expected 0-127"
+                )
+            i += 5
+        elif 0xD1 <= b <= 0xDF:
+            # Drum variants (rim, accent, ghost, etc.) — same 4-byte format as D0
+            i += 4
+        elif b == 0xC1:
+            # Short note (arpeggios/ticks), 3 bytes
+            i += 3
+        elif 0xBA <= b <= 0xBF:
+            # Control change events, 2 bytes
+            i += 2
+        elif b == 0x40:
+            # Padding, normally only at end of slot
+            i += 1
+        else:
+            unknown_cmds.add(b)
+            i += 1
+    if not saw_f2:
+        warnings.append(f"Phrase {name!r}: missing F2 terminator")
+    if unknown_cmds:
+        warnings.append(
+            f"Phrase {name!r}: unknown commands {sorted(f'0x{c:02x}' for c in unknown_cmds)}"
+        )
+    return warnings
+
+
 def validate_q7p(data: bytes, scaffold: bytes = None) -> List[str]:
     """Validate a Q7P file structure. Returns list of warnings.
 
     For 5120-byte files: compares against scaffold to ensure only phrase
     area (0x200-0x9FF) and section metadata (0x100-0x1FF) were changed.
+    Additionally walks every phrase block and validates its event stream.
     """
     warnings = []
 
@@ -197,6 +273,15 @@ def validate_q7p(data: bytes, scaffold: bytes = None) -> List[str]:
                 if len([w for w in warnings if "Modified byte" in w]) > 10:
                     warnings.append("  ... (more unsafe modifications suppressed)")
                     break
+
+    # Walk each phrase block and validate its event stream (5120-byte format)
+    if len(data) == 5120:
+        try:
+            from midi_tools.q7p_to_midi import find_phrase_blocks
+            for offset, name in find_phrase_blocks(data):
+                warnings.extend(_validate_phrase_stream(data, offset, name))
+        except Exception as e:
+            warnings.append(f"Phrase stream validation failed: {e}")
 
     return warnings
 
