@@ -52,6 +52,21 @@ def calculate_checksum(address_and_data: bytes) -> int:
 
 See [Track Structure](track-structure.md) for section/track layout.
 
+## Top-level AH Map (Session 28)
+
+AH value sweep against live QY70 revealed multiple top-level dumpable areas:
+
+| AH | Purpose | Size | Msg count |
+|----|---------|------|-----------|
+| `0x00` | Pattern body (slot N via AM) | 16274 B | 103 |
+| `0x01` | Song slot (per QYFiler template) | — | — |
+| `0x02` | Style/pattern tracks (AL addressing) | — | — |
+| `0x03` | System meta trailer | 48 B | 1 |
+| `0x04` | Full dump = `AH=0x00` + `AH=0x03` | 16322 B | 104 |
+| `0x05` | [Pattern name directory](pattern-directory.md) | 331 B | 1 |
+
+AL appears to be ignored by the QY70 for `AH=0x00/0x04/0x05` — the device returns the full fixed-size area regardless. AM selects the pattern slot for `AH=0x00`.
+
 ## Complete Transfer Sequence
 
 1. **Init**: `F0 43 10 5F 00 00 00 01 F7` (Parameter Change)

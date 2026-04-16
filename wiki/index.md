@@ -33,6 +33,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 - [MIDI Setup](midi-setup.md) — Hardware connection, Steinberg UR22C, bulk dump procedure
 - [Project Overview](overview.md) — Goals, architecture, CLI commands, test fixtures
 - [Pattern Backup & Restore](pattern-restore.md) — Capture QY70 patterns to .syx, restore via MIDI
+- [Pattern Directory](pattern-directory.md) — AH=0x05 user pattern name list (20 × 16B)
 
 ## Status & History
 

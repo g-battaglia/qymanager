@@ -39,6 +39,23 @@ Validator e builder ora segnalano il caso con `ValueError` descrittivo.
 - `midi_tools/captured/s28_sgt/capture.json` — 1056 MIDI events
 - `midi_tools/captured/s28_sgt/sgt_5120_4bar.Q7P` — Q7P hardware-verified roundtrip
 
+### AH sweep: nuove aree dumpabili scoperte
+Sweep sistematico AH=0x00..0x7F con dump request. Tre nuove aree scoperte oltre a AH=0x00 (pattern body):
+
+| AH | Size | Msg | Contenuto |
+|----|------|-----|-----------|
+| `0x03` | 48 B | 1 | System meta trailer (37B body) |
+| `0x04` | 16322 B | 104 | Full dump = AH=0x00 + AH=0x03 |
+| `0x05` | 331 B | 1 | **Pattern name directory** (20×16B) |
+
+**AH=0x05 decodificato completamente**: 20 slot × 16 byte. Primi 8 byte = nome ASCII; restanti 8 byte = metadata. Slot vuoti = `2A 2A 2A 2A 2A 2A 2A 2A` (8 asterischi, come rendering QY70). Confermato U01-U20 user slots.
+
+**AH=0x04 = superset**: prime 103 msgs identiche (con 3 differenze minori nei chunk header/footer) a AH=0x00; l'ultima msg (48B) è byte-identical al dump AH=0x03.
+
+**AL ignorato in dump response**: QY70 restituisce sempre size fisso per area, indipendentemente dal parametro AL della request.
+
+Nuovo decoder: `midi_tools/decode_pattern_names.py`.  Nuova wiki page: [pattern-directory.md](pattern-directory.md).
+
 ## [2026-04-16] session-27 | Q7P 5120 cross-pattern validation + phrase block header decoded
 
 ### Pipeline B validata cross-pattern
