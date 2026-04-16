@@ -2,6 +2,58 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-27 | Q7P 5120 cross-pattern validation + phrase block header decoded
+
+### Pipeline B validata cross-pattern
+Build + roundtrip verificati su TRE pattern indipendenti:
+- **Summer 5120**: 126/126 note, 5 tracks (RHY1/CHD1/CHD2/PHR1) → già validato S26
+- **SGT 5120**: 250/250 note, 6 tracks (RHY1/RHY2/BASS/CHD1/PAD/PHR1) — nuovo
+- **DECAY self-parse**: 12 blocks, 437 eventi totali, walker byte-identical
+
+Pipeline B robusta su dataset eterogenei (drum+melody, 151BPM e 120BPM, da 5 a 6 tracks).
+
+### Phrase block header: layout completo decodificato
+Ogni phrase block ha un header di **26 byte (0x1A)** prima del stream `F0 00 ... F2`:
+
+| Offset | Bytes | Meaning |
+|--------|-------|---------|
+| +0x00 | 12 | Nome phrase (ASCII, padded con spazi) |
+| +0x0C | 2 | Costante `03 1C` — tipo/lunghezza |
+| +0x0E | 2 | `00 00` |
+| +0x10 | 2 | `00 7F` — chord (7F=none?) |
+| +0x12 | 3 | `00 07 90` — params (pan/vol?) |
+| +0x15 | 3 | `00 00 00` |
+| **+0x18** | **2** | **Tempo BE16 (×10) — es. `04B0` = 120.0 BPM** |
+| +0x1A | — | Start F0 00 event stream |
+
+Scoperta: ogni phrase block include la propria BPM (utile se phrase condivise tra pattern con tempi diversi).
+
+### Mappa dimensioni Q7P (parziale)
+Le dimensioni Q7P variano per spazio phrase area:
+
+| Size | File | Phrase region | Metadata start |
+|------|------|---------------|----------------|
+| 3072 | VUOTO.Q7P | — (empty) | 0x876 (compact) |
+| 4096 | SUMMEROG/TR4 | 0x200-0x5FF | 0x600 |
+| 4608 | WINDY | 0x200-0x79F | 0x780 |
+| 5120 | DECAY | 0x200-0x9FF | 0xA00 |
+| 5632 | PHONE | 0x200-0xA7F | 0xA80 |
+| 6144 | SGT..Q7P | 0x200-0xDFF | 0xE00 |
+
+Metadata layout all'inizio metadata: nome (8B) + tempo BE16 + altri campi. Il formato 3072-byte usa posizioni diverse (legacy compact).
+
+### Nuovi test di regressione
+Aggiunti 2 test a `tests/test_quantizer.py`:
+- `TestPhraseBlockLayout::test_decay_phrase_headers` — valida tempo @ +0x18 e F0 00 @ +0x1A
+- `TestDecayIdentityRoundtrip::test_decay_phrase_bytes_roundtrip` — walker re-emette bytes identici
+
+**22/22 test quantizer pass.** Milestone stabile.
+
+### Limiti confermati
+- Hardware testing ancora non eseguito (risk bricking)
+- Gate formula `tick_dur // 4` assunta ma non validata contro firmware QY700
+- Formato 3072-byte usa layout diverso dai ≥4096-byte
+
 ## [2026-04-16] session-26 | Pipeline B end-to-end: 126/126 note roundtrip verified
 
 ### Pipeline B completata su Summer

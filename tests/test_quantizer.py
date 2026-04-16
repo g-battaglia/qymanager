@@ -260,6 +260,73 @@ class TestPhraseEncoder:
             )
 
 
+class TestPhraseBlockLayout:
+    """Tests that validate the phrase block header layout."""
+
+    def test_decay_phrase_headers(self):
+        """DECAY.Q7P phrase blocks must have 26-byte header with tempo at +0x18."""
+        scaffold = os.path.join(os.path.dirname(__file__), "..",
+                                "data", "q7p", "DECAY.Q7P")
+        if not os.path.exists(scaffold):
+            pytest.skip("DECAY.Q7P not available")
+        from midi_tools.q7p_to_midi import find_phrase_blocks
+        with open(scaffold, "rb") as f:
+            data = f.read()
+        blocks = find_phrase_blocks(data)
+        assert len(blocks) >= 10
+        for offset, _ in blocks:
+            # Tempo is BE16 at +0x18
+            tempo_raw = struct.unpack(">H", data[offset + 0x18:offset + 0x1A])[0]
+            assert tempo_raw == 1200, f"DECAY tempo expected 1200 (120 BPM), got {tempo_raw}"
+            # Event stream starts with F0 00 at +0x1A
+            assert data[offset + 0x1A] == 0xF0
+            assert data[offset + 0x1B] == 0x00
+
+
+class TestDecayIdentityRoundtrip:
+    """Validate walker/encoder against real DECAY.Q7P phrase events."""
+
+    def test_decay_phrase_bytes_roundtrip(self):
+        """Walking and re-emitting DECAY events must produce identical bytes."""
+        scaffold = os.path.join(os.path.dirname(__file__), "..",
+                                "data", "q7p", "DECAY.Q7P")
+        if not os.path.exists(scaffold):
+            pytest.skip("DECAY.Q7P not available")
+        from midi_tools.q7p_to_midi import find_phrase_blocks
+        with open(scaffold, "rb") as f:
+            data = f.read()
+        blocks = find_phrase_blocks(data)
+
+        for offset, name in blocks:
+            start = offset + 0x1A
+            assert data[start] == 0xF0 and data[start + 1] == 0x00
+            # Walk events and re-emit
+            buf = bytearray(b"\xF0\x00")
+            i = start + 2
+            end = None
+            while i < len(data):
+                b = data[i]
+                if b == 0xF2:
+                    buf.append(0xF2)
+                    end = i + 1
+                    break
+                elif 0xA0 <= b <= 0xAF:
+                    buf.extend(data[i:i + 2])
+                    i += 2
+                elif b == 0xD0:
+                    buf.extend(data[i:i + 4])
+                    i += 4
+                elif b == 0xE0:
+                    buf.extend(data[i:i + 5])
+                    i += 5
+                else:
+                    buf.append(b)
+                    i += 1
+            assert end is not None
+            orig = data[start:end]
+            assert bytes(buf) == orig, f"Phrase {name!r}: re-emit differs"
+
+
 class TestEndToEndRoundtrip:
     """Full pipeline: capture → quantize → Q7P 5120 → parse → verify notes."""
 
