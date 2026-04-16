@@ -483,3 +483,18 @@ class TestPatternNameDirectory:
                 + b"\x00" * 10 + bytes([0x00, 0xF7])
         with pytest.raises(ValueError):
             parse_names(short)
+
+    def test_parse_synthetic_filled_slot(self):
+        """Synthetic dump with one non-empty slot must be parsed correctly."""
+        from midi_tools.decode_pattern_names import parse_names
+        header = bytes([0xF0, 0x43, 0x00, 0x5F, 0x02, 0x40, 0x05, 0x00, 0x00])
+        body = bytearray(b"\x2a" * 16 * 20)
+        body[0:8] = b"MYSTYLE "
+        body[8:16] = bytes([0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        syx = header + bytes(body) + bytes([0x00, 0xF7])
+        slots = parse_names(syx)
+        assert slots[0]["name"] == "MYSTYLE "
+        assert slots[0]["empty"] is False
+        assert slots[0]["meta_hex"] == "0102000000000000"
+        for i in range(1, 20):
+            assert slots[i]["empty"] is True
