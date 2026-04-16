@@ -55,6 +55,24 @@ This means:
 
 **Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.
 
+### Session 25g: Ground truth finally mapped (20 events → 61 strikes)
+
+Despite all rotation models failing, we now have **exact** SysEx→MIDI ground truth
+for Summer RHY1 (see `midi_tools/captured/summer_ground_truth.json`). Each of the 20
+active events is linked to the 3 drum strikes it produces at playback.
+
+**Structural finding — each event = 1 quarter-note beat**:
+- 5 bars × 4 beats × 1 event = 20 events
+- Each beat has up to 3 strikes (2 eighth-note positions × {kick/snare, hat} combos)
+- Event `1d349706c062aa` → K127 H122 H116 (beat 1, bar 1)
+
+**Cross-bar comparison clue** (e0 across bars, all KICK+2×HAT pattern):
+- Bytes 2-3 (`97 06`) IDENTICAL when drum ID pattern matches
+- Bytes 4-6 differ only in bit 7 across bars → likely bit-7-packed velocity delta
+- Bytes 0-1 differ most → likely primary velocity/timing fields
+
+Any future encoder proposal must reproduce all 61 strikes exactly.
+
 ## ~~Priority 1a: Dump Request~~ — CORRECTED (Session 20)
 
 **Dump Request IS supported** for user pattern slots (AM=0x00-0x3F). Previous "unsupported" claim was wrong:
@@ -74,7 +92,7 @@ Program simple patterns on the QY70 with known content and capture via bulk dump
 |---------|---------|---------|--------|
 | A | Solo CHD2, C major chord, 4 bars, 120 BPM | Validate [bar header](bar-structure.md) chord encoding | Pending |
 | B | Same as A but Am chord | Which bytes change for different root/type | Pending |
-| C | Solo RHY1, kick (note 36) on beat 1 ONLY | Isolate single-instrument dense encoding | **Captured 25e** (`ground_truth_C_kick.syx`) |
+| C | Solo RHY1, kick (note 36) on beat 1 ONLY | Isolate single-instrument dense encoding | **INVALID 25f** — capture = Summer (slot U01 wasn't empty) |
 | D | Solo RHY1, HH on beats 1+3 only | Isolate beat pattern encoding | Pending |
 | E | Solo RHY1, HH all 8 eighth notes, no groove | Test whether no-groove gives exact vel_code | Pending |
 | F | Main A: C major, Main B: G major on CHD2 | Cross-section chord changes | Pending |

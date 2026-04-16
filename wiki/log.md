@@ -2,6 +2,100 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-25g | Summer MIDI ground truth: 20 events → 61 strikes mapped
+
+### Real Ground Truth Found
+`midi_tools/captured/summer_playback_s25.json` contains 395 note-on events from live
+Summer playback (4 active channels: 9/12/13/15 over 24.75s @ 120 BPM). This IS the
+ground truth we needed — captured live from QY70 MIDI OUT during pattern playback.
+
+### Summer Pattern Structure — Confirmed
+- **Tempo**: 120 BPM (hi-hat interval = 0.250s = eighth note)
+- **Length**: 5 bars stored, looped 2.5 times = 12.4 bars playback
+- **RHY1 bitstream layout**:
+  - seg0 (si=0): <13 bytes, skipped
+  - seg1..seg5 (si=1..5): **4 events each = 20 events** (the actual music)
+  - seg6 (si=6): 5 real events + 11 empty-marker events (`bfdfeff7fbfdfe`) = tail padding
+  - Total extracted: 36 events, but only 20 encode bar 1-5 music
+
+### One Event = One Quarter Note = 3 Drum Strikes
+Each 7-byte event encodes a single quarter-note beat with up to 3 simultaneous strikes
+at the 8th-note subdivisions. Bar 1 mapping:
+
+| Event | Beat | Strikes (from MIDI) |
+|-------|------|---------------------|
+| e0: `1d349706c062aa` | 1 | KICK vel=127 + HAT vel=122 (8th) + HAT vel=116 (8nd) |
+| e1: `28ae8d8144c8fc` | 2 | SNARE vel=115 + HAT vel=122 (8th) + HAT vel=117 (8nd) |
+| e2: `8ca52785056150` | 3 | HAT vel=118 + KICK vel=124 (8nd) + HAT vel=112 (8nd) |
+| e3: `494f8d820c5479` | 4 | SNARE vel=120 + HAT vel=121 (8th) + HAT vel=114 (8nd) |
+
+### Empirical Clue: Byte Positions Carry Note Identity
+Cross-bar comparison of e0 (always beat 1, always KICK+2×HAT):
+- Bar 1: `1d 34 97 06 c0 62 aa` → K127 H122 H116
+- Bar 2: `1f 74 97 06 40 e2 2a` → K127 H119 H115
+
+Bytes 2-3 (`97 06`) are IDENTICAL across bars with same strike pattern →
+likely NOTE IDENTITY encoding. Bytes 4-6 differ only in bit 7, possibly carrying
+extra velocity bits.
+
+### Byte-Role Map (hypothesis from 20 events)
+
+Grouped the 20 events by strike signature:
+- 9 events = SNARE+HAT+HAT (beats 2 & 4)
+- 5 events = KICK+HAT+HAT (beat 1)
+- 5 events = HAT+KICK+HAT (beat 3) — **byte 0 = 0x8C constant across ALL 5!**
+- 1 event = SNARE+HAT+SNARE+HAT (bar 4 beat 4 fill)
+
+**Discovered byte roles**:
+- **byte 0**: strike-pattern identifier (0x1?=K+H+H, 0x2?-0x4?=S+H+H, 0x8C=H+K+H)
+- **bytes 4-6**: velocity encoding (bar 1 and bar 5 beat 3 have IDENTICAL vels 118/124/112
+  → bytes 4-6 = `05 61 50` in both, despite differing bytes 1-3)
+- **bytes 1-3**: still unclear — vary within same-velocity events, possibly encode
+  microtiming or per-voice modulation not visible in MIDI OUT capture
+
+### Test Vector Saved
+`midi_tools/captured/summer_ground_truth.json` — 20 events mapped to 61 expected
+drum strikes. Any future decoder hypothesis must reproduce all 61 strikes.
+
+### Files Created This Session
+- `midi_tools/analyze_pattern_c_vs_summer.py` — RHY1 event-level PC vs Summer
+- `midi_tools/analyze_pc_is_summer.py` — all-tracks byte PC vs Summer
+- `midi_tools/analyze_cross_pattern_signatures.py` — cross-pattern prefix
+- `midi_tools/summer_ground_truth.py` — SysEx event → MIDI notes linker
+- `midi_tools/captured/summer_ground_truth.json` — 20-event test vector
+
+## [2026-04-16] session-25f | Pattern C INVALIDATED — slot U01 contained Summer
+
+### Critical Finding: Pattern C ≠ Ground Truth
+Cross-pattern analysis revealed that the "solo kick" capture is actually Summer's data:
+- **CHD1, CHD2, PHR1, PHR2**: BYTE-IDENTICAL to Summer (all 4 tracks, 100% match)
+- **RHY1**: first 294 bytes identical to Summer (seg1-seg5 complete drum programming)
+  - From byte 294 onwards: PC has all zeros, Summer has continuing data
+  - Only 1 "unique" event in PC: `288f8f90008000` at seg6 start
+- **Header (AL=0x7F)**: 98.1% identical (628/640 bytes), only 12 diff bytes (pattern name area)
+
+### What Actually Happened
+The user programmed a kick pattern on QY70 slot U01 and pressed STORE, but:
+- Slot U01 already contained Summer (pre-loaded factory demo or prior session)
+- The user's kick edit either didn't save, or only affected the trailing bar/segment
+- The capture returned Summer's pattern, not the user's "kick only" intent
+
+### Implications
+- `ground_truth_C_kick.syx` is UNRELIABLE for decoder validation
+- The earlier "lane model R=46" finding actually describes Summer's drums, not a solo kick
+- **Cross-pattern prefix `28ae8d81` appearing in 3 patterns** is explained: PC=Summer, so 3 patterns actually = 2 distinct sources (Summer and A_QY70). A_QY70 may also share drum programming with Summer.
+
+### Required Next Steps (New Ground Truth Needed)
+1. Factory reset QY70 slot U01 (or use a confirmed-empty slot like U10)
+2. Program MINIMAL pattern (single kick) from truly empty state
+3. Verify dump differs from any factory preset before declaring it ground truth
+4. Alternative: capture Summer's untouched state as reference, then modify ONE known byte
+
+### Analysis Scripts Created
+- `midi_tools/analyze_pattern_c_vs_summer.py` — RHY1 event-level comparison
+- `midi_tools/analyze_pc_is_summer.py` — all-tracks byte comparison
+- `midi_tools/analyze_cross_pattern_signatures.py` — cross-pattern prefix recurrence
+
 ## [2026-04-16] session-25e | Ground truth Pattern C captured, restore tool built
 
 ### Ground Truth Pattern C: Solo Kick on Beat 1
