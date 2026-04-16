@@ -2,6 +2,39 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-15] session-21 | Pipeline B: Capture → Quantize → SMF + Q7P + D0/E0
+
+### Capture Quantizer (`quantizer.py`)
+- Parses raw MIDI capture data (note_on/note_off pairs with real-time timestamps)
+- Quantizes to 16th-note grid at 480 PPQN
+- Auto-detects loop length via per-channel pattern matching + LCM
+- SGT results: avg quantization error 1.7ms (drums), 100% events under 10ms
+- Channel→track mapping: PATT OUT 9~16 → tracks 0-7 (RHY1..PHR2)
+
+### Capture-to-Q7P Pipeline (`capture_to_q7p.py`)
+- End-to-end: JSON capture → quantize → SMF + Q7P + D0/E0 phrase data
+- **SMF output**: valid Type 1 MIDI file, verified timing (6 bars = 9.5s at 151 BPM)
+- **Q7P output**: 3072B with correct metadata (name, tempo), template events preserved
+- **D0/E0 phrase data**: drum tracks as `D0 nn vv gg`, melody as `E0 nn vv gg`
+- Delta encoding: A0-A7 dd (hypothesized: step×128+value, needs hardware validation)
+- SGT capture: 374 notes across 6 tracks, 2004 bytes total phrase data
+
+### SGT Capture Analysis
+- Ch 9 (RHY1): 680 note_ons, 6 unique drums, perfect 1-bar loop
+- Ch 10 (RHY2): 170 notes, side stick only
+- Ch 12 (CHD1=bass voice): 131 bass notes, 2-bar loop
+- Ch 14 (PAD): 114 chord notes, 4-bar loop (3-note chords, 2/bar)
+- Ch 15 (PHR1): 151 arpeggio notes, 4-bar loop (8th note pattern)
+- Gate times: quantize cleanly to 0.5/1.0/1.5 sixteenth notes
+
+### Blocking Issue
+- MIDI ports (Steinberg UR22C) show as empty — cannot do fresh captures or hardware testing
+- All work done using existing `sgt_full_capture.json` from Session 17
+
+### Wiki Changes
+- Updated [conversion-roadmap.md](conversion-roadmap.md): Pipeline B stages 1-3 marked DONE, new file map
+- Updated blocking issue #3 (quantization): marked SOLVED
+
 ## [2026-04-15] session-20b | QYFiler.exe disassembly, BLK format, Dump Request confirmed unsupported
 
 ### QYFiler.exe Reverse Engineering — CRITICAL FINDING

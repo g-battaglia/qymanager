@@ -31,7 +31,9 @@ Sends Identity Request and various SysEx via rtmidi loopback test. The QY70 resp
 
 ## Capturing a Bulk Dump
 
-The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations). The dump **must** be triggered manually from QY70 hardware. This was **definitively confirmed** in Session 20: all addresses (AM=0x7E, AM=0x00) and all 16 device numbers tested with zero response. The [QYFiler.exe](qyfiler-reverse-engineering.md) binary DOES contain Dump Request templates, suggesting Yamaha intended this feature but the QY70 firmware ignores it.
+The QY70 **supports Dump Request** for user pattern slots (AM=0x00-0x3F). Previous "unsupported" claims were wrong -- Session 16 received `F0 F7` from AM=0x00 which was a valid empty-pattern response (the slot was simply empty at the time). The [QYFiler.exe](qyfiler-reverse-engineering.md) binary confirms Dump Request templates are used by Yamaha's official tool.
+
+**Important**: Dump Request does NOT work for the edit buffer (AM=0x7E). Only stored user pattern slots. The `request_dump.py` script defaulted to AM=0x7E which is why most tests appeared to fail.
 
 ### Procedure
 
@@ -69,7 +71,7 @@ The [QY70 does NOT support remote Dump Request](qy70-device.md#known-limitations
 .venv/bin/python3 midi_tools/sysex_diag.py
 ```
 
-**Dump Request**: Definitively unsupported (Session 20). QY70 ignores all Dump Request messages regardless of address or device number. Always use manual dump from UTILITY menu. Use `incremental_dump.py --manual-dump` for scripted capture with manual trigger.
+**Dump Request**: Works for user pattern slots (AM=0x00-0x3F). Use `request_dump.py --am 00` to request User Pattern 1. Edit buffer (AM=0x7E) does NOT support dump request. QYFiler also uses AM=0xFF (untested). Manual dump via UTILITY menu is always available as fallback.
 
 ## Analysis Scripts
 

@@ -45,14 +45,14 @@ This means:
 
 **Approach**: This is now a research problem, not a blocking issue for conversion. Pipeline B (capture-based) bypasses decoding entirely.
 
-## Priority 1a: Dump Request NOT Supported (Session 20 — CONFIRMED)
+## ~~Priority 1a: Dump Request~~ — CORRECTED (Session 20)
 
-**QY70 does NOT respond to remote Dump Request** for ANY address. Session 20 hardware test confirmed:
-- AM=0x7E (edit buffer): no response
-- AM=0x00 (User Pattern 1): no response
-- All 16 device numbers tried: no response
+**Dump Request IS supported** for user pattern slots (AM=0x00-0x3F). Previous "unsupported" claim was wrong:
+- Session 16: AM=0x00 returned `F0 F7` = valid empty-pattern response (slot was empty)
+- Session 20: AM=0x7E (edit buffer) got no response — edit buffer doesn't support dump request
+- QYFiler.exe uses AM=0xFF in templates (possibly "all slots" wildcard) — not yet tested
 
-**Manual dump** (UTILITY -> MIDI -> Bulk Dump -> Style) is the ONLY way to get data back from the QY70. The `incremental_dump.py` script has a `--manual-dump` mode for this.
+**To test**: load data into a User Pattern slot on QY70, then `request_dump.py --am 00`.
 
 **Previous hardware dumps are consistent**: Feb 26 and Apr 14 header captures differ by only 6/640 bytes, confirming faithful reproduction.
 

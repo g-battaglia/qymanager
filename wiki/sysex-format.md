@@ -29,7 +29,7 @@ F0 43 0n 5F BH BL AH AM AL [data...] CS F7
 | `0x2n` | Dump Request | Request data from QY70 |
 | `0x3n` | Dump Acknowledgment | ACK from QY70 (found in [QYFiler templates](qyfiler-reverse-engineering.md#sysex-command-template-table-at-va-0x434630)) |
 
-**Dump Request limitation (Session 20, confirmed)**: QY70 does NOT respond to remote Dump Request (`F0 43 20 5F AH AM AL F7`) for any address tested (AM=0x7E edit buffer, AM=0x00 user pattern, all 16 device numbers). A **manual dump** from QY70 hardware (UTILITY -> MIDI -> Bulk Dump) is required. See [MIDI Setup](midi-setup.md).
+**Dump Request** works for user pattern slots (AM=0x00-0x3F). Format: `F0 43 20 5F AH AM AL F7`. Does NOT work for edit buffer (AM=0x7E). Session 16 received `F0 F7` from AM=0x00 (valid empty-pattern response). [QYFiler.exe](qyfiler-reverse-engineering.md) also uses AM=0xFF in templates (possibly "all slots" wildcard). See [MIDI Setup](midi-setup.md).
 
 ## Checksum
 

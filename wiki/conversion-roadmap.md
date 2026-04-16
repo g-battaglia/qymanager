@@ -26,7 +26,9 @@ QY70 .syx → [Decode Bitstream] → [Abstract Events] → [Encode Q7P] → QY70
 ### Pipeline B: Capture-Based (NEW, Session 19) — RECOMMENDED
 
 ```
-QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Abstract Events] → [Encode Q7P] → QY700 .Q7P
+QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Quantize] → [Encode D0/E0] → QY700 .Q7P
+                                                    ↓ also ↓
+                                              [Standard MIDI File]
 ```
 
 | Stage | Status | Confidence |
@@ -35,10 +37,13 @@ QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Abstract Events] → 
 | Start playback (MIDI Start+Clock) | Done (`send_and_capture.py`) | High |
 | Capture MIDI notes | Done (`capture_playback.py`) | High |
 | Parse captured events | Done (JSON format) | High |
-| Quantize to beats/bars | Not started | Medium |
-| Map to Q7P events | Not started | 30% |
+| **Quantize to beats/bars** | **Done** (`quantizer.py`) | **High** |
+| **SMF export** | **Done** (`capture_to_q7p.py`) | **High** |
+| **D0/E0 phrase encoding** | **Done** (`capture_to_q7p.py`) | **Medium** |
 | Q7P metadata write | Done | High |
-| Q7P event write (3072) | Format partially mapped | 30% |
+| Q7P event write (5120) | Needs 5120B template | 40% |
+
+**Session 21 progress**: Built complete quantizer + encoder pipeline. Tested on SGT capture (374 notes, 6 tracks, 6 bars). Produces valid SMF, Q7P metadata, and D0/E0 phrase data. Delta encoding A0-A7 is hypothesized (step×128+value) — needs hardware validation.
 
 **Advantages**: bypasses all unsolved decoding problems (rotation model, chord transposition, groove templates). Captures the EXACT notes the QY70 produces.
 
@@ -65,9 +70,11 @@ Two paths exist:
 
 **Recommendation**: Get a 5120-byte Q7P from QY700 hardware. Create a pattern with known notes → save as Q7P → use as template.
 
-### 3. Capture Quantization (blocks Pipeline B)
+### ~~3. Capture Quantization~~ — SOLVED (Session 21)
 
-Captured MIDI notes have real-time timestamps. Need to quantize to beat/bar grid and map to Q7P event format. Also need drum capture (drums don't output in Pattern mode).
+`quantizer.py` quantizes raw MIDI timestamps to a 16th-note grid (480 PPQN). Loop detection via per-channel pattern matching with LCM. Tested on SGT: avg error 1.7ms for drums, 100% events within 10ms. `capture_to_q7p.py` generates SMF + D0/E0 phrase data.
+
+Remaining: drum capture (drums don't output via PATT OUT in Pattern mode).
 
 ### 4. Chord Transposition (blocks Pipeline A chord tracks)
 
@@ -77,27 +84,30 @@ Bar headers store chord-RELATIVE templates. Irrelevant for Pipeline B (capture a
 
 Both 2BE3 and 29CB produce chaotic results. Irrelevant for Pipeline B.
 
-## What Works Today
+## What Works Today (Session 21)
 
-The current converter (`qy70_to_qy700.py`) safely produces:
-- Valid 3072-byte Q7P files
-- Correct name, tempo, volume, pan
-- Template musical data (USER TMPL drum pattern)
+**Pipeline B produces end-to-end output**:
+- Standard MIDI File (.mid) — immediately playable and verifiable
+- Q7P with correct metadata (name, tempo, time sig)
+- D0/E0 phrase data for all tracks (drum + melody encoding)
+- Quantized JSON for debugging/analysis
 
-Musical event conversion is NOT implemented — output always has the template's drum pattern regardless of input.
+**Tested on SGT capture**: 374 notes across 6 tracks, 4-bar loop detected (or 6 bars with manual override). SMF duration matches expected time (9.5s at 151 BPM, 6 bars).
+
+The metadata converter (`qy70_to_qy700.py`) also works for volume, pan, and chorus/reverb.
 
 ## Recommended Next Steps (by priority)
 
 ### Pipeline B (capture-based) — highest priority
-1. **Software**: Build capture→quantize pipeline (MIDI timestamps → beat/bar grid)
-2. **Hardware**: Capture full SGT style via playback (all tracks, all sections)
-3. **Software**: Build quantized-events → Q7P writer
-4. **Hardware**: On QY700, create pattern with known notes, save as Q7P, hex-analyze (needed for Q7P format)
-5. **Hardware**: Find way to capture drums (Style mode? Different PATT OUT setting?)
+1. ~~**Software**: Build capture→quantize pipeline~~ — **DONE** (Session 21)
+2. **Hardware**: Get a 5120-byte Q7P from QY700 (create pattern → save → use as template)
+3. **Hardware**: Fresh capture of SGT with drum output (try Style mode for drum PATT OUT)
+4. **Software**: Integrate D0/E0 phrase data into 5120-byte Q7P template
+5. **Hardware**: Validate D0/E0 delta encoding (A0-A7) by loading generated Q7P on QY700
 
 ### Pipeline A (SysEx decode) — lower priority, research only
 6. **Research**: Investigate why complex styles use different encoding than user patterns
-7. **Hardware**: Run `capture_chord_test.py` with CM/Dm/G7 to study chord transposition (useful for understanding QY70 internals even if not needed for Pipeline B)
+7. **Hardware**: Run `capture_chord_test.py` with CM/Dm/G7 to study chord transposition
 
 ## File Map
 
@@ -107,10 +117,15 @@ Musical event conversion is NOT implemented — output always has the template's
 | `qymanager/formats/qy700/phrase_parser.py` | Q7P phrase reader (5120 D0/E0 + 3072 grid) |
 | `qymanager/formats/qy700/decoder.py` | Q7P decoder (reads metadata + sections) |
 | `midi_tools/event_decoder.py` | QY70 bitstream decoder (rotation model) |
+| `midi_tools/quantizer.py` | **NEW** — Capture quantizer (raw MIDI → beat grid) |
+| `midi_tools/capture_to_q7p.py` | **NEW** — Pipeline B orchestrator (SMF + Q7P + D0/E0) |
 | `midi_tools/q7p_sequence_analyzer.py` | Q7P sequence events analyzer |
 | `midi_tools/capture_chord_test.py` | Chord transposition capture tool |
 | `midi_tools/send_and_capture.py` | Combined send + capture workflow |
 | `midi_tools/validate_sgt_capture.py` | Ground truth validation (Session 19) |
 | `midi_tools/captured/sgt_full_capture.json` | SGT playback capture (2570 msgs, 6 channels) |
+| `midi_tools/captured/sgt_converted.mid` | **NEW** — SGT as Standard MIDI File (4 bars) |
+| `midi_tools/captured/sgt_6bar.mid` | **NEW** — SGT as SMF (6 bars, full section) |
+| `midi_tools/captured/sgt_converted.Q7P` | **NEW** — SGT Q7P with metadata |
 
 See [Q7P Format](q7p-format.md), [Event Fields](event-fields.md), [Open Questions](open-questions.md).
