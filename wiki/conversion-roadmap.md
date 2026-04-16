@@ -23,7 +23,7 @@ QY70 .syx → [Decode Bitstream] → [Abstract Events] → [Encode Q7P] → QY70
 | Drum event decode | R proven for user | **100%** | ~9% precision |
 | Chord transposition | Unknown | Unknown | Unknown |
 
-### Pipeline B: Capture-Based (NEW, Session 19) — RECOMMENDED
+### Pipeline B: Capture-Based (NEW, Session 19) — RECOMMENDED & VALIDATED
 
 ```
 QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Quantize] → [Encode D0/E0] → QY700 .Q7P
@@ -39,17 +39,26 @@ QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Quantize] → [Encode
 | Parse captured events | Done (JSON format) | High |
 | **Quantize to beats/bars** | **Done** (`quantizer.py`) | **High** |
 | **SMF export** | **Done** (`capture_to_q7p.py`) | **High** |
-| **D0/E0 phrase encoding** | **Done** (`capture_to_q7p.py`) | **Medium** |
+| **D0/E0 phrase encoding** | **Done** (`capture_to_q7p.py`) | **High** (roundtrip byte-identical, Session 27) |
 | Q7P metadata write | Done | High |
-| Q7P event write (5120) | Needs 5120B template | 40% |
+| **Q7P 5120B build from capture** | **Done** (`build_q7p_5120.py`) | **High** (Session 21+) |
+| **Phrase header layout (26B)** | **Done** (Session 27) | **High** (DECAY roundtrip 12/12) |
+| **Hardware-validated roundtrip** | **Done** (Session 28) | **High** (208/208 notes) |
 
-**Session 22 progress**: Full end-to-end pipeline working. Fresh capture: 851 note_on (incl. drums!), 322 notes quantized, 6 tracks, 6 bars. Produces valid SMF (10.1s), Q7P metadata, and D0/E0 phrase data (1746 bytes). Drum output via PATT OUT confirmed working. Delta encoding A0-A7 is hypothesized (step×128+value) — needs hardware validation.
+**Session 28 status**: Pipeline B validated end-to-end on live QY70 hardware:
+- Identity reply, bulk dump request, playback capture, style send all working
+- SGT capture → 310 notes → 4-bar Q7P 5120 → 208/208 roundtrip
+- Summer capture → 126/126 roundtrip (Session 26)
+- DECAY self-parse byte-identical (Session 27)
+- Cross-pattern validator: 0 warnings on Summer/SGT/DECAY
+
+**Session 28b status**: AH sweep reveals full QY70 dumpable-area map (pattern body, meta, name directory).
 
 **Advantages**: bypasses all unsolved decoding problems (rotation model, chord transposition, groove templates). Captures the EXACT notes the QY70 produces.
 
 **Requirements**: QY70 hardware must be connected. PATT OUT=9~16, ECHO BACK=Off, MIDI SYNC=External.
 
-~~**Limitation**: drums don't output via PATT OUT in Pattern mode.~~ **Session 22: DISPROVEN** — drums DO output via PATT OUT CH 9~16. The Session 17 finding was caused by MIDI clock echo masking real notes (`timing=False` bug). Fresh capture: RHY1=455 note_on, RHY2=114 note_on.
+**Known limit**: phrase area of 5120B Q7P is 2048B — supports 4-bar patterns, needs 6144B scaffold for 6-bar+. Session 28 observed `PHR1 (307 bytes) doesn't fit` with 6-bar SGT.
 
 ## Blocking Issues
 
@@ -82,30 +91,42 @@ Bar headers store chord-RELATIVE templates. Irrelevant for Pipeline B (capture a
 
 Both 2BE3 and 29CB produce chaotic results. Irrelevant for Pipeline B.
 
-## What Works Today (Session 21)
+## What Works Today (Session 28)
 
 **Pipeline B produces end-to-end output**:
 - Standard MIDI File (.mid) — immediately playable and verifiable
-- Q7P with correct metadata (name, tempo, time sig)
+- Q7P 5120B with correct metadata AND phrase data (hardware-roundtrip validated)
 - D0/E0 phrase data for all tracks (drum + melody encoding)
 - Quantized JSON for debugging/analysis
+- Cross-pattern validator with phrase-stream invariants (0 warnings)
+- Full test suite (26 tests passing, including hardware-capture regression)
 
-**Tested on SGT capture**: 374 notes across 6 tracks, 4-bar loop detected (or 6 bars with manual override). SMF duration matches expected time (9.5s at 151 BPM, 6 bars).
+**Tested on**:
+- SGT live capture 208/208 roundtrip (Session 28, hardware)
+- Summer capture 126/126 roundtrip (Session 26-27)
+- DECAY self-parse byte-identical (Session 27)
 
-The metadata converter (`qy70_to_qy700.py`) also works for volume, pan, and chorus/reverb.
+**Hardware I/O orchestration**:
+- `auto_capture_pipeline.py` — send style + capture playback + build Q7P in one shot
+- `request_dump.py` — bulk dump with Init handshake (Session 22 fix)
+- `decode_pattern_names.py` — decode AH=0x05 pattern directory (Session 28b)
+
+The metadata converter (`qy70_to_qy700.py`) also works for volume, pan, and chorus/reverb (voice writes disabled — caused prior bricking).
 
 ## Recommended Next Steps (by priority)
 
-### Pipeline B (capture-based) — highest priority
+### Pipeline B (capture-based) — production-ready for 4-bar patterns
 1. ~~**Software**: Build capture→quantize pipeline~~ — **DONE** (Session 21)
-2. ~~**Hardware**: Fresh capture with drum output~~ — **DONE** (Session 22, drums work via PATT OUT)
-3. **Hardware**: Get a 5120-byte Q7P from QY700 (create pattern → save → use as template)
-4. **Software**: Integrate D0/E0 phrase data into 5120-byte Q7P template
-5. **Hardware**: Validate D0/E0 delta encoding (A0-A7) by loading generated Q7P on QY700
+2. ~~**Hardware**: Fresh capture with drum output~~ — **DONE** (Session 22)
+3. ~~**Hardware**: Get 5120B Q7P from QY700~~ — **DONE** (DECAY scaffold)
+4. ~~**Software**: Integrate D0/E0 into 5120B Q7P template~~ — **DONE** (Session 21+)
+5. ~~**Software**: Hardware-validated roundtrip~~ — **DONE** (Session 28)
+6. **Software**: Extend to 6-bar+ via 6144B scaffold (optional)
+7. **Hardware**: Load a generated Q7P on QY700 to confirm playback (risky — use safe_q7p_tester)
 
-### Pipeline A (SysEx decode) — lower priority, research only
-6. **Research**: Investigate why complex styles use different encoding than user patterns
-7. **Hardware**: Run `capture_chord_test.py` with CM/Dm/G7 to study chord transposition
+### Pipeline A (SysEx decode) — research block, long-term
+8. **Research**: Dense encoding (rotation fails on factory styles)
+9. **Hardware**: Capture ground truth patterns A/B/D/E/F (see [Open Questions](open-questions.md))
 
 ## File Map
 
