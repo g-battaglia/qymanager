@@ -417,3 +417,41 @@ class TestQ7PMetadata:
         # Check name
         name = data[0x876:0x880].decode("ascii").strip()
         assert len(name) > 0
+
+
+class TestPatternNameDirectory:
+    """Tests for the AH=0x05 pattern-name directory decoder (Session 28)."""
+
+    @pytest.fixture
+    def directory_path(self):
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "midi_tools", "captured", "s28_areas", "ah_0x05.syx")
+        if not os.path.exists(path):
+            pytest.skip("ah_0x05.syx capture not available")
+        return path
+
+    def test_parse_empty_directory(self, directory_path):
+        """An all-empty capture must yield 20 slots of 8 asterisks."""
+        from midi_tools.decode_pattern_names import parse_names
+        with open(directory_path, "rb") as f:
+            syx = f.read()
+        slots = parse_names(syx)
+        assert len(slots) == 20
+        for slot in slots:
+            assert slot["empty"] is True
+            assert slot["name"] == "********"
+            assert slot["meta_hex"] == "00" * 8
+
+    def test_reject_non_qy70_sysex(self):
+        """Invalid SysEx prefix must raise ValueError."""
+        from midi_tools.decode_pattern_names import parse_names
+        with pytest.raises(ValueError):
+            parse_names(b"\xf0\x00\x00\x00" + b"\x00" * 330)
+
+    def test_reject_bad_body_length(self):
+        """Short body must raise ValueError."""
+        from midi_tools.decode_pattern_names import parse_names
+        short = bytes([0xF0, 0x43, 0x00, 0x5F, 0x02, 0x40, 0x05, 0x00, 0x00]) \
+                + b"\x00" * 10 + bytes([0x00, 0xF7])
+        with pytest.raises(ValueError):
+            parse_names(short)
