@@ -366,6 +366,34 @@ class TestEndToEndRoundtrip:
                 f"{expected[name]} expected"
             )
 
+    def test_roundtrip_hardware_capture_s28(self):
+        """Session 28 hardware-captured SGT produces valid Q7P 5120 (regression)."""
+        cap = os.path.join(os.path.dirname(__file__), "..",
+                           "midi_tools", "captured", "s28_sgt", "capture.json")
+        scaffold = os.path.join(os.path.dirname(__file__), "..",
+                                "data", "q7p", "DECAY.Q7P")
+        if not os.path.exists(cap) or not os.path.exists(scaffold):
+            pytest.skip("Hardware capture or scaffold not available")
+
+        from midi_tools.build_q7p_5120 import build_5120_q7p, validate_q7p
+        from midi_tools.q7p_to_midi import find_phrase_blocks
+
+        pattern = quantize_capture(cap, bar_count=4)
+        assert pattern.bpm == 151.0
+        assert pattern.bar_count == 4
+
+        total_notes = sum(len(t.notes) for t in pattern.tracks.values())
+        assert total_notes == 208, f"Expected 208 notes, got {total_notes}"
+
+        q7p = build_5120_q7p(pattern, scaffold)
+        assert len(q7p) == 5120
+
+        warnings = validate_q7p(q7p)
+        assert len(warnings) == 0, f"Validator warnings: {warnings}"
+
+        blocks = find_phrase_blocks(q7p)
+        assert len(blocks) >= 6
+
 
 class TestSMFWriter:
     """Tests for Standard MIDI File output."""
