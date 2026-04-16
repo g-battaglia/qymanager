@@ -37,6 +37,78 @@ This means:
 - Different field layout for dense events (not 6x9-bit + 2-bit remainder)
 - The 13-byte bar header participates in decoding (not just metadata)
 
+### Session 29: SGT bitstream density data-points
+
+Hardware-captured SGT S28 (151 BPM, 4-bar, 208 note totali su 6 tracce) vs bitstream bulk-dump (`QY70_SGT.syx` Section 0):
+
+| Track | Ch | Bitstream | NoteOn | B/note | Interpretazione |
+|-------|-----|-----------|--------|--------|-----------------|
+| RHY1 | 9 | 771B (6 msg) | 274 | **2.81** | dense (drum multi-strike) |
+| RHY2 | 10 | 257B (2 msg) | 69 | 3.72 | dense moderato |
+| BASS | 11 | 128B (1 msg) | 7 | 18.29 | sparse (single-voice) |
+| CHD1 | 12 | 257B (2 msg) | 52 | 4.94 | dense moderato |
+| PAD | 14 | 257B (2 msg) | 48 | 5.35 | dense moderato |
+| PHR1 | 15 | 257B (2 msg) | 61 | 4.21 | dense moderato |
+
+**Pattern strutturale**: RHY1 è l'unica traccia con allocation 6-msg/771B. Tutte le altre stanno in 1-2 msg. Non ci sono marker 0xDC (bar delimiter). 0x9E appare 5× ma a distanze irregolari (49/258/300/449/484).
+
+### Session 29b: Beat-position structure PROVEN for Summer RHY1 dense encoding
+
+**Major breakthrough**: analizzando Summer RHY1 (4 bar × 4 beat = 16 eventi 7-byte) con ground truth completo (3-4 strikes per event mappati), si trova che:
+
+1. **Events are 7-byte (56-bit) units**, one per quarter-note beat
+2. **Per-beat optimal rotations exist**: ogni beat-position (0,1,2,3 within bar) richiede una R specifica
+3. **Within same beat position + same strike pattern, up to 44/56 bits are CONSTANT across bars**
+
+Evidenza quantitativa per pattern P3 (beat 2 events, strikes = 42@0, 36@1, 42@1):
+- Rotazione ottimale: R=1 (left-rotate 1 bit prima di leggere come nibble)
+- 11/14 nibble (44 bit) IDENTICI tra bar 1, 2, 4 (bar 3 è outlier, probabile SEGMENT diverso)
+- 3/14 nibble (12 bit) variabili → codificano velocity/groove-humanization
+- Constant bit pattern (originale): `1 0001 1001 0100 VVVVVVVV 1111 VVVV 1010 0000 1010 1100 0010 1010 000`
+
+Confronto layouts per beat:
+| Beat | Strike pattern | R ottimale | Bit pattern | Bit velocity |
+|------|----------------|-----------|-------------|--------------|
+| 0 | (36@0,42@0,42@1) | 0 | 32 | 24 |
+| 1 | (38@0,42@0,42@1) | 2 | 32 | 24 |
+| 2 | (42@0,36@1,42@1) | 1 | **44** | **12** |
+| 3 | (38@0,42@0,42@1) | 0 | varia (pattern non costante tra bar) | — |
+
+**Implicazioni**:
+- La rotazione NON è R=9×(i+1) uniforme: cambia per beat-position
+- Il "pattern ID" (44 bit nel caso migliore) sembra un hash/lookup di una tabella groove
+- La variabilità 12-bit tra bar è troppo complessa per essere plain 3×4-bit velocity; probabilmente groove-humanization lookup
+- Bar 3 outlier pervasivo → segment 3 = MAIN B / FILL con dati diversi da segment 1,2,4
+
+**Remaining**: verify across PAD/CHD1/PHR1 tracks (which share allocation pattern 257B/2-msg), determine if "pattern ID" indexes a factory groove table.
+
+**Code**: vedi analisi bitstream in commit log session 29.
+
+### Session 29c: Cross-track byte sharing CHD1 vs PHR2 (same 257B/2-msg encoding)
+
+**Finding**: al livello byte (senza rotazione), eventi beat-allineati tra CHD1 e PHR2 condividono byte specifici PER BEAT POSITION. I byte condivisi tra CHD1/PHR2 sono DIVERSI per ogni beat:
+
+| Beat | Byte positions shared CHD1/PHR2 (bars 1,2,4) | Bar 3 values |
+|------|------|------|
+| 1 | byte 0 (0xd6), byte 5 (0x61), byte 6 (0x51) | byte 0=0x34, byte 5=0x42, byte 6=0x70 |
+| 2 | byte 4 (0xc3), byte 5 (0x22), byte 6 (0x58) | byte 4=0x05, byte 5=0x61, byte 6=0x51 |
+| 3 | byte 5 only (values 0x30/0x22/0xb0 — vary per bar) | — |
+| 4 | nessuno condiviso | — |
+
+**Interpretazione**: 
+- Le 3 "beat-template bytes" sono STILL invarianti tra 2 tracce diverse (2D2B e 303B preamble)
+- Ciò indica che il beat-position encoding ha una BASE-TEMPLATE invariante rispetto al tipo di encoding
+- I restanti 4 byte encoding a content track-specifico (note, voicing)
+- **Bar 3 è outlier CONSISTENT** anche tra CHD1/PHR2 → conferma ipotesi "segment 3 = FILL o MAIN B"
+
+**Implicazione per il decoder**: Isolare i "beat-template bytes" (pattern ID invariante) dai "note bytes" (varia per track) permette di:
+1. Identificare il GROOVE TEMPLATE della pattern (beat 1 byte 0,5,6; beat 2 byte 4,5,6; ecc.)
+2. Concentrarsi sul decoding dei 3-4 note-content bytes per ricostruire le strikes
+
+**Next**: confermare PHR1 e CHD2 (same 303B) si comportano identicamente, poi mappare i "note-content bytes" a note MIDI.
+
+**Ipotesi di encoding compatibile con 2.81 B/note RHY1**: mix di eventi 2B e 3B dove ~80% sono 3-byte (delta+note+vel) e ~20% sono 2-byte (delta+note con vel default). Non verificata — serve esperimento controllato con pattern isolato.
+
 **Session 25d: ALL rotation models exhaustively eliminated for dense encoding**:
 - **Structural impossibility**: note 38 (snare) UNREACHABLE from Seg 2 events at ANY rotation
 - **Instrument reordering**: "stable core" bytes (e.g., `ae8d81`=snare) move between event slots per bar

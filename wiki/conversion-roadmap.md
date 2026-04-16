@@ -58,7 +58,7 @@ QY70 Hardware → [MIDI Playback] → [Capture Notes] → [Quantize] → [Encode
 
 **Requirements**: QY70 hardware must be connected. PATT OUT=9~16, ECHO BACK=Off, MIDI SYNC=External.
 
-**Known limit**: phrase area of 5120B Q7P is 2048B — supports 4-bar patterns, needs 6144B scaffold for 6-bar+. Session 28 observed `PHR1 (307 bytes) doesn't fit` with 6-bar SGT.
+**Known limit** (resolved Session 29): phrase area of 5120B Q7P is 2048B (4-bar max). Extended `build_q7p()` auto-detects scaffold size; **6144B SGT..Q7P scaffold supports 6-bar+** (phrase area 4608B). Test `test_roundtrip_hardware_capture_s28_6bar_6144` validates 6-bar SGT roundtrip with 0 warnings.
 
 ## Blocking Issues
 
@@ -115,13 +115,13 @@ The metadata converter (`qy70_to_qy700.py`) also works for volume, pan, and chor
 
 ## Recommended Next Steps (by priority)
 
-### Pipeline B (capture-based) — production-ready for 4-bar patterns
+### Pipeline B (capture-based) — production-ready for 4-bar AND 6-bar
 1. ~~**Software**: Build capture→quantize pipeline~~ — **DONE** (Session 21)
 2. ~~**Hardware**: Fresh capture with drum output~~ — **DONE** (Session 22)
 3. ~~**Hardware**: Get 5120B Q7P from QY700~~ — **DONE** (DECAY scaffold)
 4. ~~**Software**: Integrate D0/E0 into 5120B Q7P template~~ — **DONE** (Session 21+)
 5. ~~**Software**: Hardware-validated roundtrip~~ — **DONE** (Session 28)
-6. **Software**: Extend to 6-bar+ via 6144B scaffold (optional)
+6. ~~**Software**: Extend to 6-bar+ via 6144B scaffold~~ — **DONE** (Session 29, SGT..Q7P scaffold)
 7. **Hardware**: Load a generated Q7P on QY700 to confirm playback (risky — use safe_q7p_tester)
 
 ### Pipeline A (SysEx decode) — research block, long-term

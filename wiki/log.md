@@ -2,6 +2,84 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29 | Pipeline B estesa 6-bar, validator invariant, SGT bitstream density
+
+### DECAY → QY70 tentativo (confermato: converter QY700→QY70 produce bitstream errato)
+- `DECAY_qy70.syx` inviato al QY70 (15/15 msg, 0 errori): MIDI comms ok, pattern caricato ma musicalmente rotto
+- Diagnosi: encoder bitstream dense non risolto (task #55/#59) → dati validi a livello SysEx (checksum OK), scorretti a livello semantico
+- Memory feedback aggiornata: `Converter QY700→QY70 produce dati musicalmente errati`
+
+### Pipeline B 6144B: SGT..Q7P scaffold supportato (task #69)
+- `midi_tools/build_q7p_5120.py` generalizzato a scaffold 5120 **e** 6144
+- Nuova funzione `build_q7p(pattern, scaffold_path)` auto-detect size via `PHRASE_AREA_END_BY_SIZE`
+- `build_5120_q7p()` mantenuto come back-compat alias con guard
+- **Layout 6144B validato** (SGT..Q7P): phrase area `0x200-0x13FF` (4608B), trailer `0x1400-0x17FF` (1024B)
+- Regressione: SGT S28 capture a 6 bar produce Q7P 6144B con **0 validator warning**
+
+### Validator Q7P: invariant phrase-stream estesi (task #70)
+Aggiunti a `validate_q7p()`:
+- `len(blocks) ≤ 16` (QY700 track cap)
+- Section pointer uniqueness + contiguità (step=9)
+- Overlap detection tra phrase blocks (PHRASE_SLOT=0x80 minimum)
+- Phrase boundary check dentro `[0x200, phrase_area_end)`
+- Max section pointer scala con size (0x400 per 5120, 0x1400 per 6144)
+
+### SGT bitstream density map (task #72 → data-points per task #55)
+Ratio byte/note catturato su SGT S28 (151 BPM, 4 bar, 208 note totali):
+| Track | Ch | Bitstream | NoteOn | B/note |
+|-------|-----|-----------|--------|--------|
+| RHY1 | 9 | 771B (6 msg) | 274 | **2.81** (dense) |
+| RHY2 | 10 | 257B | 69 | 3.72 |
+| BASS | 11 | 128B (1 msg) | 7 | 18.29 (sparse) |
+| CHD1 | 12 | 257B | 52 | 4.94 |
+| PAD | 14 | 257B | 48 | 5.35 |
+| PHR1 | 15 | 257B | 61 | 4.21 |
+
+Correlazione: **RHY1 è l'unico con layout 6-msg/771B** — tutte le altre tracce stanno in 1-2 messaggi (128/256B). Questo conferma la struttura ipotizzata dove drum ch9 ha bitstream esteso (encoding dense per multi-drum-hits), mentre gli altri track usano single-voice encoding.
+
+Ipotesi ricerca: ratio ~2.81 B/note RHY1 = mix di eventi 2B e 3B, dove ~80% sono 3-byte (delta+note+velocity) e ~20% sono 2-byte (delta+note con velocity default).
+
+### Dense encoding breakthrough — beat-position structure (task #55 in progress)
+
+Analizzando Summer ground truth v2 (4 bar × 4 beat × 3-4 drum strikes per event = 61 strikes mappate esattamente):
+
+**Struttura evento 7-byte**:
+- Ogni evento 7B = 1 quarter-note beat (4 eventi per bar × 4 bar = 16 eventi per pattern)
+- Strikes encoding: 3 drum hits per beat (per RHY1), 2-4 voices per beat (CHD1/PHR2)
+
+**Per-beat position rotation (R) trovata**:
+- Beat 0 (P1=kick+2hat): R=0, 32/56 bit costanti tra bar 1/2/4
+- Beat 1 (P2=snare+2hat): R=2, 32/56 bit costanti
+- Beat 2 (P3=hat+kick+hat): R=1, **44/56 bit costanti** (= pattern ID)
+- Beat 3 (variabile): non uniforme
+
+**Bit structure per beat 2 (R=1, 44 bit pattern + 12 bit variable)**:
+`1 0001 1001 0100 VVVVVVVV 1111 VVVV 1010 0000 1010 1100 0010 1010 000`
+dove V = velocity/groove-humanization variabili
+
+**Bar 3 outlier consistente** → segment 3 = FILL o MAIN B variant
+
+### Cross-track byte sharing (CHD1 vs PHR2, same 257B allocation)
+Al livello byte raw (senza rotazione), tra CHD1 (preamble 2D2B) e PHR2 (preamble 303B):
+- Beat 1: byte 0 + 5 + 6 SEMPRE uguali (bars 1,2,4)
+- Beat 2: byte 4 + 5 + 6 SEMPRE uguali
+- Beat 3-4: parzialmente uguali
+
+**Interpretazione**: "beat-template bytes" sono TRACK-INVARIANTI per 2 tracce con encoding diverso. Ciò indica che il groove/timing è encodato in POSITION-FIXED bytes, separati dai "note-content bytes". Ogni track varia solo i byte che codificano contenuto melodico/drum.
+
+### Tests (31 passing, +4 da session 28)
+- `test_roundtrip_hardware_capture_s28_6bar_6144` — 6-bar SGT → 6144B Q7P byte-valid
+- `test_duplicate_section_pointers_flagged`
+- `test_section_pointers_must_step_by_9`
+- `test_6144_scaffold_accepts_wider_section_pointers`
+
+### Files modificati
+- `midi_tools/build_q7p_5120.py` — `build_q7p()`, `PHRASE_AREA_END_BY_SIZE`, validator extensions
+- `tests/test_quantizer.py` — 4 nuovi test (6144B + validator invariants)
+- `wiki/conversion-roadmap.md` — Pipeline B ora supporta 4-bar E 6-bar
+
+---
+
 ## [2026-04-16] session-28 | Hardware-in-the-loop Pipeline B validata
 
 ### QY70 collegato, hardware I/O completo

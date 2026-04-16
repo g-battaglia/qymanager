@@ -394,6 +394,78 @@ class TestEndToEndRoundtrip:
         blocks = find_phrase_blocks(q7p)
         assert len(blocks) >= 6
 
+    def test_roundtrip_hardware_capture_s28_6bar_6144(self):
+        """Session 29: 6-bar SGT capture fits in 6144B scaffold (regression)."""
+        cap = os.path.join(os.path.dirname(__file__), "..",
+                           "midi_tools", "captured", "s28_sgt", "capture.json")
+        scaffold = os.path.join(os.path.dirname(__file__), "..",
+                                "data", "q7p", "SGT..Q7P")
+        if not os.path.exists(cap) or not os.path.exists(scaffold):
+            pytest.skip("Hardware capture or SGT scaffold not available")
+
+        from midi_tools.build_q7p_5120 import build_q7p, validate_q7p
+        from midi_tools.q7p_to_midi import find_phrase_blocks
+
+        pattern = quantize_capture(cap, bar_count=6)
+        assert pattern.bar_count == 6
+
+        total_notes = sum(len(t.notes) for t in pattern.tracks.values())
+        assert total_notes >= 200, (
+            f"Expected at least 200 notes in 6-bar SGT, got {total_notes}"
+        )
+
+        q7p = build_q7p(pattern, scaffold)
+        assert len(q7p) == 6144
+
+        with open(scaffold, "rb") as f:
+            scaffold_bytes = f.read()
+        warnings = validate_q7p(q7p, scaffold=scaffold_bytes)
+        assert len(warnings) == 0, f"Validator warnings: {warnings}"
+
+        blocks = find_phrase_blocks(q7p)
+        assert len(blocks) >= 6
+
+
+class TestValidatorInvariants:
+    """Tests for validate_q7p invariant checks added in Session 29."""
+
+    def _base_q7p(self, size=5120):
+        """Build a minimal valid Q7P from scaffold."""
+        scaffold = os.path.join(
+            os.path.dirname(__file__), "..",
+            "data", "q7p", "DECAY.Q7P" if size == 5120 else "SGT..Q7P",
+        )
+        with open(scaffold, "rb") as f:
+            return bytearray(f.read()), scaffold
+
+    def test_duplicate_section_pointers_flagged(self):
+        data, _ = self._base_q7p()
+        # Force section pointers [0] and [1] to the same value
+        data[0x100:0x102] = b"\x00\x20"
+        data[0x102:0x104] = b"\x00\x20"
+        from midi_tools.build_q7p_5120 import validate_q7p
+        warnings = validate_q7p(bytes(data))
+        assert any("Duplicate section pointers" in w for w in warnings)
+
+    def test_section_pointers_must_step_by_9(self):
+        data, _ = self._base_q7p()
+        # Force a non-contiguous section pointer
+        data[0x100:0x102] = b"\x00\x20"
+        data[0x102:0x104] = b"\x00\x40"  # +32, not +9
+        from midi_tools.build_q7p_5120 import validate_q7p
+        warnings = validate_q7p(bytes(data))
+        assert any("not contiguous" in w for w in warnings)
+
+    def test_6144_scaffold_accepts_wider_section_pointers(self):
+        """In 6144B, section pointers can exceed 0x400 (DECAY's cap)."""
+        data, scaffold = self._base_q7p(size=6144)
+        from midi_tools.build_q7p_5120 import validate_q7p
+        with open(scaffold, "rb") as f:
+            scaffold_bytes = f.read()
+        warnings = validate_q7p(bytes(data), scaffold=scaffold_bytes)
+        # Baseline scaffold itself must pass validation
+        assert not any("out of range" in w for w in warnings), warnings
+
 
 class TestSMFWriter:
     """Tests for Standard MIDI File output."""

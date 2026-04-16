@@ -36,10 +36,29 @@ from midi_tools.capture_to_q7p import (
 
 
 PHRASE_AREA_START = 0x200
-PHRASE_AREA_END = 0xA00
 SECTION_POINTERS = 0x100
 SECTION_CONFIGS = 0x120
 PHRASE_SLOT = 0x80  # phrase blocks align to 128-byte boundaries
+
+# Phrase area size scales with Q7P size. Trailer layout differs between variants.
+# Validated by inspecting DECAY (5120B) and SGT..Q7P (6144B) scaffolds.
+PHRASE_AREA_END_BY_SIZE = {
+    5120: 0x0A00,   # DECAY layout: 2048B phrase area, 2560B trailer
+    6144: 0x1400,   # SGT layout: 4608B phrase area, 1024B trailer
+}
+
+# Back-compat alias. Default is the 5120-byte DECAY layout.
+PHRASE_AREA_END = PHRASE_AREA_END_BY_SIZE[5120]
+
+
+def _phrase_area_end(q7p_size: int) -> int:
+    """Return the phrase-area end offset for a given scaffold size."""
+    if q7p_size not in PHRASE_AREA_END_BY_SIZE:
+        raise ValueError(
+            f"Unsupported Q7P scaffold size {q7p_size}. "
+            f"Supported: {sorted(PHRASE_AREA_END_BY_SIZE)}"
+        )
+    return PHRASE_AREA_END_BY_SIZE[q7p_size]
 
 
 # Track slot to AL mapping based on PATT OUT 9~16 channels.
@@ -64,14 +83,22 @@ def build_section_config(phrase_idx: int, track_idx: int, bar_count: int) -> byt
     ])
 
 
-def pack_phrase_blocks(pattern: QuantizedPattern) -> Tuple[bytes, List[Tuple[int, int, int, int]]]:
-    """Pack phrase blocks into the 0x200-0x9FF region.
+def pack_phrase_blocks(
+    pattern: QuantizedPattern,
+    phrase_area_size: int = PHRASE_AREA_END - PHRASE_AREA_START,
+) -> Tuple[bytes, List[Tuple[int, int, int, int]]]:
+    """Pack phrase blocks into the phrase area region.
+
+    Args:
+        pattern: quantized pattern with active tracks
+        phrase_area_size: total bytes available for phrase blocks
+            (2048 for 5120B Q7P, 4608 for 6144B Q7P)
 
     Returns:
-        packed_bytes: bytes for 0x200-0x9FF (2048 bytes)
+        packed_bytes: bytes for the phrase area
         section_entries: list of (phrase_idx, track_idx, bar_count, slot_offset)
     """
-    buf = bytearray(b"\x40" * (PHRASE_AREA_END - PHRASE_AREA_START))
+    buf = bytearray(b"\x40" * phrase_area_size)
     section_entries = []
     cursor = 0  # offset from PHRASE_AREA_START
 
@@ -85,7 +112,8 @@ def pack_phrase_blocks(pattern: QuantizedPattern) -> Tuple[bytes, List[Tuple[int
         if cursor + len(block) > len(buf):
             raise ValueError(
                 f"Phrase {track.name} ({len(block)} bytes) "
-                f"doesn't fit in phrase area"
+                f"doesn't fit in phrase area ({phrase_area_size}B, "
+                f"used {cursor}B so far)"
             )
 
         buf[cursor:cursor + len(block)] = block
@@ -98,32 +126,32 @@ def pack_phrase_blocks(pattern: QuantizedPattern) -> Tuple[bytes, List[Tuple[int
     return bytes(buf), section_entries
 
 
-def build_5120_q7p(
+def build_q7p(
     pattern: QuantizedPattern,
     scaffold_path: str,
 ) -> bytes:
-    """Build a 5120-byte Q7P file by replacing phrases in a scaffold.
+    """Build a Q7P file by replacing phrases in a scaffold.
 
-    The scaffold (typically DECAY.Q7P) provides:
+    Supports 5120B (DECAY layout, 4-bar max) and 6144B (SGT layout, 6-bar+).
+
+    The scaffold provides:
       - Header magic
       - Pattern metadata (0x010-0x01F)
-      - Section pointer region (starts at 0x100 — REWRITTEN)
+      - Section pointer region (0x100 — REWRITTEN)
       - Section configs (0x120+ — REWRITTEN)
-      - Unknown parameter tables (0x0A00+ — preserved)
-      - All other unknown regions (preserved)
+      - Unknown parameter tables and trailer (preserved)
     """
     with open(scaffold_path, "rb") as f:
         buf = bytearray(f.read())
 
-    if len(buf) != 5120:
-        raise ValueError(f"Scaffold must be 5120 bytes, got {len(buf)}")
+    phrase_area_end = _phrase_area_end(len(buf))
+    phrase_area_size = phrase_area_end - PHRASE_AREA_START
 
-    # 1. Replace phrase blocks at 0x200-0x9FF
-    packed, section_entries = pack_phrase_blocks(pattern)
-    buf[PHRASE_AREA_START:PHRASE_AREA_END] = packed
+    # 1. Replace phrase blocks
+    packed, section_entries = pack_phrase_blocks(pattern, phrase_area_size)
+    buf[PHRASE_AREA_START:phrase_area_end] = packed
 
     # 2. Rewrite section pointers (0x100-0x11F)
-    # Point to 0x120, 0x129, 0x132, 0x13B (4 configs × 9 bytes)
     pointers = bytearray(b"\xFE\xFE" * 16)
     for i in range(len(section_entries)):
         ptr = 0x0020 + i * 9  # offset relative to 0x100
@@ -134,21 +162,32 @@ def build_5120_q7p(
     cfg_buf = bytearray()
     for phrase_idx, track_idx, bar_count, _ in section_entries:
         cfg_buf.extend(build_section_config(phrase_idx, track_idx, bar_count))
-    # Pad remaining config area to 0x200 with zeros (was F1 ... config terminators in DECAY)
-    # Keep minimal: just our configs. DECAY had a F1 terminator after last valid config.
     if cfg_buf:
         cfg_buf.extend(bytes([0xF1, 0x00]))
     buf[SECTION_CONFIGS:SECTION_CONFIGS + len(cfg_buf)] = cfg_buf
-    # Zero out rest of config area up to 0x200
     buf[SECTION_CONFIGS + len(cfg_buf):PHRASE_AREA_START] = (
         b"\x00" * (PHRASE_AREA_START - SECTION_CONFIGS - len(cfg_buf))
     )
 
-    # 4. Update pattern name if scaffold has one
-    # Name in 5120 format is at 0x0A00 area, but format varies.
-    # We don't touch it — preserves scaffold metadata.
-
     return bytes(buf)
+
+
+def build_5120_q7p(
+    pattern: QuantizedPattern,
+    scaffold_path: str,
+) -> bytes:
+    """Back-compat alias — requires a 5120-byte scaffold.
+
+    New callers should use build_q7p() which handles both 5120B and 6144B.
+    """
+    with open(scaffold_path, "rb") as f:
+        size = len(f.read())
+    if size != 5120:
+        raise ValueError(
+            f"build_5120_q7p requires a 5120-byte scaffold, got {size}. "
+            f"Use build_q7p() for 6144B scaffolds."
+        )
+    return build_q7p(pattern, scaffold_path)
 
 
 def _validate_phrase_stream(data: bytes, offset: int, name: str) -> List[str]:
@@ -229,26 +268,49 @@ def _validate_phrase_stream(data: bytes, offset: int, name: str) -> List[str]:
 def validate_q7p(data: bytes, scaffold: bytes = None) -> List[str]:
     """Validate a Q7P file structure. Returns list of warnings.
 
-    For 5120-byte files: compares against scaffold to ensure only phrase
-    area (0x200-0x9FF) and section metadata (0x100-0x1FF) were changed.
-    Additionally walks every phrase block and validates its event stream.
+    For 5120/6144-byte files: compares against scaffold to ensure only phrase
+    area and section metadata (0x100-0x1FF) were changed.
+    Additionally walks every phrase block and validates its event stream
+    plus global invariant: phrase count ≤ 16, track count ≤ 16, unique
+    non-empty phrases, no phrase-block overlap.
     """
     warnings = []
 
     if len(data) not in (3072, 5120, 4096, 4608, 5632, 6144):
-        warnings.append(f"Unusual file size: {len(data)} (expected 3072 or 5120)")
+        warnings.append(f"Unusual file size: {len(data)} (expected 3072/5120/6144)")
 
     if not data[:6] == b"YQ7PAT":
         warnings.append(f"Invalid magic: {data[:16]!r}")
 
-    # Section pointers must be sensible
+    # Section pointers must be sensible (< phrase area start + typical trailer)
+    max_ptr = 0x0400 if len(data) == 5120 else 0x1400 if len(data) == 6144 else 0x0400
     for i in range(16):
         ptr = struct.unpack(">H", data[0x100 + i*2:0x100 + i*2 + 2])[0]
-        if ptr != 0xFEFE and ptr > 0x0400:
+        if ptr != 0xFEFE and ptr > max_ptr:
             warnings.append(f"Section pointer [{i}]=0x{ptr:04x} out of range")
 
+    # Section pointers must be unique (each points to a distinct config)
+    live_ptrs = [
+        struct.unpack(">H", data[0x100 + i*2:0x100 + i*2 + 2])[0]
+        for i in range(16)
+    ]
+    live_ptrs = [p for p in live_ptrs if p != 0xFEFE]
+    if len(live_ptrs) != len(set(live_ptrs)):
+        dupes = {p for p in live_ptrs if live_ptrs.count(p) > 1}
+        warnings.append(f"Duplicate section pointers: {sorted(f'0x{p:04x}' for p in dupes)}")
+
+    # Section pointers must be strictly increasing by 9 bytes (config slot size)
+    sorted_ptrs = sorted(live_ptrs)
+    for a, b in zip(sorted_ptrs, sorted_ptrs[1:]):
+        if b - a != 9:
+            warnings.append(
+                f"Section pointers not contiguous: 0x{a:04x} → 0x{b:04x} "
+                f"(expected step=9)"
+            )
+            break
+
     # For 3072-byte files: check classic bricking offsets (0x1E6/0x1F6/0x206)
-    # For 5120-byte files: 0x200+ is phrase blocks, so those offsets don't apply
+    # For 5120/6144-byte files: 0x200+ is phrase blocks, so those offsets don't apply
     if len(data) == 3072:
         for off in (0x1E6, 0x1F6, 0x206):
             if any(b != 0 for b in data[off:off+16]):
@@ -256,16 +318,21 @@ def validate_q7p(data: bytes, scaffold: bytes = None) -> List[str]:
                     f"NON-ZERO at 0x{off:04x} (3072B bricking area)"
                 )
 
-    # For 5120-byte with scaffold: verify we only changed expected regions
-    if len(data) == 5120 and scaffold is not None and len(scaffold) == 5120:
-        SAFE_CHANGE_REGIONS = [
-            (0x100, 0x200),   # section pointers + configs
-            (0x200, 0xA00),   # phrase blocks
+    # Determine phrase area end from scaffold size
+    phrase_area_end = None
+    if len(data) in PHRASE_AREA_END_BY_SIZE:
+        phrase_area_end = PHRASE_AREA_END_BY_SIZE[len(data)]
+
+    # For 5120/6144-byte with scaffold: verify we only changed expected regions
+    if phrase_area_end is not None and scaffold is not None and len(scaffold) == len(data):
+        safe_change_regions = [
+            (0x100, 0x200),                # section pointers + configs
+            (0x200, phrase_area_end),      # phrase blocks
         ]
         for i in range(len(data)):
             if data[i] == scaffold[i]:
                 continue
-            if not any(lo <= i < hi for lo, hi in SAFE_CHANGE_REGIONS):
+            if not any(lo <= i < hi for lo, hi in safe_change_regions):
                 warnings.append(
                     f"Modified byte 0x{i:04x} outside safe region "
                     f"(scaffold={scaffold[i]:02x}, output={data[i]:02x})"
@@ -274,11 +341,36 @@ def validate_q7p(data: bytes, scaffold: bytes = None) -> List[str]:
                     warnings.append("  ... (more unsafe modifications suppressed)")
                     break
 
-    # Walk each phrase block and validate its event stream (5120-byte format)
-    if len(data) == 5120:
+    # Walk each phrase block and validate its event stream
+    if phrase_area_end is not None:
         try:
             from midi_tools.q7p_to_midi import find_phrase_blocks
-            for offset, name in find_phrase_blocks(data):
+            blocks = find_phrase_blocks(data)
+
+            if len(blocks) > 16:
+                warnings.append(
+                    f"Too many phrase blocks: {len(blocks)} > 16 (QY700 max tracks)"
+                )
+
+            # Overlap detection: phrase blocks must not overlap
+            sorted_blocks = sorted(blocks)
+            for (a_off, a_name), (b_off, b_name) in zip(sorted_blocks, sorted_blocks[1:]):
+                if b_off < a_off + PHRASE_SLOT:
+                    # Phrase must occupy at least one PHRASE_SLOT
+                    warnings.append(
+                        f"Phrase overlap: {a_name!r}@0x{a_off:04x} "
+                        f"too close to {b_name!r}@0x{b_off:04x}"
+                    )
+
+            # Phrase must lie inside phrase area
+            for offset, name in blocks:
+                if offset < PHRASE_AREA_START or offset >= phrase_area_end:
+                    warnings.append(
+                        f"Phrase {name!r}@0x{offset:04x} outside phrase area "
+                        f"[0x{PHRASE_AREA_START:04x}, 0x{phrase_area_end:04x})"
+                    )
+
+            for offset, name in blocks:
                 warnings.extend(_validate_phrase_stream(data, offset, name))
         except Exception as e:
             warnings.append(f"Phrase stream validation failed: {e}")
