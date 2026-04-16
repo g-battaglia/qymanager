@@ -37,6 +37,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 
 ## Status & History
 
+- **[../STATUS.md](../STATUS.md)** — **Project north-star: % completion, cosa funziona, raccomandazione strategica (single-source recap)**
 - [Conversion Roadmap](conversion-roadmap.md) — End-to-end conversion status and blocking issues
 - [Decoder Status](decoder-status.md) — Current decoding confidence per track type
 - [Bricking Diagnosis](bricking.md) — QY700 bricking cause, fix, and safety rules

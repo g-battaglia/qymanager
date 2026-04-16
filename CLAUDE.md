@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+## STATUS.md (north-star)
+
+Il file `STATUS.md` nella root è il **recap generale unico** del progetto: % completamento, cosa funziona, cosa manca, raccomandazione strategica, prossimi passi. **Aggiornalo a ogni chiusura di sessione** — in particolare:
+- Data "Ultimo aggiornamento"
+- Tabella "Valutazione generale" (% completato)
+- Cosa è passato da "research" a "production-ready" o viceversa
+- Cosa è passato da "non iniziato" a "in progress"
+
+`STATUS.md` deve rimanere conciso (< 150 righe). I dettagli vanno in `wiki/`, linkati dal file.
+
 ## Wiki Maintenance
 
 This project has a persistent knowledge base in `/wiki/`. The wiki is the single source of truth for all reverse-engineered knowledge about QY70/QY700 formats.
