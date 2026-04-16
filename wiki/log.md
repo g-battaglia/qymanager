@@ -2,6 +2,45 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-26 | Pipeline B end-to-end: 126/126 note roundtrip verified
+
+### Pipeline B completata su Summer
+Pipeline cattura-a-Q7P verificata end-to-end con il pattern Summer come input.
+Cattura MIDI → quantizzatore → file SMF + Q7P 5120-byte → riconversione MIDI.
+Output: **126/126 note note-for-note esatte, durata 8.00s (4 bar @ 120 BPM)**.
+
+### Bug D0/E0 encoder scoperto e fixato
+`encode_phrase_events()` scriveva il formato evento sbagliato:
+- D0 prima: `D0 [note] [vel] [gate]` → corretto: `D0 [vel] [note] [gate]` (4 byte)
+- E0 prima: `E0 [note] [vel] [gate]` (4 byte) → corretto: `E0 [gate] [param] [note] [vel]` (5 byte)
+
+Il formato corretto è stato verificato da DECAY.Q7P (kick: `D0 3C 24 48` = vel=60, GM=36, gate=72; piano pad: `E0 1E 00 37 7F` = gate=30, param=0, G3, vel=127).
+
+Prima del fix: CHD2 perdeva 4/12 note nel roundtrip. Dopo il fix: 12/12.
+
+### Nuovo builder: `midi_tools/build_q7p_5120.py`
+Costruisce un Q7P 5120-byte completo usando DECAY.Q7P come scaffold strutturale:
+- Sostituisce solo le aree phrase blocks (0x200-0x9FF) e section pointers/configs (0x100-0x1FF)
+- Preserva ogni altro byte (header, tabelle parametri, metadata trailing)
+- Validatore confronta output vs scaffold: flag su modifiche fuori regione sicura
+
+Output roundtrip-validato: `midi_tools/captured/summer_5120.Q7P` (126 note esatte).
+
+### Fix quantizer
+`quantize_capture()` accettava solo capture con chiave "raw". Ora supporta anche "events" (formato della cattura Summer).
+
+### Limiti noti (NON risolti in questa sessione)
+- **Hardware testing**: il Q7P 5120-byte generato NON è stato testato su QY700. Regioni sconosciute del formato restano un rischio di bricking. L'utente deve verificare con cautela.
+- **Dense decoder**: encoding 2543/2D2B/303B del QY70 resta parzialmente risolto. Pipeline B bypassa completamente il dense decoder usando MIDI capture come source-of-truth.
+
+### Impatto sul roadmap
+Completamento gate #3 del conversion-roadmap: QY70 → Q7P 5120-byte con fidelity totale (via MIDI capture). Il converter QY70→QY700 può ora:
+1. Ricevere dump SysEx dal QY70
+2. Riprodurre il pattern via SysEx e catturare l'audio MIDI
+3. Generare Q7P pronto per QY700 (pending hardware validation)
+
+Files: `midi_tools/build_q7p_5120.py`, `midi_tools/capture_to_q7p.py` (fix), `midi_tools/quantizer.py` (fix), `midi_tools/captured/summer_5120.Q7P`.
+
 ## [2026-04-16] session-25h | Summer: 4-bar pattern (not 5), cross-track ground truth, groove template
 
 ### Major Correction: Summer is 4 bars, NOT 5

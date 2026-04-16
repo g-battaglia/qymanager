@@ -152,9 +152,9 @@ def quantize_capture(
     if bpm is None:
         bpm = capture.get("bpm", 120)
 
-    raw = capture.get("raw", [])
+    raw = capture.get("raw") or capture.get("events", [])
     if not raw:
-        raise ValueError("Capture file has no raw events")
+        raise ValueError("Capture file has no raw/events data")
 
     # Timing constants
     beat_dur = 60.0 / bpm

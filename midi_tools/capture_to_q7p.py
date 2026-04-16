@@ -101,21 +101,16 @@ def encode_phrase_events(
 ) -> bytes:
     """Encode a quantized track as D0/E0 phrase data.
 
-    Uses the QY700 phrase command format:
-        D0 nn vv gg — drum note (note, velocity, gate)
-        E0 nn vv gg — melody note (note, velocity, gate)
-        A0 dd       — delta time (dd ticks, resolution 1x)
-        BE 00       — note off / reset
-        F0 00       — start marker
-        F2          — end marker
-
-    Gate encoding (gg): maps tick duration to a byte value.
-    Delta encoding: A0 dd for deltas ≤ 127, A1 dd for 128-255, etc.
+    Verified format (from DECAY.Q7P analysis):
+        D0 vv nn gg       — drum note (4 bytes: vel, GM note, gate)
+        E0 gg pp nn vv    — melody note (5 bytes: gate, param, note, vel)
+        A0-AF dd          — delta time (cmd-A0)*128 + dd ticks (ppqn=480)
+        BE 00             — note off / release
+        F0 00             — start marker
+        F2                — end marker
     """
     buf = bytearray()
     buf.extend(b"\xF0\x00")  # start marker
-
-    cmd = 0xD0 if track.is_drum else 0xE0
 
     # Collect all events across all bars in absolute ticks
     events = []
@@ -132,9 +127,15 @@ def encode_phrase_events(
             _encode_delta(buf, delta)
         prev_tick = abs_tick
 
-        # Encode note
         gate = _tick_to_gate(note.tick_dur)
-        buf.extend([cmd, note.note & 0x7F, note.velocity & 0x7F, gate & 0x7F])
+        if track.is_drum:
+            # D0 vv nn gg (4 bytes)
+            buf.extend([0xD0, note.velocity & 0x7F,
+                       note.note & 0x7F, gate & 0x7F])
+        else:
+            # E0 gg pp nn vv (5 bytes). param=0x00 seen in DECAY.
+            buf.extend([0xE0, gate & 0x7F, 0x00,
+                       note.note & 0x7F, note.velocity & 0x7F])
 
     buf.append(0xF2)  # end marker
     return bytes(buf)
