@@ -78,6 +78,20 @@ Al livello byte raw (senza rotazione), tra CHD1 (preamble 2D2B) e PHR2 (preamble
 - `tests/test_quantizer.py` — 4 nuovi test (6144B + validator invariants)
 - `wiki/conversion-roadmap.md` — Pipeline B ora supporta 4-bar E 6-bar
 
+### Strategic assessment & session closure (2026-04-17)
+
+Utente ha chiesto valutazione realistica. Valutazione condivisa:
+- Pipeline B production-ready → ~30-40% obiettivo finale completato
+- Pipeline A (decoder dense) **research-blocked** → ~10% di compresione strutturale, 0% output MIDI corretto
+- Raccomandazione: costruire editor completo sopra Pipeline B anziché attendere decoder dense
+- Stime residue: decoder dense 10-30 sessioni (non garantito); encoder 5-10 post-decoder; editor UI 10-20
+
+Aggiornata documentazione:
+- `wiki/decoder-status.md` — nuova sezione "Strategic Assessment" + history 28-29e
+- `wiki/conversion-roadmap.md` — Strategic Assessment prima di "What Works Today"
+- `wiki/bitstream.md` — nuova sezione "Dense Encoding Structure (29c-e)" con tabelle per-beat R, cross-track sharing, SGT 42B super-cycle
+- `wiki/open-questions.md` — aggiunta Session 29d (multi-section map) e 29e (42B period finding)
+
 ### SGT RHY1 bulk-dump structural analysis (task #55 continuation)
 Decodificato 7-bit `tests/fixtures/QY70_SGT.syx` → 13184 byte 8-bit. Mappato struttura multi-sezione SGT:
 - 6 preamble RHY1 (`25 43 60 00`) alle posizioni 24, 2200, 4248, 6296, 8472, 10648

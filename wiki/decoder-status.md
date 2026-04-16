@@ -107,6 +107,33 @@ Event index is **per-segment** (resets to 0 at each DC delimiter).
 | **20b** | **QYFiler.exe disassembly: NO rotation in host software** | **Barrel rotation is QY70 hardware-internal. BLK format = raw SysEx. Dump Request definitively unsupported** |
 | **25** | **Summer ground truth captured (395 notes), PATT OUT enabled** | **First full GT for user pattern. Decoder 7/7 confirmed on known_pattern** |
 | **25b** | **Groove template discovery, instrument lane model, dense encoding analysis** | **Per-beat velocity NOT in bitstream — groove template at playback. Lane R=[9,22,12,53] works 4/6 bars. Cumulative R FAILS on dense patterns** |
+| **28-29** | **Pipeline B hardware-validated 208/208 + 6-bar support, validator invariants** | **Pipeline B production-ready (capture→Q7P roundtrip byte-valid). Decoder dense = research-only** |
+| **29c** | **Per-beat rotation R=0/2/1/0 on Summer (44/56 bits const beat 2)** | **First repeatable structure in dense encoding. Bar 3 outlier; cross-track byte sharing** |
+| **29d-e** | **SGT multi-section mapped: 6 sections, 692B shared prefix, 42B super-cycle period** | **SGT dense encoding has 42B period = 6 × 7-byte events. Sec2 MAIN B has 3 byte-identical consecutive events** |
+
+## Strategic Assessment (Session 29e, 2026-04-17)
+
+Dopo 29+ sessioni, valutazione realistica dei 2 pipeline:
+
+**Pipeline B (capture-based)**: **PRODUCTION-READY**
+- Roundtrip byte-valid verificato su hardware (208/208 + 126/126 note)
+- 4-bar (5120B) e 6-bar (6144B) Q7P scaffold entrambi supportati
+- Validator con invariant phrase-level (0 warnings)
+- 26+ test regression, auto-capture pipeline orchestrato
+
+**Pipeline A (SysEx decode)**: **RESEARCH-BLOCKED**
+- Decoder sparse (user patterns): 100% funzionante (7/7)
+- Decoder dense (factory styles): **~10% compreso** (struttura identificata, nessun output MIDI corretto)
+- Structural impossibility (Session 20): velocity encoding non può produrre valori required
+- Encoder inverso dense: 0% (serve decoder prima)
+- Potrebbe richiedere **firmware dump** per risolvere davvero
+
+**Raccomandazione strategica**: costruire l'editor completo sopra **Pipeline B** (capture-based) invece di attendere il decoder dense. L'utente registra/suona il pattern sul QY70, il sistema cattura le note MIDI reali, poi l'editor lavora su quegli eventi quantizzati. Meno "puro" ma consegna un prodotto funzionante molto prima.
+
+**Stime residue** (in sessioni simili alle recenti):
+- Decoder dense completo: 10-30 sessioni, non garantito
+- Encoder dense (Q7P→SysEx): 5-10 sessioni post-decoder
+- Editor UI su Pipeline B: 10-20 sessioni
 
 ## Strategic Pivot: Capture-Based Conversion (Session 19)
 

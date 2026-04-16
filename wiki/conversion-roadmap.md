@@ -91,6 +91,29 @@ Bar headers store chord-RELATIVE templates. Irrelevant for Pipeline B (capture a
 
 Both 2BE3 and 29CB produce chaotic results. Irrelevant for Pipeline B.
 
+## Strategic Assessment (Session 29e, 2026-04-17)
+
+Dopo 29+ sessioni, stato realistico del progetto:
+
+**Completato (~30-40% obiettivo finale)**:
+- Pipeline B capture-based: production-ready, roundtrip byte-valid
+- Metadata converter (tempo, nome)
+- Decoder sparse (user patterns): 100% su 7 casi noti
+- Q7P format fully decoded (read + write + validator)
+
+**Bloccato (~10% progress su decoder dense)**:
+- Decoder dense (factory styles): struttura identificata (42B super-cycle, per-beat rotation, 692B prefix)
+- Nessun output MIDI corretto da SysEx dense ancora
+- Structural impossibility provata su velocity encoding (Session 20)
+- Encoder inverso: 0% (dipende dal decoder dense)
+
+**Raccomandazione**: costruire editor completo sopra **Pipeline B** anziché attendere decoder dense. L'utente registra pattern sul QY70, sistema cattura MIDI reale, editor lavora su eventi quantizzati. Consegna prodotto funzionante MOLTO prima.
+
+**Stime residue** (sessioni simili):
+- Decoder dense completo: 10-30 sessioni, non garantito (forse serve firmware dump)
+- Encoder dense Q7P→SysEx: 5-10 sessioni post-decoder
+- Editor UI su Pipeline B: 10-20 sessioni
+
 ## What Works Today (Session 28)
 
 **Pipeline B produces end-to-end output**:

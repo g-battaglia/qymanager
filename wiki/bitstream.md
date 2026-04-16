@@ -72,6 +72,56 @@ BF DF EF F7 FB FD FE
 
 Each byte is `0xFF` with one bit (6→0) cleared in descending order. This fills unused mixer slots and track data areas.
 
+## Dense Encoding Structure (Sessions 29c-e)
+
+Il modello cumulativo R=9×(i+1) funziona SOLO su pattern sparse (utente). Per pattern dense (stili factory come Summer e SGT) la struttura è diversa:
+
+### Per-beat rotation (Session 29c, ground truth Summer)
+
+Eventi 7-byte (56 bit), uno per quarter-note beat. **Rotazione ottimale DIVERSA per beat position**:
+
+| Beat | Strike pattern | R ottimale | Bit constanti (bars 1/2/4) |
+|------|----------------|------------|-------------------------------|
+| 0 | (36@0,42@0,42@1) | 0 | 32/56 |
+| 1 | (38@0,42@0,42@1) | 2 | 32/56 |
+| 2 | (42@0,36@1,42@1) | 1 | **44/56** |
+| 3 | (42@0,42@1) | 0 | — |
+
+**Bar 3 è outlier CONSISTENT** → segment 3 diverso da bars 1/2/4 (MAIN B o FILL).
+
+### Cross-track byte sharing (Session 29c)
+
+Byte-template invarianti tra tracce diverse (CHD1 `2D2B` e PHR2 `303B`):
+
+| Beat | Byte condivisi CHD1/PHR2 |
+|------|--------------------------|
+| 1 | byte 0, 5, 6 |
+| 2 | byte 4, 5, 6 |
+| 3 | byte 5 |
+
+I "beat-template bytes" codificano GROOVE/TIMING invariante rispetto al tipo di track.
+
+### SGT super-cycle 42B (Session 29d-e)
+
+Decodificato `QY70_SGT.syx` → 13184 byte 8-bit. Struttura multi-sezione:
+
+- **6 preamble RHY1** (`25 43 60 00`) a offset 24, 2200, 4248, 6296, 8472, 10648
+- **Preamble identico a Summer** (28 byte terminating `00 00 00 25 43 60 00`)
+- **692-byte shared prefix** tra tutte 6 sezioni → divergenza inizia a byte 692 (non byte 28)
+- **Section sizes asimmetriche**: 2176, 2048, 2048, 2176, 2176, 2539 (MAIN/FILL/INTRO/ENDING)
+- **Periodo 42 byte (6 × 7-byte events)** dominante in autocorrelazione byte-by-byte
+- **Sec2 MAIN B**: eventi 1/2/3 byte-identici (`c7e37178be9f8f`) → dense encoding byte-aligned
+- **Trailer 16B** condiviso tra Sec1/Sec2/Sec4 e tra Sec3/Sec5
+
+### Open problems
+
+- Mappatura 44-bit "pattern ID" (beat 2 Summer) → MIDI strike (note 36/38/42)
+- Interpretazione 12-24 variable bit (velocity? groove humanization?)
+- Mappatura 42B super-cycle SGT → beats/subdivisions MIDI
+- Confronto SGT/Summer: Summer = 28B period (4 beats), SGT = 42B period (6 events) — stesso encoding con granularità diversa?
+
+Vedi [Open Questions](open-questions.md) Session 29c/29d/29e.
+
 ## SysEx Bulk Dump Format
 
 QY70 style data is transmitted as Yamaha SysEx bulk dump messages:
