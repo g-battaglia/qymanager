@@ -78,6 +78,25 @@ Al livello byte raw (senza rotazione), tra CHD1 (preamble 2D2B) e PHR2 (preamble
 - `tests/test_quantizer.py` — 4 nuovi test (6144B + validator invariants)
 - `wiki/conversion-roadmap.md` — Pipeline B ora supporta 4-bar E 6-bar
 
+### SGT RHY1 bulk-dump structural analysis (task #55 continuation)
+Decodificato 7-bit `tests/fixtures/QY70_SGT.syx` → 13184 byte 8-bit. Mappato struttura multi-sezione SGT:
+- 6 preamble RHY1 (`25 43 60 00`) alle posizioni 24, 2200, 4248, 6296, 8472, 10648
+- Preamble identico a Summer (28 byte con `0804820100402008...` ... `2543 6000`)
+- Sezioni size: 2176, 2048, 2048, 2176, 2176, 2539 (non uniformi → diverse classi: MAIN/FILL/INTRO/ENDING)
+- **Prefix comune 692 byte tra tutte 6 sezioni** — inizio divergence a byte 692 → preamble estesa/init-block condiviso
+- **Periodo dominante in pattern data: 42 byte (= 6 × 7-byte events)** — superamente sul 7 e 14
+
+**Sec2 (MAIN B) gruppo 0**: eventi 1/2/3 **byte-identici** (`c7e37178be9f8f`), 4 bit differenza evento 0, eventi 4-5 variano. Conferma: dense encoding è byte-aligned a 7-byte events + super-cycle 42B.
+
+**Cross-section end-markers**:
+- Sec1/Sec2/Sec4 hanno identical trailer 16B: `99949786445ec628ae8d093d8e64dc00`
+- Sec3/Sec5 hanno identical trailer: `8b85d2f13c128942211048980c060140`
+- Sec6 unico (ENDING)
+
+**Implicazione**: SGT dense encoding segue struttura ripetitiva con super-cicli da 6 eventi = 42 byte. Summer (4-beat, 28 byte per bar) potrebbe essere il caso degenere del super-ciclo. Decoder dense dovrebbe lavorare su blocchi di 42 byte, non eventi singoli.
+
+**Apertura**: mappatura dei 42-byte super-cycle a beats/subdivisions MIDI rimane aperta. Da testare: se 42B = 1 bar (6 subdivisions) o 1.5 bar o altro.
+
 ---
 
 ## [2026-04-16] session-28 | Hardware-in-the-loop Pipeline B validata

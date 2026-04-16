@@ -109,6 +109,55 @@ Confronto layouts per beat:
 
 **Ipotesi di encoding compatibile con 2.81 B/note RHY1**: mix di eventi 2B e 3B dove ~80% sono 3-byte (delta+note+vel) e ~20% sono 2-byte (delta+note con vel default). Non verificata — serve esperimento controllato con pattern isolato.
 
+### Session 29d: SGT multi-section structure decoded
+
+**Findings (applicando 7-bit decode su `tests/fixtures/QY70_SGT.syx`)**:
+- 13184 byte decoded totali (da 15141 byte 7-bit raw)
+- **6 preamble RHY1** (`25 43 60 00`) alle posizioni 24, 2200, 4248, 6296, 8472, 10648
+- Preamble identico a Summer (28 byte terminating in `00 00 00 25 43 60 00`)
+- **Section sizes: 2176, 2048, 2048, 2176, 2176, 2539** — asimmetriche (confermano INTRO/ENDING diversi da MAIN/FILL)
+- **Primi 94 "eventi" (664 byte) IDENTICI tra tutte 6 sezioni** — divergenza inizia a byte 692 (event #94-95)
+- Niente preamble 2D2B o 303B — SGT non ha CHD1/PHR2 nel formato stesso di Summer
+- Per-beat rotation test (R=0/2/1/0 da Summer): su SGT section 1 trattata come 4 bars × 4 beats produce solo **16/56 bit constant per beat 2** (vs 44/56 per Summer). Signal ~3× più debole.
+
+**Implicazioni**:
+1. La "preamble" di SGT può estendersi oltre i 28 byte iniziali — forse è uno **shared-init block** di ~692 byte valido per tutte le sezioni
+2. I dati pattern-specifici iniziano a byte 692 di ogni sezione (non byte 28)
+3. La struttura per-beat di Summer potrebbe essere valida ma richiede corretta identificazione dell'inizio dati (offset 692, non 28)
+4. SGT sections 2 e 3 (size 2048) sono più corte delle altre — probabile MAIN A/B corti
+5. Section 6 (2539 byte) è la più lunga — probabile ENDING con coda
+
+**Next**:
+- Re-analizzare SGT dalla posizione 692 per estrarre gli eventi pattern-specifici
+- Verificare se a byte 692 inizia la struttura bars × beats × 7-byte events
+- Testare per-beat rotation dopo aver trovato il vero offset di start
+
+### Session 29e: SGT dense-encoding period is 42 bytes (6 × 7-byte events)
+
+**Test**: per ogni sezione (da byte 692 in poi), autocorrelazione byte-by-byte per trovare periodo dominante.
+
+| Section | Pattern size | Best period | Matches |
+|---------|--------------|-------------|---------|
+| Sec1 (MAIN A)  | 1484B | **42** | 264/1442 |
+| Sec2 (MAIN B)  | 1356B | **42** | 256/1314 |
+| Sec6 (ENDING)  | 1847B | 7 (then 42) | 287/1840 |
+
+**Interpretazione**: 
+- Tutte le sezioni SGT hanno un **periodo di 42 byte** = 6 × 7-byte events
+- Questo supera i periodi 7, 14, 72, 114 (altri candidati)
+- 42 byte = **6 eventi per ciclo** — coerente con notation QY70 di 24 o 48 step per bar con pattern ripetitivo ogni 1/4 bar
+- Periodo 7 conferma dimensione evento singolo (come Summer)
+
+**Hypothesis**:
+- Ogni sezione è composta da N "super-cicli" da 42 byte (6 eventi ciascuno)
+- Il primo evento nel super-ciclo potrebbe essere un "beat/bar header" con metadati
+- I successivi 5 eventi sono i dati effettivi per le subdivision
+
+**Implicazione per il decoder**:
+- Il decoder dense dovrebbe lavorare su super-blocchi di 42 byte, non evento-per-evento
+- La rotazione per-beat di Summer potrebbe essere il caso DEGENERE dove il super-ciclo è 28 byte (4 × 7 = quarter notes)
+- SGT usa 6-event super-ciclo (possibly 16th notes × 1 bar o 8th notes × 3/4 bar)
+
 **Session 25d: ALL rotation models exhaustively eliminated for dense encoding**:
 - **Structural impossibility**: note 38 (snare) UNREACHABLE from Seg 2 events at ANY rotation
 - **Instrument reordering**: "stable core" bytes (e.g., `ae8d81`=snare) move between event slots per bar
