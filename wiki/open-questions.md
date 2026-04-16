@@ -70,14 +70,21 @@ This means:
 
 Program simple patterns on the QY70 with known content and capture via bulk dump.
 
-| Pattern | Content | Purpose |
-|---------|---------|---------|
-| A | Solo CHD2, C major chord, 4 bars, 120 BPM | Validate [bar header](bar-structure.md) chord encoding |
-| B | Same as A but Am chord | Which bytes change for different root/type |
-| C | Solo RHY1, kick (note 36) on beat 1 ONLY | Isolate single-instrument dense encoding |
-| D | Solo RHY1, HH on beats 1+3 only | Isolate beat pattern encoding |
-| E | Solo RHY1, HH all 8 eighth notes, no groove | Test whether no-groove gives exact vel_code |
-| F | Main A: C major, Main B: G major on CHD2 | Cross-section chord changes |
+| Pattern | Content | Purpose | Status |
+|---------|---------|---------|--------|
+| A | Solo CHD2, C major chord, 4 bars, 120 BPM | Validate [bar header](bar-structure.md) chord encoding | Pending |
+| B | Same as A but Am chord | Which bytes change for different root/type | Pending |
+| C | Solo RHY1, kick (note 36) on beat 1 ONLY | Isolate single-instrument dense encoding | **Captured 25e** (`ground_truth_C_kick.syx`) |
+| D | Solo RHY1, HH on beats 1+3 only | Isolate beat pattern encoding | Pending |
+| E | Solo RHY1, HH all 8 eighth notes, no groove | Test whether no-groove gives exact vel_code | Pending |
+| F | Main A: C major, Main B: G major on CHD2 | Cross-section chord changes | Pending |
+
+**Pattern C findings (Session 25e)** — even a single-kick-per-bar pattern is **dense**:
+- 4 events/bar allocated despite only 1 kick (lane model is universal)
+- R varies per bar AND per event slot; instruments reorder across bars
+- e0 at R=46 works for bars 1,2,4,5 (F1=368 constant) but bar 3 requires e1 at R=24
+- Same structural impossibility as Summer: some events cannot produce note 36 at any R
+- **Conclusion**: encoding regime depends on track type (drum = dense), not note density
 
 Patterns C-E are CRITICAL for understanding the [instrument lane model](2543-encoding.md#instrument-lane-model--dense-patterns-session-25b) and [groove template](2543-encoding.md#groove-template-session-25b).
 

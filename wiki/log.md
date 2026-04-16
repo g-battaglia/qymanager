@@ -2,6 +2,50 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-16] session-25e | Ground truth Pattern C captured, restore tool built
+
+### Ground Truth Pattern C: Solo Kick on Beat 1
+- User programmed simplest possible drum pattern on QY70: RHY1 with kick (note 36)
+  on beat 1 only, 4 bars, 120 BPM, saved to User Pattern slot U01 (AM=0x00)
+- Captured via `request_dump.py --all-tracks` (AH=02, AM=00)
+- **Key observation**: QY70 ignores AL parameter — returns full pattern (all tracks)
+  regardless of which specific track is requested
+- Result: 126 messages = 9 redundant copies × 14 unique bulk dumps (2230 bytes unique)
+
+### RHY1 Analysis (`analyze_ground_truth_kick.py`)
+Even with a single-instrument, single-beat pattern:
+- **4 events per bar** allocated (confirms lane model)
+- **R values are bar-dependent**, not event-index-dependent:
+  - e0 uses R=46 in bars 1,2,4,5 — but bar 3 has no e0 solution (instrument reorders to e1 at R=24)
+  - e2 alternates R=44/49 between bars
+  - e3 alternates R=2/53 between bars
+- **F1=368 constant** in e0@R=46 across working bars — likely a fixed instrument ID or beat position
+- **Some events structurally cannot produce note 36** at any R — same behavior as Summer
+- **Spurious data in CHD1/CHD2/PHR1/PHR2**: pattern slot contained template default data
+  (user confirmed slot was empty before programming — QY70 auto-fills non-RHY tracks)
+
+### Restore Tool Built
+- `midi_tools/restore_pattern.py` — converts a captured dump into a restore-ready .syx
+- Deduplicates redundant bulk dumps (keeps one copy of each unique message)
+- Adds Init handshake at start and Close message at end (required by QY70 for accept)
+- Validates all checksums before writing
+- Optional `--slot N` to remap User Pattern slot (rewrites AM byte, recalculates checksum)
+- Optional `--send` to transmit directly after building
+- Result: `ground_truth_C_kick_restore.syx` (2230 bytes, validated, ready for re-send)
+
+### Files Created
+- `midi_tools/captured/ground_truth_C_kick.syx` — raw capture (9× redundant copies)
+- `midi_tools/captured/ground_truth_C_kick_restore.syx` — deduplicated + Init/Close
+- `midi_tools/analyze_ground_truth_kick.py` — per-event R-analysis for drum tracks
+- `midi_tools/restore_pattern.py` — general-purpose dump restore utility
+
+### Why This Matters
+- Confirmed: lane model is universal (4 events/bar even for solo-kick patterns)
+- Confirmed: R value is NOT a simple function of event index or header
+- Disproves "sparse vs dense depends on note density" — even 1-note pattern is dense
+- New hypothesis: encoding regime depends on **track type** (all drum tracks are dense)
+- Insurance: if QY70 loses memory, can restore original pattern from saved .syx
+
 ## [2026-04-16] session-25d | Dense drum encoding elimination, tempo GT verification
 
 ### Tempo GT Verification
