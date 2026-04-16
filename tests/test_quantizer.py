@@ -144,28 +144,78 @@ class TestGateEncoding:
 
 
 class TestPhraseEncoder:
-    """Tests for D0/E0 phrase encoding."""
+    """Tests for D0/E0 phrase encoding (verified from DECAY.Q7P format)."""
 
-    def test_encode_drum_track(self, sgt_capture_path):
-        """Encode drum track produces valid D0 commands."""
+    def test_d0_format_vel_note_gate(self, sgt_capture_path):
+        """D0 encoding: [D0][vel][note][gate] (4 bytes, DECAY-verified)."""
         pattern = quantize_capture(sgt_capture_path, bar_count=1)
         rhy1 = pattern.tracks.get(0)
         if rhy1 is None:
             pytest.skip("No RHY1 track in capture")
 
         data = encode_phrase_events(rhy1, pattern)
-
-        # Should start with F0 00
         assert data[:2] == b"\xF0\x00"
-        # Should end with F2
         assert data[-1] == 0xF2
-        # Should contain D0 commands (drum)
-        assert 0xD0 in data
-        # Should NOT contain E0 commands (melody)
-        # (D0 is used for drums)
-        d0_count = sum(1 for i in range(len(data) - 3)
-                       if data[i] == 0xD0 and data[i+1] < 0x80)
-        assert d0_count == len(rhy1.notes)
+
+        # Walk the stream: for each D0 event, byte+2 must match a track note
+        track_notes = {n.note for n in rhy1.notes}
+        i = 2
+        d0_found = 0
+        while i < len(data) - 1:
+            cmd = data[i]
+            if cmd == 0xD0 and i + 3 < len(data):
+                vel = data[i+1]
+                note = data[i+2]
+                gate = data[i+3]
+                assert note in track_notes, (
+                    f"D0 at offset {i}: note=0x{note:02x} not in track notes"
+                )
+                assert 0 <= vel <= 0x7F
+                assert 1 <= gate <= 0x7F
+                d0_found += 1
+                i += 4
+            elif 0xA0 <= cmd <= 0xAF:
+                i += 2
+            elif cmd == 0xF2:
+                break
+            else:
+                i += 1
+        assert d0_found == len(rhy1.notes)
+
+    def test_e0_format_gate_param_note_vel(self, sgt_capture_path):
+        """E0 encoding: [E0][gate][param][note][vel] (5 bytes, DECAY-verified)."""
+        pattern = quantize_capture(sgt_capture_path, bar_count=1)
+        # Find first melody track
+        melody = next((t for t in pattern.active_tracks if not t.is_drum), None)
+        if melody is None:
+            pytest.skip("No melody track in capture")
+
+        data = encode_phrase_events(melody, pattern)
+        assert data[:2] == b"\xF0\x00"
+        assert data[-1] == 0xF2
+
+        track_notes = {n.note for n in melody.notes}
+        i = 2
+        e0_found = 0
+        while i < len(data) - 1:
+            cmd = data[i]
+            if cmd == 0xE0 and i + 4 < len(data):
+                gate = data[i+1]
+                param = data[i+2]
+                note = data[i+3]
+                vel = data[i+4]
+                assert note in track_notes
+                assert 0 <= vel <= 0x7F
+                assert 1 <= gate <= 0x7F
+                e0_found += 1
+                i += 5
+            elif 0xA0 <= cmd <= 0xAF:
+                i += 2
+            elif cmd == 0xF2:
+                break
+            else:
+                i += 1
+        assert e0_found == len(melody.notes)
 
     def test_encode_melody_track(self, sgt_capture_path):
         """Encode melody track produces valid E0 commands."""
@@ -207,6 +257,46 @@ class TestPhraseEncoder:
             assert len(events) == len(track.notes), (
                 f"Track {track.name}: encoded {len(events)} notes, "
                 f"expected {len(track.notes)}"
+            )
+
+
+class TestEndToEndRoundtrip:
+    """Full pipeline: capture → quantize → Q7P 5120 → parse → verify notes."""
+
+    def test_roundtrip_note_count(self, sgt_capture_path):
+        """Notes encoded into Q7P 5120-byte file must decode back identically."""
+        from midi_tools.build_q7p_5120 import build_5120_q7p
+        from midi_tools.q7p_to_midi import (
+            find_phrase_blocks,
+            parse_phrase_events,
+        )
+
+        pattern = quantize_capture(sgt_capture_path, bar_count=4)
+        scaffold = os.path.join(os.path.dirname(__file__), "..",
+                                "data", "q7p", "DECAY.Q7P")
+        if not os.path.exists(scaffold):
+            pytest.skip("DECAY.Q7P scaffold not available")
+
+        q7p_data = build_5120_q7p(pattern, scaffold)
+        assert len(q7p_data) == 5120
+
+        # Parse phrase blocks back from the Q7P data
+        blocks = find_phrase_blocks(q7p_data)
+        expected_names = {t.name for t in pattern.active_tracks}
+        decoded_names = {name for _, name in blocks if name in expected_names}
+        assert decoded_names == expected_names, (
+            f"Decoded phrases {decoded_names} != expected {expected_names}"
+        )
+
+        # Count notes per phrase
+        expected = {t.name: len(t.notes) for t in pattern.active_tracks}
+        for offset, name in blocks:
+            if name not in expected:
+                continue
+            phrase = parse_phrase_events(q7p_data, offset, channel=0)
+            assert len(phrase.events) == expected[name], (
+                f"Track {name}: {len(phrase.events)} decoded vs "
+                f"{expected[name]} expected"
             )
 
 
