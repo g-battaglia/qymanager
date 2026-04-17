@@ -1,16 +1,40 @@
 """
 QY700 Q7P file reader.
 
-Reads .Q7P binary files and converts them to the common Pattern model.
+Reads .Q7P binary files and converts them to the common Pattern model (legacy)
+or the Unified Data Model (UDM) Device.
 """
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
-from qymanager.models.pattern import Pattern, PatternSettings
+from qymanager.models.pattern import Pattern
 from qymanager.models.section import Section, SectionType
-from qymanager.models.track import Track, TrackSettings, create_default_tracks
+from qymanager.models.track import Track, TrackSettings
 from qymanager.formats.qy700.binary_parser import Q7PParser, Q7PHeader
+
+from qymanager.model import (
+    Device,
+    DeviceModel,
+    Pattern as UdmPattern,
+    Section as UdmSection,
+    PatternTrack,
+    SectionName,
+    TimeSig,
+    Voice,
+)
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
+
+_Q7P_SECTION_ORDER: list[SectionName] = [
+    SectionName.MAIN_A,
+    SectionName.MAIN_B,
+    SectionName.MAIN_C,
+    SectionName.MAIN_D,
+    SectionName.FILL_AA,
+    SectionName.FILL_BB,
+    SectionName.FILL_CC,
+    SectionName.FILL_DD,
+]
 
 
 class QY700Reader:
@@ -221,3 +245,90 @@ class QY700Reader:
             info["template_name"] = name.decode("ascii", errors="replace").rstrip()
 
         return info
+
+
+def parse_q7p_to_udm(data: bytes) -> Device:
+    """Parse Q7P binary data into a UDM Device.
+
+    Uses Q7PAnalyzer for byte-level extraction, maps to UDM dataclasses.
+    Stores raw bytes in Device._raw_passthrough for lossless roundtrip.
+
+    Args:
+        data: Raw Q7P file contents (3072 or 5120 bytes).
+
+    Returns:
+        Device with model=QY700 containing one Pattern.
+
+    Raises:
+        ValueError: If data is not a valid Q7P file.
+    """
+    if len(data) < 16 or data[:16] != b"YQ7PAT     V1.00":
+        raise ValueError("Invalid Q7P header")
+
+    analyzer = Q7PAnalyzer()
+    analysis = analyzer.analyze_bytes(data)
+
+    if not analysis.valid:
+        raise ValueError("Q7P analysis failed: invalid file structure")
+
+    ts_num, ts_den = analysis.time_signature
+    pattern = UdmPattern(
+        index=analysis.pattern_number,
+        name=analysis.pattern_name[:10] if analysis.pattern_name else "",
+        tempo_bpm=round(analysis.tempo, 1),
+        measures=4,
+        time_sig=TimeSig(numerator=ts_num, denominator=ts_den),
+    )
+
+    bank_msbs = _extract_voice_param(analyzer, "_get_bank_msb")
+    bank_lsbs = _extract_voice_param(analyzer, "_get_bank_lsb")
+    programs = _extract_voice_param(analyzer, "_get_programs")
+
+    for sec_info in analysis.sections:
+        if not sec_info.enabled:
+            continue
+        sec_idx = sec_info.index
+        if sec_idx >= len(_Q7P_SECTION_ORDER):
+            break
+
+        section_name = _Q7P_SECTION_ORDER[sec_idx]
+        udm_tracks: list[PatternTrack] = []
+
+        num_tracks = min(len(sec_info.tracks), 16)
+        for ti in range(num_tracks):
+            trk = sec_info.tracks[ti]
+            udm_tracks.append(
+                PatternTrack(
+                    midi_channel=max(0, min(15, trk.channel - 1)),
+                    voice=Voice(
+                        bank_msb=bank_msbs[ti] if ti < len(bank_msbs) else 0,
+                        bank_lsb=bank_lsbs[ti] if ti < len(bank_lsbs) else 0,
+                        program=programs[ti] if ti < len(programs) else 0,
+                    ),
+                    pan=trk.pan,
+                    volume=trk.volume,
+                    reverb_send=trk.reverb_send,
+                    chorus_send=trk.chorus_send,
+                )
+            )
+
+        pattern.sections[section_name] = UdmSection(
+            name=section_name,
+            tracks=udm_tracks,
+            enabled=True,
+        )
+
+    device = Device(
+        model=DeviceModel.QY700,
+        patterns=[pattern],
+        source_format="q7p",
+        _raw_passthrough=data,
+    )
+    return device
+
+
+def _extract_voice_param(analyzer: Q7PAnalyzer, method_name: str) -> list[int]:
+    method = getattr(analyzer, method_name, None)
+    if method and callable(method):
+        return method()
+    return [0] * 16

@@ -2,6 +2,28 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-31b | F1 P1.2a — Q7P reader UDM parse_to_udm
+
+**Obiettivo**: Fase F1, sotto-fase P1.2a — Aggiungere funzione `parse_q7p_to_udm()` in `reader.py` che produce `Device` UDM da byte Q7P, mantenendo backward compatibility con API legacy.
+
+**Scoperte**: [confidence High]
+- `parse_q7p_to_udm(data) -> Device` ora produce Device QY700 con Pattern UDM completo
+- Usa `Q7PAnalyzer` internamente per estrazione byte (piu' completo di `Q7PParser`)
+- Mappa sezioni Q7P → UDM SectionName (prime N sezioni enabled → MAIN_A..FILL_DD)
+- Track params (channel, volume, pan, reverb, chorus, voice bank/prog) mappati su UDM PatternTrack
+- Raw bytes preservati in `Device._raw_passthrough` per roundtrip lossless
+- API legacy (`QY700Reader.parse_bytes() → Pattern`) intatta — zero breaking changes
+
+**Codice**:
+- `qymanager/formats/qy700/reader.py` — aggiunta `parse_q7p_to_udm()` + `_extract_voice_param()` + import UDM
+- `tests/test_q7p_to_udm.py` — 23 nuovi test (basic, pattern fields, sections, fixture T01/TXX)
+
+**Test**: +23 nuovi, 254/254 totali verdi (era 231 → ora 254)
+
+**Next**: F1 P1.2b — Q7P writer UDM (`device_to_q7p_bytes()`) + roundtrip test Q7P → UDM → Q7P byte-identical
+
+---
+
 ## [2026-04-17] session-31a | F1 P1.1 — UDM schema dataclasses
 
 **Obiettivo**: Fase F1, sotto-fase P1.1 — Creare schema UDM (Unified Data Model) con dataclass, validation e JSON serialization.
