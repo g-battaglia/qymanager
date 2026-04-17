@@ -18,14 +18,30 @@ QY Manager (formerly QYConv) is a Python library and CLI tool for converting, an
 
 ## Installation
 
+Project uses [uv](https://docs.astral.sh/uv/) (Astral) for environment / dependency management.
+
 ```bash
 # From source
 git clone https://github.com/qymanager/qymanager.git
 cd qymanager
-pip install -e .
 
-# With development dependencies
-pip install -e ".[dev]"
+# Install uv if not already: https://docs.astral.sh/uv/getting-started/install/
+
+# Sync deps (runtime + MIDI extras + dev tools)
+uv sync --all-extras --group dev
+
+# Run CLI
+uv run qymanager --help
+
+# Run tests
+uv run pytest
+```
+
+If installing on an external volume / filesystem without hardlink support (APFS → exFAT/NTFS), export `UV_LINK_MODE=copy` first.
+
+Legacy pip workflow still works:
+```bash
+pip install -e ".[midi]"
 ```
 
 ## CLI Usage

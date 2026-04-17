@@ -56,8 +56,22 @@ The user communicates in Italian. Respond in Italian. Code comments and technica
 
 ## Environment
 
+Il progetto usa **uv** (Astral). Su questo volume esterno serve `UV_LINK_MODE=copy` (il filesystem non supporta hardlink).
+
 ```bash
 cd /Volumes/Data/DK/XG/T700/qyconv
-source .venv/bin/activate
-# Use .venv/bin/python3 for midi_tools/ scripts (system python lacks mido)
+export UV_LINK_MODE=copy
+
+# Sync deps (prima volta o dopo modifiche a pyproject.toml)
+uv sync --all-extras --group dev
+
+# Test
+uv run pytest
+
+# Tool MIDI (richiedono extra `midi`, installato con --all-extras)
+uv run python3 -m midi_tools.pattern_editor <cmd>
+uv run python3 midi_tools/capture_playback.py ...
+
+# CLI principale
+uv run qymanager <cmd>
 ```
