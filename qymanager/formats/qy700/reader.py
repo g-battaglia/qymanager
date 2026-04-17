@@ -229,7 +229,7 @@ class QY700Reader:
         with open(filepath, "rb") as f:
             data = f.read()
 
-        info = {
+        info: dict[str, object] = {
             "valid": False,
             "size": len(data),
             "expected_size": 3072,
@@ -330,5 +330,6 @@ def parse_q7p_to_udm(data: bytes) -> Device:
 def _extract_voice_param(analyzer: Q7PAnalyzer, method_name: str) -> list[int]:
     method = getattr(analyzer, method_name, None)
     if method and callable(method):
-        return method()
+        result: list[int] = method()
+        return result
     return [0] * 16
