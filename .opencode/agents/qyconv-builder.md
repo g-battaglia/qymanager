@@ -41,13 +41,16 @@ Dopo questi, leggi specifiche wiki per la sotto-fase in corso (es. `wiki/xg-para
 - **QY70**: sequencer portatile, 519 voci XG + 20 Drum Kit, 6 sezioni × 8 tracce, 4167 phrase preset, 20 song, 16 parti MIDI, effetti Reverb + Chorus
 - **QY700**: workstation, 491 voci XG + 11 Drum Kit, 8 sezioni × 16 tracce, 3876 phrase preset, 20 song × 35 tracce, 32 parti DVA, effetti Reverb + Chorus + Variation, floppy disk
 
-**Stato oggi** (post Session 30i, 2026-04-17):
+**Stato oggi** (post Session 30i + audit 2026-04-17):
 - Pipeline B (QY70 → QY700 via MIDI capture) = **production-ready**, 100% roundtrip byte-valid
 - Pipeline A (SysEx decode dense) = **blocked ~10%** (42B super-cycle identificato, mai output MIDI corretto)
 - Editor CLI = **21 sub-command**, copre solo pattern bitstream + tempo
-- Test suite = **164 test verdi**
+- Test suite = **164 test verdi** (flat in `tests/`, subdir `property/integration/hardware/` da creare in F1/F3/F11)
 - Bricking risolto (voice offsets 0x1E6/0x1F6/0x206 disabilitati)
 - Hardware sempre disponibile: QY70 + QY700 primario + QY700 secondario ("yolo" per RE aggressivo)
+- **UDM dataclass già esistono** in `qymanager/model/` (17 file). **Modello legacy `qymanager/models/` plurale** ancora usato dai parser. F1 è ora "migrazione parser legacy → UDM" (NON "creazione schema")
+- File legacy names reali: `reader.py`/`writer.py` (non `q7p_reader.py`), `qymanager/utils/yamaha_7bit.py` (non `seven_bit_codec.py`)
+- Tool già esistenti: `midi_tools/safe_q7p_tester.py`, `midi_tools/ground_truth_analyzer.py`
 
 **Obiettivo finale**: ~40-65 sessioni di lavoro per completare F1-F12 del piano (editor integrale + converter perfetto con phrase library RE).
 
@@ -63,13 +66,15 @@ uv sync --all-extras --group dev  # prima volta o dopo modifiche pyproject.toml
 
 **Esecuzione**:
 ```bash
-uv run pytest                                    # Test suite
-uv run pytest tests/property/ -v                 # Property test
-uv run pytest tests/hardware/ -v --qy70-port="UR22C Port 1"  # Hardware
+uv run pytest                                    # Test suite (oggi flat in tests/)
+uv run pytest tests/ -v -k "property"            # Property test (appena esistono in tests/property/)
+uv run pytest tests/ -v -k "hardware" --qy70-port="UR22C Port 1"  # Hardware
 uv run qymanager <cmd>                           # CLI principale
 uv run python3 -m midi_tools.pattern_editor <cmd>
 uv run python3 midi_tools/capture_playback.py ...
 ```
+
+**Nota**: `tests/property/`, `tests/integration/`, `tests/hardware/` sono subdir da **creare** come parte del lavoro F1/F3/F11. Finché non esistono, aggiungi test nella root `tests/` con prefisso coerente (`test_property_*.py`, `test_integration_*.py`, ecc.), poi migra a subdir quando chiudi la fase.
 
 **Linting/type-check**:
 ```bash
@@ -191,28 +196,29 @@ Poi identifica la **fase corrente** nella timeline PLAN.md sezione 7.1:
 
 Per task tipici:
 
-**Task A — Creare dataclass UDM**:
+**Task A — Estendere/validare dataclass UDM** (schema esiste già):
 ```bash
-# Edit file in qymanager/model/
-# Aggiungi test in tests/unit/test_udm_<name>.py
-uv run pytest tests/unit/test_udm_<name>.py -v
+# `qymanager/model/` esiste con 17 file di dataclass (Device, System, Pattern, ...)
+# Non ricreare. Estendi se servono campi mancanti; aggiungi test in tests/test_udm_<name>.py
+uv run pytest tests/test_udm_<name>.py -v
 uv run mypy qymanager/model/<name>.py
 ```
 
-**Task B — Rifattorizzare parser su UDM**:
+**Task B — Migrare parser legacy → UDM**:
 ```bash
-# Modifica qymanager/formats/qy700/q7p_reader.py
-# Test roundtrip in tests/property/test_q7p_roundtrip.py
-uv run pytest tests/property/test_q7p_roundtrip.py -v
-# Verifica regressione su test esistenti
+# Oggi `qymanager/formats/qy700/reader.py` importa da `qymanager.models` (legacy plurale)
+# Refactor: produce `qymanager.model.Device` (UDM singolare)
+# Test roundtrip in tests/property/test_q7p_roundtrip.py (creare subdir se prima volta)
+uv run pytest tests/ -k "q7p_roundtrip" -v
+# Verifica regressione su test esistenti (164 baseline)
 uv run pytest
 ```
 
 **Task C — Aggiungere CLI command**:
 ```bash
 # Nuovo file cli/commands/<cat>.py
-# Test end-to-end in tests/integration/test_cli_<cat>.py
-uv run pytest tests/integration/ -v
+# Test end-to-end in tests/test_cli_<cat>.py (o tests/integration/ quando esiste)
+uv run pytest tests/ -k "cli_<cat>" -v
 # Smoke test manuale
 uv run qymanager <cat> --help
 ```
@@ -229,9 +235,10 @@ uv run python3 midi_tools/capture_dump.py -o tests/fixtures/gt_<X>.syx
 
 **Task E — Hardware test**:
 ```bash
-uv run pytest tests/hardware/ -v \
+uv run pytest tests/ -k "hardware" -v \
     --qy70-port="UR22C Port 1" \
     --qy700-port="UR22C Port 2"
+# Quando esiste la subdir tests/hardware/, cambia in: pytest tests/hardware/ -v ...
 ```
 
 ### Dettaglio step 6: Document
@@ -271,15 +278,14 @@ uv run ruff check .              # Lint pulito
 uv run black --check .           # Formato
 
 # Commit granulare (1 per sotto-fase)
-git add qymanager/model/system.py tests/unit/test_udm_system.py wiki/udm.md
+git add qymanager/formats/qy700/reader.py tests/test_q7p_roundtrip.py wiki/udm.md
 git commit -m "$(cat <<'EOF'
-feat(udm): add System dataclass with validation
+refactor(model): Q7P reader produces Device UDM
 
-- Master tune -100..+100, master volume 0..127, transpose -24..+24
-- MidiSync enum (Internal/External/Auto)
-- Filter flags per message type
-- Validation via dataclass __post_init__
-- 15 unit tests covering range + enum
+- Switch import from qymanager.models to qymanager.model (UDM)
+- parse_q7p(path) -> Device(model=QY700, patterns=[Pattern(...)])
+- 3 property tests (hypothesis) roundtrip byte-identical
+- Legacy qymanager/models/pattern.py marked for deprecation
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
@@ -295,18 +301,19 @@ A fine iterazione stampa (in italiano):
 ```
 ## Iterazione completata
 
-**Fase**: F1 — UDM schema + Q7P/syx sparse UDM-aware
-**Sotto-fase**: P1.1 step 3/5 (dataclass System completata)
+**Fase**: F1 — migrazione parser `models/` legacy → `model/` UDM
+**Sotto-fase**: P1.2 step 1/4 (reader.py Q7P → Device UDM)
 
 **Fatto**:
-- Creato qymanager/model/system.py con 12 campi + validazione
-- Test unit: 15 nuovi, tutti verdi (test totali: 179/179)
-- Wiki: aggiornato wiki/udm.md con schema System
+- Rifattorizzato qymanager/formats/qy700/reader.py per importare qymanager.model invece di qymanager.models
+- Test property: 3 nuovi (test_q7p_roundtrip.py), verdi
+- Test totali: 167/167
+- Wiki: aggiornato wiki/udm.md con esempio parse→Device
 - Log: aggiunta entry Session 31a a wiki/log.md
-- Commit: b9379e8 feat(udm): add System dataclass
+- Commit: refactor(model): Q7P reader produces Device UDM
 
 **Next**:
-- Sotto-fase P1.1 step 4/5: qymanager/model/multi_part.py (16/32 parts)
+- Sotto-fase P1.2 step 2/4: rifattorizzare writer.py emit(Device) → bytes
 - Stima: 1 iterazione ralph
 
 **RE aperti**:
@@ -370,7 +377,7 @@ Usa questi, non reinventare:
 - `midi_tools/restore_pattern.py` — restore da `.syx`
 - `midi_tools/syx_edit.py` — byte-level editor
 - `midi_tools/xg_param.py` — parse/emit XG Param Change
-- `qymanager/formats/seven_bit_codec.py` — 7-bit pack/unpack Yamaha
+- `qymanager/utils/yamaha_7bit.py` — 7-bit pack/unpack Yamaha
 - `qymanager/validation/q7p_invariants.py` — validator Q7P
 
 Hardware MIDI ports:

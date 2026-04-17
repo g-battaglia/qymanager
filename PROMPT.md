@@ -24,12 +24,15 @@ Il progetto mira a costruire una suite integrale di controllo programmatico dei 
 2. **Editor integrale** di TUTTI i parametri, offline (file `.syx` / `.q7p` / `.q7a`) e realtime (XG Parameter Change MIDI)
 3. **Reverse engineering residuo** ossessivo: voice offsets Q7P, phrase library 4167↔3876, chord transposition layer, dense bitstream encoding, formato Q7A
 
-**Stato oggi** (post Session 30i, 2026-04-17):
-- Pipeline B QY70 → QY700 production-ready, 164 test verdi
+**Stato oggi** (post Session 30i + audit 2026-04-17):
+- Pipeline B QY70 → QY700 production-ready, 164 test verdi (flat in `tests/`)
 - Pipeline A bloccata al 10% (dense encoding)
 - Editor CLI 21 sub-command, solo pattern/tempo
 - 20+ pagine wiki tecniche
 - Hardware sempre disponibile: QY70 + QY700 primario + QY700 secondario (yolo)
+- **UDM dataclass già esistono** in `qymanager/model/` (17 file). Modello **legacy** `qymanager/models/` **plurale** ancora usato dai parser → F1 è "migrazione parser legacy → UDM", NON "creazione schema"
+- File reali: `reader.py`/`writer.py` (non `q7p_reader.py`), `qymanager/utils/yamaha_7bit.py` (non `seven_bit_codec.py`)
+- `midi_tools/safe_q7p_tester.py`, `midi_tools/ground_truth_analyzer.py` già esistenti
 
 Dettagli completi: legge `STATUS.md` e `PLAN.md`.
 
@@ -73,11 +76,11 @@ Segui la timeline `PLAN.md` in ordine:
 - **F13** (parallelo 1-su-5) P4d Dense bitstream RE (~10-30)
 
 Seleziona **UN micro-step** (non più) della fase corrente. Esempi di micro-step:
-- "Creare dataclass `qymanager/model/system.py` con validazione + test unit"
-- "Rifattorizzare `q7p_reader.py` per emettere UDM.Pattern invece di dict"
-- "Aggiungere comando CLI `qymanager system set master-tune N`"
+- "Estendere dataclass `qymanager/model/system.py` aggiungendo campo X + test (schema già esistente, non ricreare)"
+- "Rifattorizzare `qymanager/formats/qy700/reader.py` per importare `qymanager.model` (UDM) invece di `qymanager.models` (legacy) e restituire `Device`"
+- "Aggiungere comando CLI `qymanager system set master-tune N` (nuovo file `cli/commands/system.py`)"
 - "Cattura ground truth GT_A (CHD2 C major) dal QY70 via `capture_dump.py`"
-- "RE voice offsets: test sweep da 0x1E6 a 0x200 con safe_q7p_tester.py"
+- "RE voice offsets: test sweep su QY700 secondario con `safe_q7p_tester.py` (già esistente)"
 
 **Step 3 — Pianifica il micro-step**:
 
@@ -101,15 +104,17 @@ Esegui le modifiche seguendo le **regole critiche** dell'agente `qyconv-builder`
 
 Comandi utili:
 ```bash
-uv run pytest                           # Test suite
-uv run pytest tests/unit/ -v            # Unit
-uv run pytest tests/property/ -v        # Property
-uv run pytest tests/integration/ -v     # Integration
-uv run pytest tests/hardware/ -v        # Hardware (skip se no device)
+uv run pytest                           # Test suite (oggi flat in tests/)
+uv run pytest tests/ -k "udm" -v        # Filter per topic finché subdir non esistono
+uv run pytest tests/ -k "property" -v   # Property (dopo creazione tests/property/)
+uv run pytest tests/ -k "integration" -v
+uv run pytest tests/ -k "hardware" -v   # Hardware (skip se no device)
 uv run ruff check qymanager cli midi_tools
 uv run mypy qymanager cli
 uv run black qymanager cli tests --check
 ```
+
+**Nota subdir test**: oggi `tests/` è flat (164 test). Le subdir `tests/property/`, `tests/integration/`, `tests/hardware/` vanno **create** come parte del lavoro F1/F3/F11. Finché non esistono, aggiungi test alla root `tests/` con prefisso coerente (`test_property_*.py`, `test_hardware_*.py`), poi migra a subdir quando chiudi la fase relativa.
 
 **Step 5 — Documenta**:
 

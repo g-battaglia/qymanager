@@ -4,9 +4,16 @@
 >
 > **Non è una roadmap vincolante ma un master-plan di lavoro**. Dettagli operativi vengono raffinati ad ogni sessione. Aggiornare `STATUS.md` a ogni milestone superato.
 >
-> **Versione**: 1.0 — 2026-04-17
+> **Versione**: 1.1 — 2026-04-17 (post-audit)
 > **Autore**: Session 30j planning
 > **Dipendenze lette**: `STATUS.md`, `wiki/*` (20+ pagine), `CLAUDE.md`, sessioni log 1-30i
+>
+> **Nota post-audit (v1.1)**: verificando la codebase reale abbiamo scoperto che:
+> - **UDM dataclass (`qymanager/model/`) già esistono**: Device/System/MultiPart/DrumSetup/Effects/Pattern/Section/Phrase/Song/GrooveTemplate/FingeredZone/UtilityFlags/Voice/MidiEvent + `types.py` con enum + `validate()` metodi + `tests/test_udm_schema.py`. **F1.1 è già chiuso**.
+> - **Modello legacy coesistente** (`qymanager/models/` **plurale**) usato dai parser attuali (`reader.py`, `sysex_parser.py`) e dai converter. F1 va ridefinito: "**migrazione parser+converter da `models/` legacy a `model/` UDM + deprecazione `models/`**".
+> - **Path file diversi dal piano originale**: `reader.py`/`writer.py` (non `q7p_reader.py`), `utils/yamaha_7bit.py` (non `seven_bit_codec.py`).
+> - **Tool già esistenti erroneamente marcati NEW**: `midi_tools/safe_q7p_tester.py` (piano P4a step 1 è obsoleto), `midi_tools/ground_truth_analyzer.py`.
+> - **Tests directory flat**: oggi non esistono subdir `tests/property/`, `tests/integration/`, `tests/hardware/`; creazione è parte del lavoro F1/F3/F11.
 
 ---
 
@@ -197,11 +204,13 @@
 - `xg_param.py` — parse + emit XG Parameter Change (emit non in CLI)
 
 **Utilità Python**:
-- `qymanager/formats/qy70/` — syx parser (sparse)
-- `qymanager/formats/qy700/q7p_reader.py` + `q7p_writer.py`
-- `qymanager/formats/seven_bit_codec.py` — 7-bit pack/unpack
-- `qymanager/converters/qy70_to_qy700.py` — metadata converter
-- `qymanager/converters/qy700_to_qy70.py` — stub con SysEx init/close corretto
+- `qymanager/model/` — **UDM dataclass già completo** (17 file): Device, System, MultiPart, DrumSetup, Effects, Pattern, Section, Phrase, Song, GrooveTemplate, FingeredZone, UtilityFlags, Voice, MidiEvent + enum `types.py`
+- `qymanager/models/` — **legacy plurale** usato da parser attuali (da deprecare in F1); contiene Pattern, Section, Track, Phrase (4 file)
+- `qymanager/formats/qy70/` — `sysex_parser.py`, `reader.py`, `writer.py`, `decoder.py` (usano legacy `models/`)
+- `qymanager/formats/qy700/reader.py` + `writer.py` + `binary_parser.py` + `phrase_parser.py` + `decoder.py` (usano legacy `models/`)
+- `qymanager/utils/yamaha_7bit.py` — 7-bit pack/unpack
+- `qymanager/converters/qy70_to_qy700.py` (496 LOC, legacy) — metadata converter
+- `qymanager/converters/qy700_to_qy70.py` (830 LOC, legacy) — SysEx init/close + Pipeline B capture-based
 
 ---
 
@@ -447,21 +456,24 @@ Fondamenta tutto poggia sopra.
 
 **Sub-fasi**:
 
-**P1.1 Schema UDM** (1 sessione):
-- Definire tutte le dataclass in `qymanager/model/`
-- Range/enum validators (pydantic v2 o dataclass + custom `validate()`)
-- JSON serialization round-trip test
+**P1.1 Schema UDM** (**GIÀ CHIUSO** — verificato in audit 2026-04-17):
+- [x] Dataclass in `qymanager/model/` (17 file, ~800 LOC)
+- [x] Enum + validators custom in `types.py` + `validate()` per ogni dataclass
+- [x] Test iniziali in `tests/test_udm_schema.py`
+- **Lavoro residuo** (da completare in P1.2+): aumentare copertura test UDM, aggiungere `to_dict`/`from_dict` JSON serialization, hypothesis strategies in `tests/property/`
 
-**P1.2 Q7P ↔ UDM** (1-2 sessioni):
-- Rifattorizzare `q7p_reader.py` → `parse(bytes) → Device(QY700)`
-- Rifattorizzare `q7p_writer.py` → `emit(device) → bytes`
-- Property test: 100 Q7P random → parse → emit → byte-identical
+**P1.2 Q7P ↔ UDM — migrazione parser legacy** (2-3 sessioni):
+- `qymanager/formats/qy700/reader.py`: oggi importa `from qymanager.models.pattern import Pattern, PatternSettings` (legacy). **Refactor**: produce `qymanager.model.Device(model=QY700, patterns=[Pattern(...)])`
+- `qymanager/formats/qy700/writer.py`: rifattorizzare `emit(device: Device) → bytes`
+- Property test: 100 Q7P random → parse → emit → byte-identical (`tests/property/test_q7p_roundtrip.py`)
+- Deprecare `qymanager/models/pattern.py` (legacy)
 - **Blocker**: phrase blob 0x360-0x677 → passthrough opaco con marker, completare P4c (chord layer) per editing nota-per-nota
 
-**P1.3 `.syx` sparse ↔ UDM** (1-2 sessioni):
-- `qymanager/formats/qy70/syx_parser.py` → `parse(bytes) → Device(QY70)`
-- `qymanager/formats/qy70/syx_writer.py` → `emit(device) → bytes`
-- Property test su 7 user patterns noti
+**P1.3 `.syx` sparse ↔ UDM — migrazione parser** (1-2 sessioni):
+- `qymanager/formats/qy70/sysex_parser.py` oggi produce `list[SysExMessage]`. **Refactor**: aggiungere `parse_to_udm(bytes) → Device(QY70)` che usa `qymanager.model`
+- `qymanager/formats/qy70/reader.py`: oggi importa `qymanager.models` (legacy); migrare a `qymanager.model`
+- Creare `qymanager/formats/qy70/syx_writer.py` → `emit(device) → bytes` (oppure estendere `writer.py` esistente)
+- Property test su 7 user patterns noti (`tests/property/test_syx_sparse_roundtrip.py`)
 
 **P1.4 XG bulk dump ↔ UDM** (1 sessione):
 - Parser per blocchi XG completi (System/Multi/Drum/Eff) ricevuti via bulk dump
@@ -477,34 +489,24 @@ Fondamenta tutto poggia sopra.
 - `.blk` = raw SysEx stream multi-message, già noto (RE Data Filer)
 - Wrapper parser: itera messaggi, route a parser appropriato per Model ID
 
-**File creati/modificati P1**:
+**File modificati/creati P1**:
 ```
-qymanager/model/
-  __init__.py
-  device.py
-  system.py
-  multi_part.py
-  drum_setup.py
-  effects.py
-  pattern.py
-  section.py
-  phrase.py
-  song.py
-  groove.py
-  event.py
-  fingered_zone.py
-  utility.py
-  voice.py
-  phrase_category.py
-qymanager/formats/xg_bulk.py        (NEW)
-qymanager/formats/smf.py            (modify: add parse)
-qymanager/formats/qy700/q7p_reader.py  (rewrite UDM-aware)
-qymanager/formats/qy700/q7p_writer.py  (rewrite UDM-aware)
-qymanager/formats/qy70/syx_parser.py   (rewrite UDM-aware)
-qymanager/formats/qy70/syx_writer.py   (NEW)
-qymanager/formats/blk.py            (NEW)
-tests/property/test_udm_roundtrip.py   (NEW)
-tests/property/test_q7p_roundtrip.py   (NEW)
+qymanager/model/                        (ESISTENTE — schema UDM già completo)
+  __init__.py, device.py, system.py, multi_part.py, drum_setup.py,
+  effects.py, pattern.py, section.py, phrase.py, song.py, groove.py,
+  event.py, fingered_zone.py, utility.py, voice.py, serialization.py, types.py
+qymanager/formats/xg_bulk.py            (NEW — parser blocchi XG → Device.system/multi_part/drum_setup/effects)
+qymanager/formats/smf.py                (NEW — add parse side; emit esiste in pipeline B)
+qymanager/formats/qy700/reader.py       (REFACTOR — import `qymanager.model` invece di `qymanager.models`)
+qymanager/formats/qy700/writer.py       (REFACTOR — emit da `Device` UDM)
+qymanager/formats/qy70/sysex_parser.py  (EXTEND — aggiungere parse_to_udm)
+qymanager/formats/qy70/reader.py        (REFACTOR — UDM-aware)
+qymanager/formats/qy70/writer.py        (REFACTOR o NEW syx_writer.py)
+qymanager/formats/blk.py                (NEW — wrapper multi-message)
+qymanager/models/                       (DEPRECATE dopo migrazione — rimuovere a fine F1)
+tests/property/__init__.py              (NEW subdir)
+tests/property/test_udm_roundtrip.py    (NEW)
+tests/property/test_q7p_roundtrip.py    (NEW)
 tests/property/test_syx_sparse_roundtrip.py (NEW)
 ```
 
@@ -749,7 +751,7 @@ Priorità per robustezza del converter:
 **Problema**: offset 0x1E6/0x1F6/0x206 sospettati di essere Bank MSB/Program/Bank LSB per-track, ma scrittura lì ha brickato il QY700 (Session 1-10). Veri offset sconosciuti.
 
 **Approccio**:
-1. Creare `midi_tools/safe_q7p_tester.py` come da piano originale Session 11
+1. `midi_tools/safe_q7p_tester.py` **già esistente**; verificare coverage attuale e estenderlo se necessario (audit 2026-04-17)
 2. Genera Q7P con 1 byte variato per volta partendo da TXX.Q7P baseline
 3. Load su QY700 secondario (yolo), capture XG OUT, confronta voce renderata
 4. Bisezione su zona 0x100-0x260 con voci note programmate manualmente
@@ -1077,7 +1079,7 @@ qyconv/
 ├── qymanager/                   # pacchetto Python principale
 │   ├── __init__.py
 │   ├── model/                   # NEW: Unified Data Model
-│   │   ├── __init__.py
+│   │   ├── __init__.py          # ESISTENTE (tutti sotto)
 │   │   ├── device.py
 │   │   ├── system.py
 │   │   ├── multi_part.py
@@ -1092,11 +1094,11 @@ qyconv/
 │   │   ├── voice.py
 │   │   ├── fingered_zone.py
 │   │   ├── utility.py
-│   │   ├── phrase_category.py
-│   │   └── version.py
+│   │   ├── serialization.py
+│   │   └── types.py             # enum DeviceModel/MidiSync/SectionName/...
 │   ├── formats/
 │   │   ├── __init__.py
-│   │   ├── seven_bit_codec.py  # esistente
+│   │   ├── utils/yamaha_7bit.py  # esistente
 │   │   ├── xg_bulk.py           # NEW
 │   │   ├── smf.py               # esistente, aggiunge parse
 │   │   ├── blk.py               # NEW (wrapper)
@@ -1108,8 +1110,8 @@ qyconv/
 │   │   │   └── dense_codec.py   # STUB, WIP
 │   │   └── qy700/
 │   │       ├── __init__.py
-│   │       ├── q7p_reader.py    # rewrite UDM-aware
-│   │       ├── q7p_writer.py    # rewrite UDM-aware
+│   │       ├── reader.py    # rewrite UDM-aware
+│   │       ├── writer.py    # rewrite UDM-aware
 │   │       ├── q7a_parser.py    # NEW (post P4e)
 │   │       ├── q7s_parser.py    # NEW on-demand
 │   │       └── esq_parser.py    # NEW on-demand
@@ -1168,13 +1170,13 @@ qyconv/
 │   ├── syx_edit.py              # esistente
 │   ├── xg_param.py              # esistente, expose emit API
 │   ├── pattern_editor.py        # esistente, migrate to UDM
-│   ├── safe_q7p_tester.py       # NEW (post P4a start)
+│   ├── safe_q7p_tester.py       # ESISTENTE
 │   ├── phrase_library_mapper.py # NEW (post P4b start)
-│   └── ground_truth_analyzer.py # NEW (post GT capture)
+│   └── ground_truth_analyzer.py # ESISTENTE
 │
 ├── tests/
 │   ├── unit/                    # esistenti (~200 target)
-│   │   ├── test_q7p_reader.py
+│   │   ├── test_reader.py
 │   │   ├── test_xg_param.py
 │   │   └── ...
 │   ├── property/                # NEW
@@ -1385,13 +1387,14 @@ Tutti i comandi devono ritornare exit code 0 e output coerente.
 
 ## 13. Next step operativo
 
-Quando si riprende il lavoro (prossima sessione post-piano):
+Quando si riprende il lavoro (prossima sessione post-piano, revisionato post-audit):
 
-1. **Review** di questo `PLAN.md` con l'utente
-2. **Aggiornamento** `STATUS.md` con link a PLAN.md
-3. **Kick-off F1**: creare `qymanager/model/device.py` + `system.py` come primi file UDM
+1. **Review** di questo `PLAN.md` con l'utente (fatto)
+2. **Aggiornamento** `STATUS.md` con link a PLAN.md + sezione "UDM bootstrapped"
+3. **Kick-off F1** (revisionato): il lavoro è **migrazione parser `qymanager/models/` legacy → `qymanager/model/` UDM**, non creazione dataclass (già fatte). Primo micro-step: aggiungere `parse_to_udm(path) → Device` in `qymanager/formats/qy700/reader.py` + property test `tests/property/test_q7p_roundtrip.py`.
 4. **Task tracker**: nuovi task per ogni sub-fase F1-F12
-5. **Commit iniziale**: "feat: bootstrap PLAN.md + UDM skeleton"
+5. **Commit iniziale sessione F1**: `refactor(model): start P1.2 Q7P → UDM migration`
+6. **Post-F1**: rimuovere `qymanager/models/` legacy (dopo conferma che nessun consumer lo usi)
 
 ---
 
