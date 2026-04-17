@@ -317,6 +317,101 @@ def op_humanize_velocity(
     return count
 
 
+def op_new_empty_pattern(
+    bar_count: int = 4,
+    bpm: float = 120.0,
+    ppqn: int = 480,
+    time_sig: tuple = (4, 4),
+    name: str = "EMPTY",
+) -> QuantizedPattern:
+    """Create a fresh empty pattern with no notes, ready to be programmed."""
+    if bar_count < 1 or bar_count > 16:
+        raise ValueError("bar_count must be in [1, 16]")
+    if not (20 <= bpm <= 300):
+        raise ValueError("bpm must be in [20, 300]")
+    return QuantizedPattern(
+        bpm=float(bpm),
+        ppqn=int(ppqn),
+        time_sig=tuple(time_sig),
+        bar_count=int(bar_count),
+        tracks={},
+        name=str(name),
+    )
+
+
+def op_diff_patterns(
+    a: QuantizedPattern,
+    b: QuantizedPattern,
+) -> dict:
+    """Compare two patterns; return structured delta.
+
+    Keys:
+        metadata: dict of (field, (a_val, b_val)) for differing fields
+        tracks_only_in_a: list of track_idx
+        tracks_only_in_b: list of track_idx
+        track_diffs: {track_idx: {"added": [...], "removed": [...], "modified": [...]}}
+    """
+    out = {
+        "metadata": {},
+        "tracks_only_in_a": [],
+        "tracks_only_in_b": [],
+        "track_diffs": {},
+    }
+
+    for field in ("bpm", "ppqn", "time_sig", "bar_count", "name"):
+        va, vb = getattr(a, field), getattr(b, field)
+        if va != vb:
+            out["metadata"][field] = (va, vb)
+
+    a_tracks, b_tracks = set(a.tracks), set(b.tracks)
+    out["tracks_only_in_a"] = sorted(a_tracks - b_tracks)
+    out["tracks_only_in_b"] = sorted(b_tracks - a_tracks)
+
+    def note_key(n: QuantizedNote):
+        return (n.bar, n.tick_on, n.note)
+
+    for idx in sorted(a_tracks & b_tracks):
+        a_notes = {note_key(n): n for n in a.tracks[idx].notes}
+        b_notes = {note_key(n): n for n in b.tracks[idx].notes}
+
+        added_keys = sorted(set(b_notes) - set(a_notes))
+        removed_keys = sorted(set(a_notes) - set(b_notes))
+        modified = []
+        for k in sorted(set(a_notes) & set(b_notes)):
+            na, nb = a_notes[k], b_notes[k]
+            if na.velocity != nb.velocity or na.tick_dur != nb.tick_dur:
+                modified.append({
+                    "key": k,
+                    "vel": (na.velocity, nb.velocity),
+                    "dur": (na.tick_dur, nb.tick_dur),
+                })
+
+        if added_keys or removed_keys or modified:
+            out["track_diffs"][idx] = {
+                "added": [{"bar": k[0], "tick_on": k[1], "note": k[2],
+                           "vel": b_notes[k].velocity} for k in added_keys],
+                "removed": [{"bar": k[0], "tick_on": k[1], "note": k[2],
+                             "vel": a_notes[k].velocity} for k in removed_keys],
+                "modified": modified,
+            }
+
+    return out
+
+
+def op_resize(pattern: QuantizedPattern, new_bar_count: int) -> int:
+    """Change pattern bar count. Notes in bars >= new_bar_count are dropped.
+    Returns count dropped."""
+    if new_bar_count < 1 or new_bar_count > 16:
+        raise ValueError("bar_count must be in [1, 16]")
+    dropped = 0
+    for track in pattern.tracks.values():
+        before = len(track.notes)
+        track.notes = [n for n in track.notes if n.bar < new_bar_count]
+        dropped += before - len(track.notes)
+    pattern.bar_count = new_bar_count
+    return dropped
+
+
 # --- CLI commands ---
 
 def cmd_export(args: argparse.Namespace) -> int:
@@ -459,6 +554,64 @@ def cmd_humanize(args: argparse.Namespace) -> int:
     count = op_humanize_velocity(pattern, args.track, args.amount, seed=args.seed)
     save_pattern(pattern, args.input)
     print(f"Humanized velocity (±{args.amount}) on {count} notes")
+    return 0
+
+
+def cmd_new_empty(args: argparse.Namespace) -> int:
+    pattern = op_new_empty_pattern(
+        bar_count=args.bars,
+        bpm=args.bpm,
+        time_sig=(args.num, args.den),
+        name=args.name,
+    )
+    save_pattern(pattern, args.output)
+    print(f"Created empty pattern: {args.output} "
+          f"({args.bars} bars, {args.bpm} BPM, {args.num}/{args.den}, name={args.name!r})")
+    return 0
+
+
+def cmd_diff(args: argparse.Namespace) -> int:
+    a = load_pattern(args.a)
+    b = load_pattern(args.b)
+    delta = op_diff_patterns(a, b)
+
+    print(f"=== diff {args.a} → {args.b} ===")
+    if delta["metadata"]:
+        print("\nMetadata changes:")
+        for k, (va, vb) in delta["metadata"].items():
+            print(f"  {k}: {va!r} → {vb!r}")
+    if delta["tracks_only_in_a"]:
+        print(f"\nTracks only in A: {delta['tracks_only_in_a']}")
+    if delta["tracks_only_in_b"]:
+        print(f"\nTracks only in B: {delta['tracks_only_in_b']}")
+    for idx, td in sorted(delta["track_diffs"].items()):
+        print(f"\nTrack {idx}: "
+              f"+{len(td['added'])} added, "
+              f"-{len(td['removed'])} removed, "
+              f"~{len(td['modified'])} modified")
+        for n in td["added"][:5]:
+            print(f"  + bar{n['bar']} tick={n['tick_on']} note={n['note']} vel={n['vel']}")
+        if len(td["added"]) > 5:
+            print(f"    ...{len(td['added']) - 5} more")
+        for n in td["removed"][:5]:
+            print(f"  - bar{n['bar']} tick={n['tick_on']} note={n['note']} vel={n['vel']}")
+        if len(td["removed"]) > 5:
+            print(f"    ...{len(td['removed']) - 5} more")
+        for m in td["modified"][:5]:
+            print(f"  ~ bar{m['key'][0]} tick={m['key'][1]} note={m['key'][2]}: "
+                  f"vel {m['vel'][0]}→{m['vel'][1]}, dur {m['dur'][0]}→{m['dur'][1]}")
+
+    if not any([delta["metadata"], delta["tracks_only_in_a"],
+                delta["tracks_only_in_b"], delta["track_diffs"]]):
+        print("Patterns are identical.")
+    return 0
+
+
+def cmd_resize(args: argparse.Namespace) -> int:
+    pattern = load_pattern(args.input)
+    dropped = op_resize(pattern, args.bars)
+    save_pattern(pattern, args.input)
+    print(f"Resized to {args.bars} bars, dropped {dropped} notes")
     return 0
 
 
@@ -608,6 +761,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_hum.add_argument("--seed", type=int, default=None,
                        help="Random seed for reproducibility")
     p_hum.set_defaults(func=cmd_humanize)
+
+    p_new = sub.add_parser("new-empty", help="Create an empty pattern from scratch")
+    p_new.add_argument("-o", "--output", required=True, help="Output pattern JSON")
+    p_new.add_argument("--bars", type=int, default=4)
+    p_new.add_argument("--bpm", type=float, default=120.0)
+    p_new.add_argument("--num", type=int, default=4, help="Time sig numerator")
+    p_new.add_argument("--den", type=int, default=4, help="Time sig denominator")
+    p_new.add_argument("--name", default="EMPTY")
+    p_new.set_defaults(func=cmd_new_empty)
+
+    p_diff = sub.add_parser("diff", help="Compare two pattern JSONs")
+    p_diff.add_argument("a", help="Pattern A (before)")
+    p_diff.add_argument("b", help="Pattern B (after)")
+    p_diff.set_defaults(func=cmd_diff)
+
+    p_resize = sub.add_parser("resize", help="Change pattern bar count (drops overflow)")
+    p_resize.add_argument("input")
+    p_resize.add_argument("--bars", type=int, required=True)
+    p_resize.set_defaults(func=cmd_resize)
 
     p_build = sub.add_parser("build", help="Build .Q7P + .mid from pattern JSON")
     p_build.add_argument("input")

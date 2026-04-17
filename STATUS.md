@@ -3,7 +3,7 @@
 > Single-source north-star del progetto QY70 ↔ QY700 reverse engineering.
 > Aggiornato a ogni chiusura di sessione.
 
-**Ultimo aggiornamento**: 2026-04-17 (Session 29f — editor CLI prototipo)
+**Ultimo aggiornamento**: 2026-04-17 (Session 29h — editor: new-empty, diff, resize)
 **Obiettivo finale**: Editor completo pattern + conversione bidirezionale QY700 ↔ QY70
 
 ---
@@ -15,8 +15,8 @@
 | Conversione QY70 → QY700 (Pipeline B capture-based) | **Production-ready** | 100% |
 | Conversione QY70 → QY700 (Pipeline A SysEx decode) | Research-blocked | 10% |
 | Conversione QY700 → QY70 (metadata only) | Parziale (musicalmente errato) | 30% |
-| Editor pattern (CLI prototipo) | **In progress** | ~15% |
-| **Obiettivo finale complessivo** | In progress | **~35-45%** |
+| Editor pattern (CLI prototipo) | **In progress** | ~22% |
+| **Obiettivo finale complessivo** | In progress | **~38-48%** |
 
 ---
 
@@ -27,8 +27,8 @@
 - **Decoder sparse** (user patterns): 100% su 7/7 casi noti (rotation R=9×(i+1))
 - **Q7P format**: read + write + validator con invariant phrase-stream (0 warnings)
 - **Hardware I/O**: Init handshake, bulk dump, send style, capture playback tutti funzionanti
-- **Editor CLI prototipo** (`midi_tools/pattern_editor.py`): 15 sub-command (export, summary, list-notes, add-note, remove-note, transpose, shift-time, copy-bar, clear-bar, kit-remap, humanize, set-velocity, set-tempo, set-name, build). Test roundtrip: JSON editabile ↔ QuantizedPattern bijective
-- **Test suite**: 88 test regression verdi (24 editor + 31 pipeline + 33 altri)
+- **Editor CLI prototipo** (`midi_tools/pattern_editor.py` + `cli/commands/edit.py`): **18 sub-command** — export, summary, list-notes, new-empty, add-note, remove-note, transpose, shift-time, copy-bar, clear-bar, kit-remap, humanize, set-velocity, set-tempo, set-name, resize, diff, build. Accessibile via modulo (`python3 -m midi_tools.pattern_editor`) **e** CLI principale (`qymanager edit`). Test roundtrip bijective JSON ↔ QuantizedPattern
+- **Test suite**: **103 test** regression verdi (39 editor + 31 pipeline + 33 altri)
 
 Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decoder-status.md](wiki/decoder-status.md)
 
@@ -58,12 +58,12 @@ Dettagli: [wiki/open-questions.md](wiki/open-questions.md), [wiki/bitstream.md](
 
 **Costruire editor completo sopra Pipeline B** anziché attendere decoder dense.
 
-Workflow (prototipo funzionante in Session 29f):
-1. Utente suona/registra pattern sul QY70
+Workflow (Session 29h, prototipo esteso):
+1. Utente suona/registra pattern sul QY70 **oppure** parte da zero con `new-empty`
 2. Sistema cattura MIDI playback via `capture_playback.py`
-3. `pattern_editor export` → JSON editabile
-4. `pattern_editor transpose/add-note/remove-note/set-velocity/...` → modifiche
-5. `pattern_editor build` → Q7P per QY700 + SMF standard
+3. `qymanager edit export` / `new-empty` → JSON editabile
+4. `qymanager edit transpose / add-note / resize / diff / set-velocity / ...` → modifiche
+5. `qymanager edit build` → Q7P per QY700 + SMF standard
 
 Pro: consegna prodotto funzionante molto prima, bypassa decoder dense irrisolto.
 Contro: meno "puro" — serve QY70 hardware connesso per catturare.
@@ -77,7 +77,7 @@ Vedi [wiki/pattern-editor.md](wiki/pattern-editor.md) per comandi e workflow det
 Ordine suggerito (ciascuno = 1+ sessione):
 
 1. **Editor hardware test**: caricare Q7P editato sul QY700 con `safe_q7p_tester.py`, verificare playback
-2. **Editor features**: aggiungere shift-time (sposta note in time), copy/paste bar, humanize (random velocity/timing)
+2. **Editor features**: humanize timing (random tick_on ±N), velocity curves (crescendo), multi-track shift
 3. **Hardware**: catturare ground truth patterns A/B/C/D (chord semplici) per validare chord decoder dense
 4. **Editor GUI**: opzionale, dopo consolidamento CLI
 5. **Decoder dense** (parallelo, long-term): mappare 42B super-cycle SGT → MIDI note

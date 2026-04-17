@@ -22,9 +22,12 @@ from midi_tools.pattern_editor import (
     op_add_note,
     op_clear_bar,
     op_copy_bar,
+    op_diff_patterns,
     op_humanize_velocity,
     op_kit_remap,
+    op_new_empty_pattern,
     op_remove_notes,
+    op_resize,
     op_set_velocity,
     op_shift_time,
     op_transpose,
@@ -262,6 +265,138 @@ class TestHumanize:
         op_humanize_velocity(sgt_pattern, t_idx, amount=0, seed=1)
         after = [n.velocity for n in sgt_pattern.tracks[t_idx].notes]
         assert before == after
+
+
+class TestNewEmpty:
+
+    def test_defaults(self):
+        p = op_new_empty_pattern()
+        assert p.bpm == 120.0
+        assert p.ppqn == 480
+        assert p.time_sig == (4, 4)
+        assert p.bar_count == 4
+        assert p.name == "EMPTY"
+        assert p.tracks == {}
+
+    def test_custom_values(self):
+        p = op_new_empty_pattern(bar_count=8, bpm=140.0,
+                                  time_sig=(3, 4), name="WALTZ")
+        assert p.bar_count == 8
+        assert p.bpm == 140.0
+        assert p.time_sig == (3, 4)
+        assert p.name == "WALTZ"
+
+    def test_bar_count_bounds(self):
+        with pytest.raises(ValueError, match="bar_count"):
+            op_new_empty_pattern(bar_count=0)
+        with pytest.raises(ValueError, match="bar_count"):
+            op_new_empty_pattern(bar_count=17)
+
+    def test_bpm_bounds(self):
+        with pytest.raises(ValueError, match="bpm"):
+            op_new_empty_pattern(bpm=10.0)
+        with pytest.raises(ValueError, match="bpm"):
+            op_new_empty_pattern(bpm=400.0)
+
+    def test_new_empty_can_be_populated(self):
+        p = op_new_empty_pattern(bar_count=2)
+        op_add_note(p, track_idx=2, bar=0, beat=0, sub=0, note=60, velocity=90)
+        assert len(p.tracks[2].notes) == 1
+        assert p.tracks[2].notes[0].note == 60
+
+
+class TestDiff:
+
+    def test_identical_patterns_empty_diff(self, sgt_pattern):
+        import copy
+        other = copy.deepcopy(sgt_pattern)
+        delta = op_diff_patterns(sgt_pattern, other)
+        assert delta["metadata"] == {}
+        assert delta["tracks_only_in_a"] == []
+        assert delta["tracks_only_in_b"] == []
+        assert delta["track_diffs"] == {}
+
+    def test_metadata_change_detected(self, sgt_pattern):
+        import copy
+        other = copy.deepcopy(sgt_pattern)
+        other.bpm = 999.0
+        other.name = "DIFFERENT"
+        delta = op_diff_patterns(sgt_pattern, other)
+        assert "bpm" in delta["metadata"]
+        assert "name" in delta["metadata"]
+        assert delta["metadata"]["bpm"] == (sgt_pattern.bpm, 999.0)
+
+    def test_added_note_detected(self, sgt_pattern):
+        import copy
+        other = copy.deepcopy(sgt_pattern)
+        t_idx = next(iter(other.tracks))
+        op_add_note(other, t_idx, bar=0, beat=0, sub=0, note=60, velocity=90)
+        delta = op_diff_patterns(sgt_pattern, other)
+        assert t_idx in delta["track_diffs"]
+        assert len(delta["track_diffs"][t_idx]["added"]) >= 1
+
+    def test_removed_note_detected(self, sgt_pattern):
+        import copy
+        other = copy.deepcopy(sgt_pattern)
+        t_idx = next(iter(other.tracks))
+        op_clear_bar(other, t_idx, bar=0)
+        delta = op_diff_patterns(sgt_pattern, other)
+        assert t_idx in delta["track_diffs"]
+        assert len(delta["track_diffs"][t_idx]["removed"]) >= 1
+
+    def test_modified_velocity_detected(self, sgt_pattern):
+        import copy
+        other = copy.deepcopy(sgt_pattern)
+        t_idx = next(iter(other.tracks))
+        op_set_velocity(other, t_idx, velocity=42, bar=0)
+        delta = op_diff_patterns(sgt_pattern, other)
+        assert t_idx in delta["track_diffs"]
+        modified = delta["track_diffs"][t_idx]["modified"]
+        assert len(modified) >= 1
+        for m in modified:
+            assert m["vel"][1] == 42
+
+    def test_tracks_only_in_b(self):
+        a = op_new_empty_pattern(bar_count=2)
+        b = op_new_empty_pattern(bar_count=2)
+        op_add_note(b, track_idx=3, bar=0, beat=0, sub=0, note=60)
+        delta = op_diff_patterns(a, b)
+        assert 3 in delta["tracks_only_in_b"]
+        assert delta["tracks_only_in_a"] == []
+
+
+class TestResize:
+
+    def test_shrink_drops_overflow(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        overflow = sum(1 for n in sgt_pattern.tracks[t_idx].notes if n.bar >= 2)
+        dropped = op_resize(sgt_pattern, new_bar_count=2)
+        assert dropped >= overflow
+        assert sgt_pattern.bar_count == 2
+        for track in sgt_pattern.tracks.values():
+            for n in track.notes:
+                assert n.bar < 2
+
+    def test_grow_preserves_notes(self, sgt_pattern):
+        total_before = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        dropped = op_resize(sgt_pattern, new_bar_count=8)
+        assert dropped == 0
+        assert sgt_pattern.bar_count == 8
+        total_after = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        assert total_before == total_after
+
+    def test_resize_bounds(self, sgt_pattern):
+        with pytest.raises(ValueError, match="bar_count"):
+            op_resize(sgt_pattern, new_bar_count=0)
+        with pytest.raises(ValueError, match="bar_count"):
+            op_resize(sgt_pattern, new_bar_count=17)
+
+    def test_resize_to_same_is_noop(self, sgt_pattern):
+        total_before = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        dropped = op_resize(sgt_pattern, new_bar_count=sgt_pattern.bar_count)
+        assert dropped == 0
+        total_after = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        assert total_before == total_after
 
 
 class TestEndToEndEdit:

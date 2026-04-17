@@ -2,7 +2,9 @@
 
 CLI editor che opera sopra [Pipeline B](conversion-roadmap.md#pipeline-b-capture-based-new-session-19--recommended--validated) per modificare pattern catturati dal QY70 e rigenerare Q7P + SMF.
 
-**Status**: Prototipo funzionante (Session 29f, 2026-04-17) — 15 test verdi.
+**Status**: Prototipo funzionante (Session 29h, 2026-04-17) — 39 test verdi, 18 comandi CLI.
+
+Accessibile sia via modulo (`python3 -m midi_tools.pattern_editor <cmd>`) sia via CLI principale (`qymanager edit <cmd>`); le due interfacce condividono le stesse operazioni `op_*` pure.
 
 ## Workflow
 
@@ -20,13 +22,15 @@ QY70 hardware → capture_playback.py → capture.json
 
 ## Comandi CLI
 
-Entry point: `python3 -m midi_tools.pattern_editor <command>`
+Entry point primario: `python3 -m midi_tools.pattern_editor <command>`
+Entry point integrato: `qymanager edit <command>` (stessa semantica via Typer)
 
 | Comando | Descrizione | Esempio |
 |---------|-------------|---------|
 | `export` | Capture JSON → editable JSON | `export capture.json -o pattern.json` |
 | `summary` | Sommario pattern | `summary pattern.json` |
 | `list-notes` | Lista note (filtri: `--track`, `--bar`) | `list-notes pattern.json --track 3` |
+| `new-empty` | Crea pattern vuoto da zero | `new-empty -o empty.json --bars 4 --bpm 120 --name MYPATT` |
 | `add-note` | Aggiunge una nota | `add-note pattern.json --track 5 --bar 0 --beat 0 --note 60 --velocity 100` |
 | `remove-note` | Rimuove note (filtri: `--bar`, `--beat`, `--note`) | `remove-note pattern.json --track 0 --bar 2 --note 36` |
 | `transpose` | Sposta note di N semitoni (solo melody, drum rifiutato) | `transpose pattern.json --track 3 --semitones 2` |
@@ -38,6 +42,8 @@ Entry point: `python3 -m midi_tools.pattern_editor <command>`
 | `set-velocity` | Modifica velocity (filtri: `--bar`, `--note`) | `set-velocity pattern.json --track 0 --velocity 90 --bar 0` |
 | `set-tempo` | Cambia BPM | `set-tempo pattern.json 120` |
 | `set-name` | Cambia nome pattern | `set-name pattern.json MYEDIT01` |
+| `resize` | Cambia bar count (overflow droppato) | `resize pattern.json --bars 2` |
+| `diff` | Confronta due pattern (metadata + note) | `diff before.json after.json` |
 | `build` | Rigenera .Q7P + .mid | `build pattern.json -o out --scaffold data/q7p/DECAY.Q7P` |
 
 ## Invariant & Safety
@@ -93,7 +99,8 @@ File principali:
 | `midi_tools/quantizer.py` | `dict_to_pattern` / `pattern_to_dict` / `load_quantized_json` |
 | `midi_tools/build_q7p_5120.py` | Costruzione Q7P da pattern |
 | `midi_tools/capture_to_q7p.py` | SMF writer + D0/E0 encoder |
-| `tests/test_pattern_editor.py` | 15 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
+| `cli/commands/edit.py` | Typer sub-app (`qymanager edit <cmd>`), wrap pure delle stesse `op_*` |
+| `tests/test_pattern_editor.py` | 39 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
 
 ## Limitazioni prototipo
 

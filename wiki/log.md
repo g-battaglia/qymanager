@@ -2,6 +2,72 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29h | Editor: new-empty, diff, resize (18 comandi totali)
+
+### Obiettivo
+Continuare estensione editor Pipeline B in autonomia (direttiva utente: "procedi in piena autonomia senza MAI fermarti"). Aggiungere le operazioni mancanti per supportare workflow completo: creare pattern da zero, confrontare versioni, cambiare durata.
+
+### Nuove operazioni (`midi_tools/pattern_editor.py`)
+
+- `op_new_empty_pattern(bar_count, bpm, ppqn, time_sig, name)` — crea `QuantizedPattern` vuoto pronto da popolare (bounds: 1-16 bar, 20-300 BPM)
+- `op_diff_patterns(a, b)` — delta strutturato: metadata changes, tracks_only_in_{a,b}, per-track added/removed/modified con note_key `(bar, tick_on, note)`
+- `op_resize(pattern, new_bar_count)` — change bar count in place; note con `bar >= new_bar_count` droppate, ritorna count droppato
+
+### CLI wiring
+
+**Argparse** (`python3 -m midi_tools.pattern_editor`):
+- `new-empty -o out.json --bars 4 --bpm 120 --num 4 --den 4 --name MYPATT`
+- `diff a.json b.json` → output testuale con +added/-removed/~modified per track
+- `resize pattern.json --bars N`
+
+**Typer** (`qymanager edit`): stessi 3 comandi via wrap delle `op_*` con output Rich-formattato.
+
+Totale: **18 comandi CLI** (da 15 di session 29f/29g), entrambi entry point allineati.
+
+### Test coverage
+
+`tests/test_pattern_editor.py` da 24 → **39 test**:
+- `TestNewEmpty` (5): defaults, custom values, bar_count bounds, bpm bounds, can-be-populated
+- `TestDiff` (6): identical = empty, metadata change, added/removed/modified detection, tracks_only_in_b
+- `TestResize` (4): shrink drops overflow, grow preserves, bounds, same = noop
+
+**Risultato suite completa**: 103/103 pytest verdi (era 88, +15 editor).
+
+### Workflow validato
+
+```bash
+# Crea pattern vuoto
+qymanager edit new-empty -o /tmp/fresh.json --bars 4 --name DRAFT01
+qymanager edit add-note /tmp/fresh.json --track 0 --bar 0 --beat 0 --note 36
+qymanager edit add-note /tmp/fresh.json --track 0 --bar 0 --beat 2 --note 38
+
+# Compara due versioni
+qymanager edit diff /tmp/before.json /tmp/after.json
+
+# Resize pattern
+qymanager edit resize /tmp/fresh.json --bars 2
+```
+
+### Wiki + STATUS
+
+- `wiki/pattern-editor.md` — tabella comandi aggiornata (18 righe), nota dual entry-point
+- `wiki/log.md` — entry session 29h
+- `STATUS.md` — resta in progress, % editor ~20% (maturazione CLI prototipo)
+
+### File modificati
+- `midi_tools/pattern_editor.py` — 3 nuove `op_*`, 3 subcomando argparse
+- `cli/commands/edit.py` — 3 nuovi comandi Typer (new-empty, diff, resize)
+- `tests/test_pattern_editor.py` — 15 nuovi test (TestNewEmpty/TestDiff/TestResize)
+- `wiki/pattern-editor.md` — doc aggiornata
+
+### Limitazioni residue (roadmap Session 30+)
+- No undo/redo (bisogna salvare backup)
+- Time humanize non ancora implementato
+- Velocity curves (crescendo) non ancora implementati
+- Hardware loopback test ancora non eseguito (Q7P editato → QY700 → playback)
+
+---
+
 ## [2026-04-17] session-29f | Editor CLI su Pipeline B — prototipo funzionante
 
 ### Obiettivo

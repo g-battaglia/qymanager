@@ -17,9 +17,12 @@ from midi_tools.pattern_editor import (
     op_add_note,
     op_clear_bar,
     op_copy_bar,
+    op_diff_patterns,
     op_humanize_velocity,
     op_kit_remap,
+    op_new_empty_pattern,
     op_remove_notes,
+    op_resize,
     op_set_velocity,
     op_shift_time,
     op_transpose,
@@ -230,6 +233,64 @@ def set_name_cmd(
     pattern.name = name
     save_pattern(pattern, input)
     console.print(f"Name set to {name!r}")
+
+
+@edit_app.command("new-empty")
+def new_empty_cmd(
+    output: str = typer.Option(..., "-o", "--output"),
+    bars: int = typer.Option(4, "--bars"),
+    bpm: float = typer.Option(120.0, "--bpm"),
+    num: int = typer.Option(4, "--num"),
+    den: int = typer.Option(4, "--den"),
+    name: str = typer.Option("EMPTY", "--name"),
+) -> None:
+    """Create a fresh empty pattern from scratch."""
+    pattern = op_new_empty_pattern(bar_count=bars, bpm=bpm,
+                                    time_sig=(num, den), name=name)
+    save_pattern(pattern, output)
+    console.print(f"[green]Created:[/green] {output} "
+                  f"({bars} bars, {bpm} BPM, {num}/{den}, name={name!r})")
+
+
+@edit_app.command("diff")
+def diff_cmd(
+    a: str = typer.Argument(..., help="Pattern A (before)"),
+    b: str = typer.Argument(..., help="Pattern B (after)"),
+) -> None:
+    """Compare two pattern JSONs."""
+    pa = load_pattern(a)
+    pb = load_pattern(b)
+    delta = op_diff_patterns(pa, pb)
+
+    console.print(f"[bold]=== diff {a} → {b} ===[/bold]")
+    if delta["metadata"]:
+        console.print("\n[cyan]Metadata changes:[/cyan]")
+        for k, (va, vb) in delta["metadata"].items():
+            console.print(f"  {k}: {va!r} → {vb!r}")
+    if delta["tracks_only_in_a"]:
+        console.print(f"\n[yellow]Tracks only in A:[/yellow] {delta['tracks_only_in_a']}")
+    if delta["tracks_only_in_b"]:
+        console.print(f"\n[yellow]Tracks only in B:[/yellow] {delta['tracks_only_in_b']}")
+    for idx, td in sorted(delta["track_diffs"].items()):
+        console.print(f"\n[cyan]Track {idx}:[/cyan] "
+                      f"+{len(td['added'])} added, "
+                      f"-{len(td['removed'])} removed, "
+                      f"~{len(td['modified'])} modified")
+    if not any([delta["metadata"], delta["tracks_only_in_a"],
+                delta["tracks_only_in_b"], delta["track_diffs"]]):
+        console.print("[green]Patterns are identical.[/green]")
+
+
+@edit_app.command("resize")
+def resize_cmd(
+    input: str = typer.Argument(...),
+    bars: int = typer.Option(..., "--bars"),
+) -> None:
+    """Change pattern bar count (drops overflow)."""
+    pattern = load_pattern(input)
+    dropped = op_resize(pattern, bars)
+    save_pattern(pattern, input)
+    console.print(f"Resized to {bars} bars, dropped {dropped} notes")
 
 
 @edit_app.command("build")
