@@ -2,6 +2,42 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-31a | F1 P1.1 — UDM schema dataclasses
+
+**Obiettivo**: Fase F1, sotto-fase P1.1 — Creare schema UDM (Unified Data Model) con dataclass, validation e JSON serialization.
+
+**Scoperte**: [confidence High]
+- 15 dataclass UDM create in `qymanager/model/` (singolare, distinto da `qymanager/models/` legacy): Device, System, MultiPart, DrumSetup/DrumNote, Effects (Reverb/Chorus/Variation), Pattern, Section, PatternTrack, Phrase, Song/SongTrack, GrooveTemplate/GrooveStep, FingeredZone, UtilityFlags, Voice, MidiEvent
+- 12 enums: DeviceModel, MidiSync, MonoPoly, KeyOnAssign, NoteOffMode, SectionName, PhraseCategory, PhraseType, SongTrackKind, EventKind, TransposeRule + TimeSig frozen dataclass
+- ChordTrack con 12 root × 28 chord types + on_bass flag
+- Validation cascading: Device.validate() → tutti i sub-model validate()
+- JSON serialization: udm_to_dict() ricorsiva con enum→value, bytes→hex, skip _private fields
+
+**Codice**:
+- `qymanager/model/__init__.py` — package exports
+- `qymanager/model/types.py` — enums + TimeSig
+- `qymanager/model/voice.py` — Voice (bank_msb/lsb + program)
+- `qymanager/model/event.py` — MidiEvent (tick-based, kind enum)
+- `qymanager/model/system.py` — System (master_tune/vol/transpose/sync)
+- `qymanager/model/multi_part.py` — MultiPart (~17 campi XG)
+- `qymanager/model/drum_setup.py` — DrumNote + DrumSetup
+- `qymanager/model/effects.py` — ReverbBlock/ChorusBlock/VariationBlock + Effects
+- `qymanager/model/pattern.py` — Pattern + ChordEntry + ChordTrack
+- `qymanager/model/section.py` — Section + PatternTrack
+- `qymanager/model/phrase.py` — Phrase (category/type/events)
+- `qymanager/model/song.py` — Song + SongTrack
+- `qymanager/model/groove.py` — GrooveTemplate + GrooveStep
+- `qymanager/model/fingered_zone.py` — FingeredZone
+- `qymanager/model/utility.py` — UtilityFlags
+- `qymanager/model/device.py` — Device (top-level container)
+- `qymanager/model/serialization.py` — udm_to_dict + device_to_json + validate_device
+
+**Test**: 67 nuovi test in `tests/test_udm_schema.py`, totale 231/231 verdi
+
+**Next**: F1 P1.2 — Rifattorizzare q7p_reader.py per emettere UDM.Device invece di dict/Pattern legacy
+
+---
+
 ## [2026-04-17] session-30i | Menu tree completo QY70 + QY700
 
 ### Contesto
