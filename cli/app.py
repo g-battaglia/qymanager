@@ -16,6 +16,7 @@ from cli.commands.map import map as map_cmd
 from cli.commands.tracks import tracks
 from cli.commands.sections import sections
 from cli.commands.phrase import phrase
+from cli.commands.edit import edit_app
 
 __version__ = "0.4.0"
 
@@ -39,6 +40,7 @@ app.command(name="map")(map_cmd)
 app.command(name="tracks")(tracks)
 app.command(name="sections")(sections)
 app.command(name="phrase")(phrase)
+app.add_typer(edit_app, name="edit")
 
 
 @app.command()
@@ -81,6 +83,12 @@ def main(
         qymanager diff A.Q7P B.Q7P       # Compare two files
         qymanager validate pattern.Q7P   # Validate file structure
         qymanager convert in.syx out.Q7P # Convert formats
+
+    [bold]Pattern Editor (Pipeline B):[/bold]
+
+        qymanager edit export capture.json -o pattern.json
+        qymanager edit transpose pattern.json --track 3 --semitones 2
+        qymanager edit build pattern.json -o out --scaffold data/q7p/DECAY.Q7P
 
     Use --help with any command for more details.
     """

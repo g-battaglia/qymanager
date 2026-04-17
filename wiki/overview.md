@@ -15,7 +15,7 @@ qymanager/           Core library
 
 cli/                 CLI (Typer + Rich)
 ├── app.py           Entry point
-├── commands/        info, convert, diff, validate, dump, map, tracks, sections, phrase
+├── commands/        info, convert, diff, validate, dump, map, tracks, sections, phrase, edit
 └── display/         Rich tables and formatters
 
 midi_tools/          Reverse engineering scripts
