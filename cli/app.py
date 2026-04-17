@@ -18,6 +18,8 @@ from cli.commands.sections import sections
 from cli.commands.phrase import phrase
 from cli.commands.edit import edit_app
 from cli.commands.edit_field import field_emit_xg, field_get, field_set
+from cli.commands.realtime import app as realtime_app
+from cli.commands.udm_convert import udm_convert
 from cli.commands.xg import app as xg_app
 
 __version__ = "0.4.0"
@@ -47,6 +49,8 @@ app.add_typer(xg_app, name="xg")
 app.command(name="field-set")(field_set)
 app.command(name="field-get")(field_get)
 app.command(name="field-emit-xg")(field_emit_xg)
+app.add_typer(realtime_app, name="realtime")
+app.command(name="udm-convert")(udm_convert)
 
 
 @app.command()
