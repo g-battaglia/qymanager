@@ -9,6 +9,37 @@ Hardware setup for communicating with [QY70](qy70-device.md) and [QY700](qy700-d
 - **Port names**: "Steinberg UR22C Porta 1" (may vary by OS)
 - **Virtual env**: always use `.venv/bin/python3` (system python3 lacks `mido`)
 
+## TO HOST direct connection (alternativa UR22C)
+
+Il QY70 ha anche una porta **TO HOST** (MINI DIN 8-pin) per connessione diretta al PC senza MIDI interface. Dal manuale QY70 pag 16-20:
+
+| Host Select | Device | Rate | Driver |
+|-------------|--------|------|--------|
+| MIDI | MIDI DIN only | 31250 bps MIDI | standard |
+| PC-2 | IBM RS-232C | 38400 bps | Yamaha CBX / CBX-T3 |
+| PC-1 | NEC PC-9801 | 31250 bps | Yamaha CBX / CBX-T3 |
+| Mac | Mac serial modem/printer | 31250 bps | OMS / Yamaha CBX |
+
+Cavo IBM: 8-pin MINI DIN → 9-pin D-SUB cross. Con TO HOST + MIDI controller esterno collegato, l'echo back software **deve essere ON**.
+
+Non testato nel progetto (usiamo UR22C USB-MIDI direct).
+
+## UTILITY → MIDI — tutte le opzioni (OM pag 222-224)
+
+| Setting | Values | Use |
+|---------|--------|-----|
+| MIDI SYNC | Internal / External | **External** per ricevere MIDI Start/Clock dal computer |
+| MIDI CONTROL | Off / In / Out / In+Out | **In** o **In+Out** per accept MIDI Start/Stop remoti |
+| ECHO BACK | Off / Thru / RecMontr | **Off** (no loop); Thru = pass-through input → output; RecMontr = monitor record |
+| LOCAL | On / Off | Controlla se la micro-keyboard pilota il tone generator interno |
+| MIDI FILTER | Off / PB / CC / AT / Exc | Blocca un tipo di evento in ricezione/record |
+| PATT OUT CH | Off / 1~8 / 9~16 | Canali MIDI su cui trasmettere le 8 tracce pattern |
+| XG PARM OUT | Off / On | Trasmette XG parameters al cambio song/pattern |
+| DEVICE NO | 1-16 / Off | Device number per SysEx (default 1 = 0x00) |
+| RECEIVE CH | 1-16 / Omni | Canale ricezione per modo Voice/Song |
+
+**SYSTEM EXCLUSIVE INTERVAL TIME** (UTILITY → System, pag 221): `0*100..9*100 ms` — delay tra blocchi SysEx in transmission. Questo è la **fonte ufficiale** del 150-200ms empirico documentato nei nostri script `send_style.py`. Il QY70 inserisce automaticamente questo delay quando invia bulk dump, e si aspetta che il mittente faccia altrettanto.
+
 ## MIDI Validation (Session 16)
 
 Bidirectional MIDI confirmed:

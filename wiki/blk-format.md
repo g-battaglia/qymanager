@@ -75,7 +75,36 @@ The QYFiler performs NO data transformation beyond the standard [7-bit encoding]
 ## External Documentation
 
 - [QY70 Data Filer Manual (PDF)](https://www.deepsonic.ch/deep/docs_manuals/yamaha_qy70_datafiler_manual.pdf) -- Yamaha official manual
-- The manual describes: "All data in the QY70 can be saved to the computer as QY Bulk Files" via MIDI bulk dump transfer
+- Copia locale: `manual/QY70/QY70_DATA_FILLER_MANAUL.PDF` (typo Yamaha originale)
+- Vedi anche [QY Data Filer software](qy-data-filer.md) per flow utente
+
+## Data Filer transmit types (PC → QY70)
+
+Il QY Data Filer supporta 3 livelli di trasferimento:
+
+| Tipo | Scope | Destructive |
+|------|-------|-------------|
+| **All** | Bulk completo: 20 song + 64 user style + system setup | **SÌ** — overwrite totale |
+| **One Song** | Un singolo song (1-20) → slot scelto | Solo slot target |
+| **One Pattern** | Un singolo user style (U01-U64) → slot scelto | Solo slot target |
+
+"One Pattern" nel manuale Data Filer = "One User Style" nel firmware. Terminologia Yamaha non uniforme.
+
+## "Now Bulk Mode" blocking state
+
+Durante bulk transfer, il QY70 blocca la UI e mostra "Now Bulk Mode" sull'LCD. Qualsiasi tasto premuto mentre è in questo stato viene rifiutato. Conferma il comportamento empirico osservato durante i bulk send.
+
+## Error messages Data Filer (pag 22-24 manual)
+
+| Messaggio | Causa |
+|-----------|-------|
+| "The selected MIDI device is in use..." | Altra app usa la porta MIDI |
+| "Can't find the MIDI device..." | Driver non installato / porta errata |
+| "Data transfer failed..." | HOST SELECT sbagliato, QY70 off, cavo rotto |
+| "Data transfer interrupted..." | Interruzione mid-transfer → power cycle QY70 |
+| "Data transfer is not possible in the QY70's current mode..." | QY70 DEVE essere in **SONG play display** o **PATTERN play display** (non in Record/Playback) |
+| "An error has caused the QY Data Filer to terminate." | Generic abend (restart PC) |
+| "Could not create the bulk file. Disk is full." | Disco pieno |
 
 ## QY70 vs QY100 Compatibility
 

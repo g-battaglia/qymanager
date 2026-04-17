@@ -1,8 +1,8 @@
 # QYFiler.exe Reverse Engineering
 
-Disassembly analysis of Yamaha QY Data Filer (Windows, MSVC 6.0 / MFC). Session 20.
+Disassembly analysis of Yamaha QY Data Filer (Windows, MSVC 6.0 / MFC). Session 20 (binario) + Session 30g (HLP + deep strings/imports).
 
-**Confidence: HIGH** -- findings from static disassembly of actual Yamaha binary.
+**Confidence: HIGH** -- findings from static disassembly of actual Yamaha binary and user manual (.HLP).
 
 See also: [SysEx Format](sysex-format.md), [7-Bit Encoding](7bit-encoding.md), [BLK Format](blk-format.md)
 
@@ -34,6 +34,80 @@ This means:
 2. When playing back, it de-rotates internally
 3. When dumping via SysEx, it sends rotated data as-is
 4. The `.syx` / `.blk` files contain hardware-rotated data
+
+## MidiCtrl.dll — Deep RE (Session 30g)
+
+**File**: `exe/extracted/Program_Dll_Files/MidiCtrl.dll` (122.880 byte, PE32 i386 DLL, MSVC 6.0 linker)
+**Timestamp**: 27 Sep 2000
+**Version metadata**: "**DLL Software for Card Filer**", v1.0.4, © 1999 YAMAHA CORPORATION
+
+> Originariamente sviluppata per **Card Filer** (software PCMCIA Yamaha generico), riusata in QYFiler. Spiega perché la DLL è **device-agnostic**: nessuna stringa "QY70/QY700/Yamaha" nel codice, nessun error-table custom, nessun handshake hardcoded. Tutta la logica protocol-specific sta nell'exe parent.
+
+### Singleton pattern
+
+Tutte le 14 export functions sono thin C thunks che dispatchano via vtable verso un singleton `0x10017058` in `.data`. Offset interni noti:
+- `+0x10`: last result (HRESULT-like)
+- `+0x14`: callback utente (MIDI IN data)
+- `+0xC0`: MIDI OUT subsystem base
+
+### Import table — completa
+
+**WINMM** (tutte le funzioni MIDI host):
+```
+midiInOpen/Close/Start/Stop/Reset
+midiInAddBuffer/PrepareHeader/UnprepareHeader
+midiInGetNumDevs/GetDevCapsA/GetErrorTextA
+midiOutOpen/Close/Reset
+midiOutShortMsg/LongMsg
+midiOutPrepareHeader/UnprepareHeader
+midiOutGetNumDevs/GetDevCapsA/GetErrorTextA
+```
+
+**Notevoli**:
+- `Sleep` (ord.662), `CreateThread`, `SetThreadPriority`, 4× CriticalSection API
+- 5× `Reg*` (HKCU read)
+- `WritePrivateProfileStringA` (scrittura .ini in fallback)
+- **NO `timeGetTime` / `timeBeginPeriod`**: la DLL non usa high-resolution timing, si appoggia solo ai callback WINMM
+
+### Timing / buffer constants (DLL-interne)
+
+| Valore | Significato |
+|--------|-------------|
+| `0x40` (64) | `sizeof(MIDIHDR)` — passato a Prepare/UnprepareHeader |
+| `0x10` (16) | Slot pool buffer MIDIHDR (`shl $6` stride = 16 × 64 byte) |
+| `0x400` (1024) | **Buffer stack SysEx IN** — limite per chunk MIM_LONGDATA |
+| `0x30000` | Flag `CALLBACK_FUNCTION` passato a `midiOutOpen` |
+| `0x32` (50 ms) | `Sleep(50)` tra iterazioni polling thread IN |
+| `0x3E8` (1000) | Loop count / timeout ms |
+| `0x143` | Custom WM_USER+0x43 per notifica inter-thread |
+| `0x3C3` / `0x3C4` / `0x3C9` | MIM_DATA / MIM_LONGDATA / MOM_DONE |
+
+### SysEx handling — flow dedotto
+
+**`outWrite(buf, len)`**: se `buf[0] < 0xF0` e `len ≤ 3` → `midiOutShortMsg` (pack in DWORD). Altrimenti: alloca slot (GlobalAlloc+Lock), memcpy, `midiOutPrepareHeader(&hdr, 0x40)` + `midiOutLongMsg(&hdr, 0x40)`.
+
+**`outDump`**: long-path di outWrite, scorre i 16 slot cercando uno libero. **Chunking**: una SysEx = una call `midiOutLongMsg`. **La DLL non segmenta SysEx grandi** — dipende dal driver/OS. Il chunking QY70 (128B blocks 7-bit + 147B dopo encoding) è deciso dall'eseguibile parent, NON dalla DLL.
+
+**`inStart`/MIM_LONGDATA handler**: copia bytes in buffer stack da 1024, richiama callback utente via `*0x14(singleton)`, poi re-submits il buffer con `midiInPrepareHeader + midiInAddBuffer` (ring-buffer).
+
+**Error propagation**: `comGetLastResult` legge `+0x10`; `comGetErrorText` wrappa `midi{In,Out}GetErrorTextA`. Nessun error-table custom → errori utente sono quelli standard Windows MME.
+
+### Configuration
+
+Device ID e port ID iniettati dal parent via `comSetDeviceID` e `ctrlSelectDevice`. **Nessun .ini embedded**. Legge `HKCU\Software\Microsoft\Windows\CurrentVersion\Multimedia\MIDIMap\CurrentInstrument` per il default MIDI mapper di sistema.
+
+### Resource strings
+
+UTF-16 dialog strings:
+- "MIDI IN Port" / "MIDI OUT Port" — dialog invocato da `ctrlSelectDevice`
+- `CMidiInThread` (class name) — thread dedicato con PeekMessage loop
+
+### Take-away per qyconv
+
+- **Limite SysEx IN = 1024 byte** per chunk MIM_LONGDATA. Compatibile con dump QY70 standard (~500B), ma dump > 1KB richiedono concatenazione applicativa.
+- **Nessun timing custom**: i 500ms/150ms Init → Bulk → Bulk delay documentati in `quirks.md` sono imposti dal **firmware QY70**, non dalla DLL.
+- **No handshake/flow-control**: la DLL dispatcha direttamente al driver. L'affidabilità della trasmissione dipende dall'OS + driver, non dalla DLL.
+- Il protocollo QY70 reverse-engineered nel progetto **è compatibile** con come QYFiler chiamava questa DLL (outDump di buffer intero, inStart con callback).
 
 ## MidiCtrl.dll Export Table
 
@@ -128,6 +202,8 @@ Complete embedded SysEx templates found in the binary:
 
 | VA Address | Template (hex) | Purpose |
 |-----------|----------------|---------|
+| 0x434630 | `F0 7E 7F 09 01 F7` | **GM System On** (Universal Realtime) |
+| 0x434638 | `F0 7F 7F 04 01 11 7F F7` | **Master Volume** (Universal Realtime, max) |
 | 0x434644 | `F0 7E 7F 06 01 F7` | Identity Request (Universal) |
 | 0x43464C | `F0 7E 7F 06 02 43 00 41 02 55 FF FF FF FF F7` | Identity Reply match (QY70, FF=wildcards) |
 | 0x43465C | `F0 43 10 5F 00 00 00 01 F7` | Init (start bulk transfer) |
@@ -141,8 +217,11 @@ Complete embedded SysEx templates found in the binary:
 | 0x4346C0 | `F0 43 00 5F 00 25 03 ...` (37B) | Bulk dump type 3 (system setup?) |
 | 0x4346E0 | `F0 43 00 5F 02 40 05 ...` (576B) | Bulk dump Style |
 | 0x4346F0 | `F0 43 00 5F 04 00 05 01` | Receive matching template |
+| 0x4346F8 | `F0 43 20 5F 04 00 00 F7` | **Dump Request AH=0x04 (BULK ALL)** |
 
 **QY70 Identity**: Manufacturer 0x43 (Yamaha), Family 0x00 0x41, Member 0x02 0x55. FF bytes in the reply template are wildcards for matching.
+
+**Implicazione GM On / Master Volume**: il Data Filer resetta lo stato GM e alza il volume prima di trasmettere gli .MID generati via **SMF Data Send**. Match col flusso descritto nel manuale HLP (SMF Data Conv → optional "Add XG header").
 
 ### Dump Request Templates
 
@@ -198,6 +277,161 @@ When loading a `.blk` file, QYFiler checks:
 3. Byte[6] high nibble: `0x0_` = QY70 (valid), `0x1_` = wrong model: "This bulk file is not for QY70"
 
 See [BLK Format](blk-format.md) for file structure details.
+
+## QYFiler.HLP — User manual content (extracted)
+
+Windows 3.0 Help file (18879 byte, signature `3F 5F 03 00`, © 1997 Yamaha). Testo topic-blocks in chiaro, dump con `strings`. **No decompression needed** su macOS.
+
+### Target device
+
+QYFiler è **solo per QY70**. Il manuale non menziona mai il QY700 — prodotto distinto (QY700 usa floppy disk + XG SysEx, non il Data Filer PC).
+
+### Comandi principali (5 transfer operations)
+
+| Comando | Direzione | Payload |
+|---------|-----------|---------|
+| QY Data Save | QY70 → PC | Bulk dump completo → .BLK |
+| QY Data Send | PC → QY70 | .BLK → QY70, modi `All` / `One Song` / `One Pattern` |
+| SMF Data Conv. | PC filesystem | Converte Song QY70 → .MID (opz. "Add XG header" prepende SysEx XG voice setup) |
+| SMF Data Send | PC → QY70 | Invia .MID → slot Song, conversione SMF→QY al volo (proprietario, non documentato) |
+| QY Control Ctrl | PC → QY70 | Name list view; CLEAR SONG / CLEAR ALL SONGS / CLEAR USER STYLE / CLEAR ALL USER STYLES |
+
+### Slot ranges confermati
+
+- **Song**: 01-20 (20 slot)
+- **User Style / Pattern**: U01-U64 (64 slot)
+- **"One Pattern" = "One User Style"** — sinonimi nel manuale
+
+### Stato display requirements
+
+Prima di ogni transfer verso QY70: il device **deve essere in SONG play display o PATTERN play display** (obbligatorio). Play/Record devono essere stoppati.
+
+### Messaggi di stato UI (non error codes)
+
+- "Ready for data transfer"
+- "The QY70 bulk file has been created"
+- "The Standard MIDI File has been created"
+- "Transmission complete"
+
+**Il manuale non espone error codes né SysEx protocol** all'utente. Il lavoro RE è completamente giustificato.
+
+### Add XG Header option (SMF Data Conv)
+
+Se attivata, il converter prepone un SysEx XG di voice setup **prima del primo tick** del file .MID generato, utile per riproduzione su expander XG esterni senza perdere lo stato voci.
+
+### Technical residui
+
+- Fonts: Helv, Symbol, Arial, MS Sans Serif, Times, Wingdings, Century
+- Temp path residuo: `C:\WINDOWS\TEMP\~hc10`
+- Macro: `BrowseButtons()` (Prev/Next WinHelp 3.0)
+- Phrase-table HLP: 4 entries `R:Seq1..Seq4` offsets `0, 1F0, 8630, 108BC`
+
+### Rilevanza per qyconv
+
+Il filer **non documenta**: rotation, bitstream, dense encoding, pattern structure, SysEx format. Conferma memoria `project_qyfiler_re.md` ("barrel rotation is QY70 hardware-internal, BLK=raw SysEx"). Il .BLK è formato opaco by design.
+
+## QYFiler.exe — Deep strings & resources (Session 30g)
+
+### Full DLL imports (9 DLL)
+
+| DLL | Ruolo |
+|-----|-------|
+| **MidiCtrl.DLL** | MIDI broker (vedi sezione dedicata sopra) |
+| KERNEL32.DLL | File I/O, threading, GlobalAlloc |
+| USER32.DLL | Window/dialog, messaggi UI |
+| GDI32.DLL | Painting (bitmaps 1.1 MB in .rsrc) |
+| ADVAPI32.DLL | Registry read/write |
+| COMDLG32.DLL | File Open/Save common dialog |
+| WINSPOOL.DRV | Print (probabilmente print Name List da QY Control) |
+| SHELL32.DLL | ShellExecute per Help / SMF open |
+| WINMM.DLL | Backup MIDI se MidiCtrl assente; multimedia timer |
+
+**Fallback pattern**: USER32 MessageBox è usato direttamente per gli error dialog (non via MFC wrapper custom).
+
+### Menu hierarchy (estratta da .rsrc UTF-16LE)
+
+```
+File
+├── New                Ctrl+N
+├── Open...            Ctrl+O
+├── Close
+├── Save               Ctrl+S
+├── Save As...
+├── (Recent file list)
+└── Exit
+
+QY Data
+├── QY Data Save...         ← richiede Dump Request flow
+├── QY Data Send...         ← modi All / One Song / One Pattern
+├── SMF Data Conv...        ← opz. "Add XG header"
+├── SMF Data Send...
+└── QY Control...           ← Name list + CLEAR operations
+
+Option
+└── MIDI Setup...           ← ctrlSelectDevice (MidiCtrl.dll)
+
+Help
+├── Help Topics              ← apre QYFiler.HLP
+└── About QY DATA FILER...
+```
+
+### Registry path
+
+**Hive**: `HKCU\Software\Local AppWizard-Generated Applications\QY DATA FILER\Settings\`
+
+Chiavi osservate (MFC standard profile):
+- `Recent File List\File1..File4` — MRU dei .BLK aperti
+- `Settings\MidiInID` (DWORD) — device ID iniettato in MidiCtrl via `comSetDeviceID`
+- `Settings\MidiOutID` (DWORD)
+- `Settings\AddXgHeader` (DWORD 0/1) — flag per SMF Data Conv
+- `Settings\WorkDir` (SZ) — ultima dir I/O
+
+Path tipico "Local AppWizard-Generated" indica che l'applicazione è stata generata dal wizard MFC AppWizard standard senza override del Registry path — consueto per progetti interni Yamaha.
+
+### Error messages table (estratti stringhe UTF-16LE)
+
+Message box mostrati all'utente (14+):
+
+| Messaggio | Contesto |
+|-----------|----------|
+| "An error found in the bulk file." | Validazione BLK (size < 0x560 o header non-5F) |
+| "This bulk file is not for QY70." | Byte[6] high nibble ≠ 0x0_ |
+| "The QY70 is not ready for data transfer." | Device non in SONG/PATTERN play display |
+| "Communication error with the QY70." | Timeout MIDI IN (3000ms) |
+| "Please wait. The QY70 is in bulk transfer mode." | Init inviato ma close pendente |
+| "Now Bulk Mode" | Stato blocking durante trasferimento |
+| "Ready for data transfer" | Status-bar pre-transfer |
+| "The QY70 bulk file has been created." | Dopo QY Data Save |
+| "The Standard MIDI File has been created." | Dopo SMF Data Conv |
+| "Transmission complete." | Dopo QY Data Send / SMF Data Send |
+| "The file is not a QY70 format." | Loading file non-BLK |
+| "Cannot open MIDI input/output device." | midiInOpen/midiOutOpen MMSYSERR |
+| "Please set the device display to SONG or PATTERN play." | Pre-condition check fail |
+| "The operation has been cancelled." | User cancel mid-transfer |
+
+**Nota**: nessun codice numerico — sono tutte stringhe UI. Gli HRESULT sottostanti (da WINMM `midi{In,Out}GetErrorTextA`) non sono mai esposti direttamente.
+
+### English vs Japanese build — confronto
+
+Due build separati (`English_Files/` vs `Japanese_Files/`): **funzionalmente identici**. Differenze limitate a:
+- `.rsrc` dialog/menu/string resources (traduzioni UTF-16LE)
+- About box version string
+- Help file path (stesso .HLP ma con topic-blocks tradotti)
+
+Tutta la code section (`.text`), SysEx template table (0x434630), MidiCtrl.DLL, 7-bit encoder e flow protocol sono **byte-identici**. Conferma che la logica protocol-specific è isolata in codice C++ puro, indipendente dalla lingua UI.
+
+### Timing magic numbers extended
+
+Oltre ai valori già documentati:
+
+| Valore | Hex | Significato |
+|--------|-----|-------------|
+| 208 | `0xD0` | Chunk read BLK file |
+| 300 | `0x012C` | Pausa ms tra Send iterations (non confermato MIDI layer) |
+| 400 | `0x0190` | Timeout ACK da QY70 (ms) |
+| 1000 | `0x3E8` | Default operation timeout (ms) |
+
+Combinati con 200ms inter-block + 3000ms timeout: finestra operativa totale ~3.5s per un trasferimento standard.
 
 ## Key Constants Summary
 

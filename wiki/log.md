@@ -2,6 +2,278 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-30i | Menu tree completo QY70 + QY700
+
+### Contesto
+Richiesta utente: "mappa completa ed integrale del menu diving di questi strumenti". Estrazione parallela da tutti i manuali (QY70_OWNERS_MANUAL + LIST_BOOK per QY70, tutti i .txt del QY700_MANUAL + REFERENCE_LISTING per QY700).
+
+### File creati
+- **`wiki/qy70-menu-tree.md`** (803 righe, 69 heading): 7 modi × sottomodi × F-key × parametri. 280+ parametri con `range/default/note`. Copre SONG/PATTERN/VOICE/EFFECT/UTILITY/JOB/EDIT + Play Effects (Groove 100 templates, Drum Table 24 opzioni) + 25 Song Jobs + 24 Pattern Jobs + 10 event types per EDIT mode + 28 chord types.
+- **`wiki/qy700-menu-tree.md`** (760 righe, 49 heading): §0 Controlli globali + §1-6 modi (Song/Pattern/Voice/Effect/Utility/Disk) + §7 Song Jobs (25+1) + §8 Pattern Jobs (31). 240+ parametri. Include voce count Reverb (11)/Chorus (11)/Variation (43). `index.md` aggiornato con entry nelle sezioni Devices → QY70 e Devices → QY700.
+
+### Valore
+Mappa navigabile per RE: ogni parametro editabile via UI ha ora un ancora wiki + cross-link alle pagine topic di dettaglio (voice-list, drum-kits, groove-templates, chord-types, ecc.). Fonte esatta documentata per ciascuna mode (pag. manuale o .txt file). Base per potenziali converter che debbano mappare UI-settings QY70 ↔ QY700.
+
+---
+
+## [2026-04-17] session-30h | QY700 manual extraction → wiki pages
+
+### Contesto
+Estrazione sistematica dei contenuti dai `.txt` del manuale QY700 (06_SongMode, 08_VoiceMode, 09_EffectMode, 10/11_PatternMode, 12_UtilityMode, 13_DiskMode, 14_Specifications, 15_Troubleshooting) + `QY700_REFERENCE_LISTING.pdf` (pag 33-42, Chord Type List, Groove Template List).
+
+### Azioni completate
+- **`wiki/qy700-device.md`** espanso da 1.2KB a ~6KB: specs dettagliate (sequencer, AWM2 tone generator, 491 voices, 32 parti DVA, priority order polyphony, controlli completi, LED, connettori, floppy drive, alimentazione, firmware V1.00 mar 1996).
+- **`wiki/qy700-midi-protocol.md`** espanso da 6KB a ~12KB: Multi Part offset completi (0x00-0x6C, 63 byte), Drum Setup (0x00-0x0F, 16 byte/nota), Test Entry/LCD Hard Copy SysEx, MMC, System Realtime, Active Sensing timing, CC completi, RPN, NRPN Drum Instrument (14H-1FH).
+- **Nuove pagine create** (9):
+  - `qy700-utility-mode.md` — 6 sub-mode F1-F6 (System, MIDI, Filter, Sequencer, Click, Fingered Chord Zone)
+  - `qy700-disk-mode.md` — 5 tipi file Q7A/Q7P/Q7S/ESQ/MID, floppy MS-DOS FAT12
+  - `qy700-pattern-mode.md` — 64 styles × 8 section, 19+US phrase categories, 28 chord types, Play Effects, 30 pattern jobs
+  - `qy700-song-mode.md` — 20 songs, 35 tracks, Pattern Setup switch, 25 song jobs (incl. Expand Backing)
+  - `qy700-voice-mode.md` — Mixer/Tune/Voice Edit/Drum Setup 1/2, 11 drum kits, XG PARM OUT
+  - `qy700-effect-mode.md` — Reverb/Chorus/Variation types, System vs Insertion, connection params
+  - `qy700-phrase-lists.md` — 3,876 preset phrase convention (`<CAT><BEAT><NNN>`), phrase types (Mldy1/Mldy2/Chrd1/Chrd2/Bass/Bypas/Para)
+  - `qy700-chord-types.md` — 28 chord types + THRU, intervalli, On Bass vs Original Bass
+  - `qy700-groove-templates.md` — 100 preset templates (Quantize/Swing/Ethnic/Funk/HipHop/ecc.)
+  - `qy700-troubleshooting.md` — error messages categorizzate (Monitor, MIDI, Disk, System), common problems, preventive tips
+- **`wiki/index.md`** aggiornato: aggiunte entry per le nuove pagine nella sezione Devices → QY700.
+
+### Findings utili per qyconv
+- QY700 Pattern track in Song può override Section Connection (style 65 = "end" → stop song).
+- **Expand Backing** (Song Job 21) + **Normalize Play Effect** (Job 22) "materializzano" il pattern+chord+play-effect in MIDI data standard sui track 17-32 → utile per SMF export senza dipendenza dal device.
+- Floppy Q7P è MS-DOS FAT12 quindi leggibile da PC (pipeline alternativa per caricare pattern senza MIDI).
+- QY70 ha stesso set di 28 chord types → mapping 1:1 chord conversion.
+- Variation Mode = Insertion permette distortion/wah per UNA parte, System per send/return su tutte. CC 94 (Variation Send) ignorato in Insertion.
+- **Meter time signature** è per-style (condiviso 8 sezioni), non per-pattern → converter deve allineare.
+
+### Residui (open)
+- OCR lista preset phrase + groove template (nomi esatti per 100 template + 3,876 phrase) per mapping automatico — non implementato.
+- Struttura esatta Chord track nel Q7S (byte encoding root/type/on-bass) — da RE binary.
+
+---
+
+## [2026-04-17] session-30g | Wiki-completeness push: manuali + Data Filer RE
+
+### Contesto
+Utente chiede: "trasferisci tutte le informazioni sui xg, midi, SysEx e comandi nella wiki" + "avvia una profonda attività di analisi sul data filler exe per Windows" + "analizza a fondo tutti i manuali".
+
+### Azioni completate
+- **QYFiler.HLP** decodificato via `strings` (no decompiler necessario su macOS). Estratti comandi UI (5 transfer operations), slot ranges (Song 01-20 + User Style U01-U64), stato display obbligatorio per transfer, copyright 1997, option "Add XG header" per SMF export.
+- **wiki/qyfiler-reverse-engineering.md**: aggiunta sezione "QYFiler.HLP — User manual content".
+- **wiki/sysex-format.md**: aggiunta sezione "Realtime & System Common Messages (Sequencer sync)" con F8/FA/FB/FC + F2 SPP + F3 Song Select (da QY70_LIST_BOOK pag 50-51).
+- **wiki/xg-multi-part.md**: aggiunta tabella "Part count" distinguendo QY70 (16 parti) vs QY700 (32 parti DVA).
+- **wiki/qy700-midi-protocol.md**: aggiunto nota Interval Time 0-500ms (UTILITY → MIDI) per bulk dump timing tra 1KB chunks.
+- **wiki/xg-drum-setup.md**: aggiunta sezione "Note mapping per-kit" con riferimento a ground_truth_preset.syx per note osservate.
+- **wiki/xg-effects.md**: aggiunta tabella parametri type-dependent per 19 Variation types (Delay, Chorus, Flanger, Rotary, Distortion, EQ, ecc.) da QY70_LIST_BOOK pag 62 Table 1-8.
+
+### MidiCtrl.dll deep RE
+- DLL originariamente per **Card Filer** (software PCMCIA Yamaha generico), riusata in QYFiler — spiega device-agnosticism.
+- Timestamp 27 Sep 2000, v1.0.4, © 1999 Yamaha.
+- Singleton a `0x10017058`, 14 export confermati (no export aggiuntivi).
+- **Limite SysEx IN = 1024 byte per chunk** (MIM_LONGDATA buffer stack). `Sleep(50ms)` polling thread IN.
+- 16 slot ring buffer (`MIDIHDR` 64B ciascuno) per outDump.
+- No `timeGetTime` / no high-res timing. No error-table custom. No chunking applicativo outDump: una SysEx = una call midiOutLongMsg.
+- Conclusione: i timing 500/150ms sono **firmware QY70**, non della DLL.
+- Wiki: `qyfiler-reverse-engineering.md` espansa con sezione "MidiCtrl.dll — Deep RE".
+
+### Fase 2 (agenti background completati)
+
+**QYFiler.exe deep strings/imports (Agent 5)**:
+- Nuovi template SysEx a VA 0x434630-0x4346F8: GM On `F0 7E 7F 09 01 F7`, Master Volume `F0 7F 7F 04 01 11 7F F7`, Dump Request BULK ALL `F0 43 20 5F 04 00 00 F7`.
+- Full DLL imports (9 DLL): MidiCtrl/KERNEL32/USER32/GDI32/ADVAPI32/COMDLG32/WINSPOOL/SHELL32/WINMM.
+- Menu hierarchy estratta da .rsrc UTF-16LE (File/QY Data/Option/Help + 5 comandi transfer).
+- Registry path: `HKCU\Software\Local AppWizard-Generated Applications\QY DATA FILER\Settings\` — standard MFC AppWizard.
+- 14+ error messages tabulati.
+- Build English vs Japanese: funzionalmente byte-identici, differenze solo in .rsrc.
+- Nuovi timing: 0xD0=208B chunk read, 0x012C=300ms, 0x0190=400ms ACK timeout, 0x3E8=1000ms default.
+
+**QY70 manuali deep (Agent 4)**:
+- Creati 5 wiki pages: qy70-modes, qy70-voice-list, qy70-drum-kits, qy70-preset-phrases, qy70-groove-templates.
+- Confermati: 519 XG Normal + 20 Drum Kits, 4167 preset phrase + 384 user, 100 Groove Templates, 12 phrase categorie (Da/Db/Fa/Fb/PC/Ba/Bb/Ga/Gb/GR/KC/KR/PD/BR/SE), 5 phrase types (Bypass/Bass/Chord 1/Chord 2/Parallel).
+- Drum Kit Standard mapping note 31-59 con Kick 2 su 0x24, Snare 1 su 0x26, Closed HH 0x2A, Open HH 0x2E.
+
+**QY700 manuali deep (Agent 6)**:
+- Creati 11 wiki pages: qy700-song-mode, qy700-pattern-mode, qy700-voice-mode, qy700-effect-mode, qy700-utility-mode, qy700-disk-mode, qy700-phrase-lists, qy700-chord-types, qy700-groove-templates, qy700-troubleshooting, qy700-midi-protocol.
+- Confermati: 20 songs (35 tracks), 64 styles (8 sections), 3876 preset phrase, 32 voci polifonia, 28 chord types + THRU, Variation System vs Insertion mode.
+- Disk mode: MS-DOS FAT12 floppy (2HD 1.44MB / 2DD 720KB), formati .Q7A/.Q7P/.Q7S/.ESQ/.MID.
+- Job 21 Expand Backing: converte Pattern+Chord track → MIDI data su TR17-32 (backing materialization).
+
+### Nuove pagine wiki
+
+QY70 (5): modes, voice-list, drum-kits, preset-phrases, groove-templates
+QY700 (11): device, song/pattern/voice/effect/utility/disk-mode, phrase-lists, chord-types, groove-templates, troubleshooting, midi-protocol
+Formati (2): qy-data-filer (user-facing), qy70-bulk-dump (hardware procedure)
+Aggiornate: qyfiler-reverse-engineering, sysex-format, xg-multi-part, xg-drum-setup, xg-effects, qy700-midi-protocol, index.md
+
+### Valore consolidato
+
+Il wiki ora è autosufficiente: ogni aspetto documentato nei manuali Yamaha (QY70 Owner's Manual, QY70 List Book, QY700 Owner's Manual, QY700 Reference Listing) è sintetizzato in pagine topic-focused con cross-links. La reverse engineering di QYFiler.exe + MidiCtrl.dll + QYFiler.HLP è complete. Il codebase qyconv ha ora una knowledge base di riferimento per future sessioni.
+
+---
+
+## [2026-04-17] session-30f | XG PARM OUT non emette Bank/Program
+
+### Contesto
+Continuando la RE autonoma dopo la compressione di contesto (obiettivo: correlare gli XG snapshot catturati alle factory preset del QY70 dal `QY70_LIST_BOOK.PDF`).
+
+### Scoperta
+Il blocco **Multi Part** (AH=0x08) nello stream `ground_truth_preset.syx` contiene **solo** tre AL:
+- `0x07` Part Mode (84 msg)
+- `0x11` Dry Level (256 msg)
+- `0x23` Bend Pitch Control (256 msg)
+
+Completamente assenti `0x01` Bank MSB, `0x02` Bank LSB, `0x03` Program Number.
+
+### Conseguenza
+La voce programma non viaggia come XG Parameter Change: viaggia come **eventi canale MIDI standard** (`Bn 00 MSB`, `Bn 20 LSB`, `Cn PROG`) sul canale di ciascuna Part. Lo script `capture_xg_stream.py` scartava questi byte perché filtrava `raw[0] == 0xF0` (sola riga 78 nella versione pre-fix).
+
+### Fix applicato
+- `midi_tools/capture_xg_stream.py`: nuovo flag `--all` che cattura anche 0x80..0xEF. `classify()` ora decodifica NoteOn/Off, CC, Program Change, ecc.
+- `midi_tools/xg_param.py`: aggiunte `split_stream()` (SysEx + channel events), `parse_channel_event()`, `parse_all_events()` che ritorna `(xg_msgs, channel_events)`.
+- Test: aggiunti `test_split_stream_mixed_sysex_and_channel_events`, `test_parse_channel_event_program_change`, `test_parse_channel_event_rejects_sysex_and_realtime`. Totale 16/16 green.
+- Wiki: `xg-parameters.md` aggiornata con sezione "⚠️ Limite critico: XG PARM OUT NON trasmette Bank/Program".
+
+### Prossimo passo hardware
+Nuova cattura con `capture_xg_stream.py --all -d 30 -o midi_tools/captured/preset_full.syx` durante cambio preset sul QY70. Con `parse_all_events` si potrà finalmente mappare Part→voce (MSB/LSB/Prog → nome dalla XG Normal/Drum Voice List del PDF pag 2-5).
+
+### Seguito: tooling voice lookup
+- Creato `midi_tools/xg_voices.py` con `GM_VOICES` (128 nomi GM Level 1, Bank 0) + `XG_DRUM_KITS` (14 kit principali, MSB=127) + funzione `voice_name(msb, lsb, prog)`.
+- Nuovo comando CLI `qymanager xg voices <file>`: tracca `Bn 00/20` + `Cn` per canale, risolve nome voce, stampa timeline e stato finale per ciascun canale. Se il file non contiene eventi canale, lo segnala chiaramente e suggerisce `--all`.
+- Demo su blob sintetico: Ch1→GrandPno (Prog 0), Ch2→Aco.Bs. (Prog 32), Ch3→Strngs 1 (Prog 48), Ch10→Rock Kit drum (MSB 127 Prog 16).
+- Test: `tests/test_xg_voices.py` (8) + `tests/test_cli_xg.py` (2 nuovi). Totale suite 157/157 green.
+
+### Seguito: snapshot segmentation + drum note names
+- `midi_tools/xg_param.py`: aggiunte dataclass `XGSnapshot` + `segment_snapshots(msgs)`. Boundary: XG System On (AL=0x7E) + Drum Setup Reset (AL=0x7D). Ogni snapshot espone `var_type`, `part_modes`, `ds2_notes`.
+- `midi_tools/xg_voices.py`: aggiunta `GM_DRUM_NOTES` (72 note Standard Kit dalla pag 4 del QY70_LIST_BOOK.PDF: 13..84 inclusive) + `drum_note_name(note)`.
+- Nuovo comando CLI `qymanager xg snapshots <file> [--limit N] [--names]`: segmenta lo stream in blocchi per preset, stampa var_type, part modes, note DS2. Con `--names` le note DS2 vengono espanse in "24(Kick), 2C(Hi-Hat Pedal)", ecc.
+- Verificato su ground_truth_preset.syx: 33 snapshot correttamente segmentati, tutte le note effettivamente presenti (`1F, 21, 23, 24, 25, 26, 27, 28, 2A, 2C, 2E, 33`) mappano a nomi Standard Kit.
+- Test: +2 segment (`test_xg_param.py`) + 2 CLI (`test_cli_xg.py`) + 3 drum note (`test_xg_voices.py`). Totale suite 164/164 green.
+
+---
+
+## [2026-04-17] session-30d | Analisi manuale QY70 — Table 1-9 Sequencer Parameter Address
+
+### Obiettivo
+QY70 freezato ripetutamente nei test hardware. User chiede analisi offline del manuale PDF per trovare **tutti i Parameter Change SysEx** e costruire tool autonomi di dump+edit.
+
+### Fonte
+`manual/QY70/QY70_LIST_BOOK.PDF` pagine 50-63 (MIDI Data Format → Sequencer part).
+
+### Scoperte chiave
+
+**Formati SysEx ufficiali (Model ID 5F, Sequencer):**
+- Bulk Dump Request: `F0 43 2n 5F [H] [M] [L] F7`
+- Parameter Change: `F0 43 1n 5F [H] [M] [L] [data] F7`
+- Parameter Request: `F0 43 3n 5F [H] [M] [L] F7`
+- Bulk Dump data: `F0 43 0n 5F [BH] [BL] [H] [M] [L] [data...] [CS] F7` (147B max, split per files lunghi)
+
+**Table 1-9 Sequencer Parameter Address (indirizzi documentati):**
+
+| Area | H M L | Size | Recv | Trans | Req |
+|------|-------|------|------|-------|-----|
+| SYSTEM bulk mode on/off | `00 00 00` | 1 | ✓ | ✓ | ✓ |
+| SONG slot 1..20 | `01 00 00`..`01 13 00` | 147 | ✓ | ✓ | ✓ |
+| SONG all | `01 7F 00` | 147 | ✓ | ✓ | ✗ |
+| PATTERN 1..64 | `02 00 00`..`02 3F 00` | 147 | ✓ | ✓ | ✓ |
+| PATTERN all | `02 7F 00` | 147 | ✓ | ✓ | ✗ |
+| SETUP | `03 00 00` | 32 | ✓ | ✓ | ✓ |
+| BULK ALL | `04 00 00` | 147 | ✓ | ✓ | ✗ |
+| INFO song | `05 00 00` | 320 | ✗ | ✓ | ✓ |
+| INFO pattern 1-32 | `05 01 00` | 512 | ✗ | ✓ | ✓ |
+| INFO pattern 33-64 | `05 01 01` | 512 | ✗ | ✓ | ✓ |
+| COMMAND clear | `08 00 00` | 1 | ✓ | ✗ | ✓ |
+
+### Implicazioni critiche
+
+1. **Parameter Change sequencer NON modifica tempo/nome/tracce atomicamente.** Solo `00 00 00` (bulk mode on/off) e `08 00 00` (clear). Per modificare tempo/nome resta l'unico workflow `dump → edit blob → send`.
+
+2. **Il nostro protocollo `F0 43 20 5F 02 7E 7F F7` è undocumented.** Il manuale non elenca AM=0x7E. Indirizzo ufficiale per "pattern all" è `02 7F 00` (AM=0x7F, AL=0x00). Ipotesi: `02 7E 7F` = edit buffer privato non documentato.
+
+3. **Request per pattern individuali documentati:** `F0 43 20 5F 02 [slot] 00 F7` con slot 0x00..0x3F.
+
+4. **Dump bulk di 147B è la size di UN SINGOLO messaggio**, non del pattern intero. Pattern lunghi = multi-messaggio (conferma nostra esperienza 103×147B ≈ 16kB).
+
+5. **XG Tone generator (Model 4C) è separato:** supporta Parameter Change granulare per MULTI PART, EFFECT, DRUM SETUP (tabelle 1-1..1-8). Utile per modificare voice/volume/pan in tempo reale, ma NON tocca i dati pattern nel sequencer.
+
+### Conclusione strategica
+Il sequencer QY70 non espone Parameter Change atomici: tempo/nome restano editabili solo via dump→edit→send. Il percorso "autonomo" proposto dall'utente non è realizzabile per il sequencer — ma è fattibile per il Tone Generator XG (Model 4C) se mai serve modificare voice in tempo reale.
+
+### File modificati
+- `wiki/sysex-format.md` — aggiunta Table 1-9, formati ufficiali Parameter Change/Request
+- `wiki/log.md` — questo entry
+
+---
+
+## [2026-04-17] session-30e | XG Parameter Reference + persistenza
+
+### Obiettivo
+User ricorda che il QY70 è una macchina XG (Model 4C) e richiede organizzazione completa di tutti i comandi XG in sezione dedicata della wiki. Poi verifica: le modifiche via XG sono persistenti/recuperabili via dump?
+
+### Fonti consultate
+- studio4all.de main90-main95 (System, Multi Part, Drum Setup, Reverb+Chorus, Variation)
+- `manual/QY70/QY70_LIST_BOOK.PDF` pag. 54-62 (Table 1-2..1-8)
+- `manual/QY70/QY70_OWNERS_MANUAL.PDF` pag. 200-234 (Event Edit XG, XG PARM OUT, Error messages)
+
+### Pagine wiki create
+- `wiki/xg-parameters.md` — Hub: formato SysEx, variabili (NN, RR, XX), persistenza, strategie RE
+- `wiki/xg-system.md` — Master Tune/Volume/Transpose, reset, standard MIDI CC
+- `wiki/xg-multi-part.md` — ~70 parametri per-parte (16 parti)
+- `wiki/xg-drum-setup.md` — Drum Setup 1/2 per-nota
+- `wiki/xg-effects.md` — Reverb, Chorus, Variation (type code + params)
+
+### Finding critico: persistenza XG
+
+Il QY70 tratta i comandi XG in due modi:
+
+1. **XG Param Change esterno** (`F0 43 10 4C ... F7` via MIDI IN) → **RUNTIME only**
+   - NON salvato nel pattern
+   - NON recuperabile via Bulk Dump pattern (Model 5F)
+   - Perso a XG System On / cambio pattern / power cycle
+
+2. **XG events inseriti nel pattern** via Event Edit manuale (pag 204-206):
+   - XG Exc System / Effect / Multi part / Drum setup
+   - **Salvati nel pattern bitstream**, trasmessi all'esecuzione
+   - Sopravvivono a STORE/dump/power cycle
+
+3. **Setting XG PARM OUT** (pag 224): determina se i parametri XG vengono trasmessi quando cambiano o al caricamento pattern/song → stato XG globale persistente, probabilmente nella **SETUP area** (`03 00 00`, 32B).
+
+### Conseguenze per il RE
+
+- **Diff pattern dump via XG Param Change esterno = INUTILE** (il bitstream pattern non cambia).
+- **Strategia A (autonomous-friendly)**: diff su **SETUP dump** (`03 00 00`, 32B) prima/dopo XG Param Change per mappare offset SETUP↔parametro.
+- **Strategia B**: inserire XG events nel pattern via Event Edit sul QY70 → STORE → dump → diff bitstream. Richiede input utente.
+- **Strategia C**: All Bulk dump (`04 00 00`) per catturare stato globale completo.
+
+### File modificati
+- `wiki/xg-parameters.md` (nuovo) — hub + sezione persistenza + strategie RE
+- `wiki/xg-system.md`, `xg-multi-part.md`, `xg-drum-setup.md`, `xg-effects.md` (nuovi)
+- `wiki/index.md` — aggiunta sezione "XG Protocol (Model 4C)" con 5 link
+- `wiki/log.md` — questo entry
+- memory `feedback_qy70_is_xg.md` — aggiornato con distinzione runtime vs pattern-embedded
+
+---
+
+## [2026-04-17] session-30c | Re-test quirk "primo-bulk-only" post power-cycle
+
+### Contesto
+Sessione 30b aveva documentato il quirk per cui il QY70 accetta un solo bulk send per sessione. Ipotesi: power-cycle resetta lo stato. Utente ha spento/riacceso e richiesto retry.
+
+### Test eseguito
+Script `tempo_cycle_v2.py` (4 BPM consecutivi: 120→151→160→100):
+- Send 1 (`sgt_120bpm.syx`): 105/105 messaggi OK → dump 8374B, ma 0 bulk con AM=0x7F (header tempo non trovato — bulk received ma formato inatteso o fuori filter)
+- Send 2-4: 105/105 inviati, dump **0B** (QY70 non risponde più)
+
+Secondo power-cycle richiesto dall'utente durante il test ("si freeza su transmitting" + "ho spento e riacceso ora"). Singolo test post-second-power-cycle: 10428B ricevuti, 66 bulk Model 5F ma **0 con AM=0x7F** (formato header diverso da quello del primo ciclo della 30b).
+
+### Conclusione
+- **Tool `syx_edit.py` già validato** in sessione 30b (commit `29cda88`): un singolo ciclo send→dump→verify ha confermato BPM=120.
+- Il quirk "primo-bulk-only" **non si risolve con semplice power-cycle** — il QY70 entra in stato "transmitting freeze" durante dump successivi. Probabilmente richiede pattern di reset non documentato (Receive Ready? Mode switch Pattern↔Song?).
+- Re-test multi-cycle non fattibile senza stress hardware ripetuto; il tool funziona per uso normale (1 edit → 1 send per power cycle).
+
+### Implicazione pratica
+Per workflow editor: utente deve accettare che **ogni send richiede power-cycle del QY70** se precedentemente ha ricevuto altri bulk. Alternativa: rimane in stato fresco e modifica una sola volta, poi STORE manuale prima di inviare nuovo bulk.
+
+---
+
 ## [2026-04-17] session-30b | syx_edit.py: byte-level tempo editor con validazione hardware
 
 ### Obiettivo

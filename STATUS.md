@@ -3,7 +3,7 @@
 > Single-source north-star del progetto QY70 ↔ QY700 reverse engineering.
 > Aggiornato a ogni chiusura di sessione.
 
-**Ultimo aggiornamento**: 2026-04-17 (Session 30 — QY70 SysEx protocol validato + syx_edit.py byte-level editor applicato su hardware con successo)
+**Ultimo aggiornamento**: 2026-04-17 (Session 30g+30h+30i — wiki-completeness push completata. 5 pagine QY70 + 11 pagine QY700 + 2 Data Filer + 2 menu-tree (803+760 righe, 520+ parametri documentati). Totale: 20 nuove pagine wiki + 6 aggiornate. Wiki ora autosufficiente come reference operativa + navigazione completa UI/menu)
 **Obiettivo finale**: Editor completo pattern + conversione bidirezionale QY700 ↔ QY70
 
 ---
@@ -28,8 +28,8 @@
 - **Q7P format**: read + write + validator con invariant phrase-stream (0 warnings)
 - **Hardware I/O**: Init handshake, bulk dump, send style, capture playback tutti funzionanti. **Coordinate SysEx confermate (Session 30)**: Model=0x5F, device=0, AM=0x7E (solo edit buffer; slot User rifiutato)
 - **Editor CLI prototipo** (`midi_tools/pattern_editor.py` + `cli/commands/edit.py`): **21 sub-command** — export, summary, list-notes, new-empty, add-note, remove-note, transpose, shift-time, copy-bar, clear-bar, kit-remap, humanize, humanize-timing, velocity-curve, set-velocity, set-tempo, set-name, resize, diff, merge (overlay/append), build. **5 comandi multi-track** (`--all-tracks`): `shift-time`, `humanize`, `humanize-timing`, `velocity-curve`, `set-velocity`. Accessibile via modulo (`python3 -m midi_tools.pattern_editor`) **e** CLI principale (`qymanager edit`). Test roundtrip bijective JSON ↔ QuantizedPattern
-- **Test suite**: **131 test** regression verdi (59 editor + 31 pipeline + 8 syx_edit + 33 altri)
-- **syx_edit.py** (Session 30): byte-level tempo editor per .syx QY70; bypass bitstream encoder rotto. **Verificato su hardware**: `syx_edit.py SGT.syx --tempo 120 -o out.syx` → send → dump QY70 conferma decoded[0]=0x3F, BPM=120
+- **Test suite**: **164 test** regression verdi (59 editor + 31 pipeline + 8 syx_edit + 22 xg_param/cli-xg + 11 xg_voices + 33 altri)
+- **syx_edit.py** (Session 30): byte-level tempo editor per .syx QY70; bypass bitstream encoder rotto. **Verificato su hardware** (single cycle, session 30b): `syx_edit.py SGT.syx --tempo 120 -o out.syx` → send → dump QY70 conferma decoded[0]=0x3F, BPM=120. **Quirk confermato** (session 30c): QY70 entra in "transmitting freeze" su bulk successivi, power-cycle non sufficiente — uso normale è 1 edit + 1 send per power cycle
 
 Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decoder-status.md](wiki/decoder-status.md)
 
@@ -40,7 +40,7 @@ Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decode
 - **Decoder dense** (factory styles): struttura parzialmente compresa (per-beat rotation, 42B super-cycle SGT, 692B shared prefix) ma **nessun output MIDI corretto** prodotto. Structural impossibility provata su velocity encoding (Session 20). Stima: 10-30 sessioni residue, non garantito (forse serve firmware dump)
 - **Encoder dense** (Q7P → SysEx): dipende dal decoder, 0% fatto. **Session 30 conferma**: converter `QY700ToQY70Converter.convert_bytes()` produce bulk che il QY70 riceve ma interpreta come "svuota edit buffer" invece di "carica pattern" — bitstream encoding non valido
 - **Chord transposition layer**: non decodificato — bar headers memorizzano chord-relative templates
-- **Voice writes al QY700**: offset reali sconosciuti (0x1E6/0x1F6/0x206 causavano bricking, ora disabilitati)
+- **Voice writes al QY700**: offset reali sconosciuti (0x1E6/0x1F6/0x206 causavano bricking, ora disabilitati). **Alternativa identificata (Session 30e)**: usare XG Param Change runtime per Bank/Program/Voice invece di scrivere a offset Q7P ignoti
 
 Dettagli: [wiki/open-questions.md](wiki/open-questions.md), [wiki/bitstream.md](wiki/bitstream.md)
 
@@ -70,6 +70,17 @@ Pro: consegna prodotto funzionante molto prima, bypassa decoder dense irrisolto.
 Contro: meno "puro" — serve QY70 hardware connesso per catturare.
 
 Vedi [wiki/pattern-editor.md](wiki/pattern-editor.md) per comandi e workflow dettagliati.
+
+### XG Protocol (Session 30e–30f) — fonte complementare
+
+Il QY70 è un tone generator XG completo ([wiki/xg-parameters.md](wiki/xg-parameters.md)). Con XG PARM OUT attivo, al cambio pattern emette via MIDI lo stato XG (Multi Part, Effect, Drum Setup). **Persistenza**:
+- XG Param Change esterno via MIDI IN = RUNTIME (non salvato nel pattern)
+- XG events inseriti via Event Edit del QY70 = SALVATI nel pattern
+- Pattern dump Model 5F NON contiene XG (verificato su ground_truth_C_kick.syx: 0 messaggi XG)
+
+**⚠️ Limite XG PARM OUT (Session 30f)**: del blocco Multi Part (`AH=0x08`) vengono emessi solo `AL=07` Part Mode, `AL=11` Dry Level, `AL=23` Bend Pitch. Mai Bank/Program (AL=01/02/03). Le voci programma viaggiano come eventi canale MIDI standard (`Bn 00 MSB`, `Bn 20 LSB`, `Cn PROG`), che `capture_xg_stream.py` pre-fix filtrava. Uso corretto: `capture_xg_stream.py --all -o out.syx`, poi `xg_param.parse_all_events(path)` → `(xg_msgs, channel_events)`.
+
+Tool: `qymanager xg` / `midi_tools/xg_param.py` (parse/summary/diff/emit + `parse_all_events` misto).
 
 ---
 

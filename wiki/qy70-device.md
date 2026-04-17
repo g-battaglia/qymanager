@@ -6,13 +6,37 @@ Portable sequencer and style player. Part of the Yamaha QY series.
 
 | Property | Value |
 |----------|-------|
-| Tracks | 8 (RHY1, RHY2, BASS, CHD1, CHD2, PAD, PHR1, PHR2) |
+| Tracks Pattern | 8 (D1, D2, PC, BA, C1, C2, C3, C4 → style names RHY1/2, BASS, CHD1/2, PAD, PHR1/2) |
+| Tracks Song | 16 sequencer + 3 accompaniment (Pattern, Chord, Tempo) |
 | Sections | 6 (Intro, Main A, Main B, Fill AB, Fill BA, Ending) |
+| Songs | 20 slot (+ 3 demo 21-23) |
+| User Patterns | 64 (U01-U64) |
+| Preset Phrases | 4167 (12 categorie) |
+| User Phrase slots | 384 |
 | Tone Generator | Yamaha XG (Model ID `0x4C`) |
+| Voices | **519** XG Normal + **20 Drum Kits** |
+| Polyphony | 32 notes |
+| Clock Resolution | **480 ticks per quarter note** |
+| Pattern Length | 1-8 measures, time sig 1..16/16, 1..16/8, 1..8/4 |
+| Measure Range | 001-999 |
+| Tempo Range | 25-300 BPM |
+| Transpose | -24..+24 semitoni |
 | Sequencer Model ID | `0x5F` |
 | MIDI Identity | Family `0x4100`, Member `0x5502` |
 | Data Format | SysEx bulk dump (`.syx`) |
 | Style Format | Packed [bitstream](bitstream.md) with [7-bit encoding](7bit-encoding.md) |
+
+## Physical Connections (OM pag 13-18)
+
+- **MIDI IN / MIDI OUT**: 5-pin DIN standard
+- **TO HOST**: MINI DIN 8-pin per connessione diretta PC (Windows/Mac) senza MIDI interface esterna
+- **HOST SELECT switch** (4 posizioni):
+  - `MIDI` → solo MIDI DIN attivo
+  - `PC-2` → IBM RS-232C, 38400 bps
+  - `PC-1` → NEC PC-9801, 31250 bps
+  - `Mac` → Mac serial modem/printer, 31250 bps
+- **Line Out / Phones**: mini stereo jack
+- Con TO HOST servono driver Yamaha CBX (Win95) o CBX-T3 (Win3.1), dal floppy QY Data Filer
 
 ## MIDI Communication
 
