@@ -568,6 +568,45 @@ class TestMerge:
             op_merge_patterns(a, b, mode="sideways")
 
 
+class TestMultiTrackOps:
+
+    def test_set_velocity_all_tracks(self, sgt_pattern):
+        total = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        changed = op_set_velocity(sgt_pattern, None, velocity=77)
+        assert changed == total
+        for track in sgt_pattern.tracks.values():
+            for n in track.notes:
+                assert n.velocity == 77
+
+    def test_humanize_velocity_all_tracks(self, sgt_pattern):
+        total = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        count = op_humanize_velocity(sgt_pattern, None, amount=5, seed=7)
+        assert count == total
+        for track in sgt_pattern.tracks.values():
+            for n in track.notes:
+                assert 1 <= n.velocity <= 127
+
+    def test_humanize_timing_all_tracks(self, sgt_pattern):
+        total_before = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        kept = op_humanize_timing(sgt_pattern, None, amount_ticks=20, seed=7)
+        assert kept <= total_before
+        ticks_per_bar = sgt_pattern.bar_ticks
+        total_ticks = sgt_pattern.bar_count * ticks_per_bar
+        for track in sgt_pattern.tracks.values():
+            for n in track.notes:
+                abs_t = n.bar * ticks_per_bar + n.tick_on
+                assert 0 <= abs_t < total_ticks
+
+    def test_velocity_curve_all_tracks(self, sgt_pattern):
+        total = sum(len(t.notes) for t in sgt_pattern.tracks.values())
+        count = op_velocity_curve(sgt_pattern, None, start_vel=30, end_vel=110)
+        assert count == total
+        # Every note should have been clamped into [1, 127]
+        for track in sgt_pattern.tracks.values():
+            for n in track.notes:
+                assert 1 <= n.velocity <= 127
+
+
 class TestEndToEndEdit:
 
     def test_edit_and_build_q7p(self, sgt_pattern, tmp_path):

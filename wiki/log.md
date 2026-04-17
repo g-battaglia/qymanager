@@ -2,6 +2,65 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29k | Editor: uniformità --all-tracks su humanize/velocity-curve/set-velocity
+
+### Obiettivo
+Continuazione autonoma. Dopo Session 29j che aveva introdotto `--all-tracks` solo su `shift-time`, estendere la stessa simmetria a tutti gli op che modificano velocity/timing per coerenza UX.
+
+### Refactor
+
+Nuovo helper condiviso in `midi_tools/pattern_editor.py`:
+
+```python
+def _resolve_target_tracks(pattern, track_idx):
+    if track_idx is None:
+        return list(pattern.tracks.values())
+    ...
+```
+
+Le 4 op pure (`op_set_velocity`, `op_humanize_velocity`, `op_humanize_timing`, `op_velocity_curve`) ora accettano `track_idx: Optional[int]` con `None` = tutte le tracce. Back-compat invariata: chiamate con int continuano a funzionare.
+
+CLI wiring: argparse + Typer ricevono flag `--all-tracks` (mutuamente esclusivo con `--track`) tramite helper `_resolve_track_arg` / `_resolve_target`.
+
+### Test coverage
+
+`tests/test_pattern_editor.py` da 55 → **59 test**:
+- `TestMultiTrackOps` (4): set-velocity/humanize/humanize-timing/velocity-curve su `track_idx=None` impattano tutte le tracce
+
+**Risultato suite completa**: 123/123 pytest verdi.
+
+### Workflow end-to-end validato
+
+```bash
+qymanager edit new-empty -o /tmp/multi.json --bars 4
+qymanager edit add-note /tmp/multi.json --track 0 --bar 0 --beat 0 --note 36
+qymanager edit add-note /tmp/multi.json --track 3 --bar 0 --beat 2 --note 60
+qymanager edit add-note /tmp/multi.json --track 5 --bar 1 --beat 1 --note 72
+qymanager edit set-velocity     /tmp/multi.json --all-tracks --velocity 88
+qymanager edit humanize         /tmp/multi.json --all-tracks --amount 10 --seed 1
+qymanager edit velocity-curve   /tmp/multi.json --all-tracks --start 50 --end 100
+```
+
+Output: "Applied … on all tracks, 3 notes" — 5 op su 21 ora supportano `--all-tracks`.
+
+### Wiki + STATUS
+
+- `wiki/pattern-editor.md` — 5 comandi multi-track, roadmap aggiornata (undo/redo #2, GUI #3)
+- `wiki/log.md` — entry session 29k
+- `STATUS.md` — 123 test, editor ~35%, uniformità multi-track
+
+### File modificati
+- `midi_tools/pattern_editor.py` — helper `_resolve_target_tracks` + `_resolve_track_arg`, 4 op refattorizzate, 4 subparser
+- `cli/commands/edit.py` — helper `_resolve_target`, 4 Typer command updated
+- `tests/test_pattern_editor.py` — class `TestMultiTrackOps` (4 test)
+
+### Limitazioni residue
+- No undo/redo (priorità #1 ora che multi-track è uniforme)
+- Hardware loopback test sempre non eseguito
+- `transpose`, `copy-bar`, `kit-remap` restano single-track (coerente con loro semantica)
+
+---
+
 ## [2026-04-17] session-29j | Editor: shift-time --all-tracks, merge (21 comandi)
 
 ### Obiettivo

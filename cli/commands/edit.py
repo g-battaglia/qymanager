@@ -179,64 +179,84 @@ def kit_remap_cmd(
     console.print(f"Remapped {count} drum notes {src} → {dst}")
 
 
+def _resolve_target(track: Optional[int], all_tracks: bool) -> Optional[int]:
+    if all_tracks and track is not None:
+        raise typer.BadParameter("use either --track or --all-tracks, not both")
+    if not all_tracks and track is None:
+        raise typer.BadParameter("either --track N or --all-tracks is required")
+    return None if all_tracks else track
+
+
 @edit_app.command("humanize")
 def humanize_cmd(
     input: str = typer.Argument(...),
-    track: int = typer.Option(..., "--track"),
+    track: Optional[int] = typer.Option(None, "--track"),
+    all_tracks: bool = typer.Option(False, "--all-tracks"),
     amount: int = typer.Option(..., "--amount"),
     seed: Optional[int] = typer.Option(None, "--seed"),
 ) -> None:
     """Randomize velocity ±amount."""
+    target = _resolve_target(track, all_tracks)
     pattern = load_pattern(input)
-    count = op_humanize_velocity(pattern, track, amount, seed=seed)
+    count = op_humanize_velocity(pattern, target, amount, seed=seed)
     save_pattern(pattern, input)
-    console.print(f"Humanized velocity (±{amount}) on {count} notes")
+    label = "all tracks" if target is None else f"track {target}"
+    console.print(f"Humanized velocity (±{amount}) on {label}, {count} notes")
 
 
 @edit_app.command("humanize-timing")
 def humanize_timing_cmd(
     input: str = typer.Argument(...),
-    track: int = typer.Option(..., "--track"),
+    track: Optional[int] = typer.Option(None, "--track"),
+    all_tracks: bool = typer.Option(False, "--all-tracks"),
     amount: int = typer.Option(..., "--amount", help="Max ±ticks jitter"),
     seed: Optional[int] = typer.Option(None, "--seed"),
 ) -> None:
     """Randomize tick_on ±amount ticks."""
+    target = _resolve_target(track, all_tracks)
     pattern = load_pattern(input)
-    kept = op_humanize_timing(pattern, track, amount, seed=seed)
+    kept = op_humanize_timing(pattern, target, amount, seed=seed)
     save_pattern(pattern, input)
-    console.print(f"Humanized timing (±{amount} ticks), {kept} notes kept")
+    label = "all tracks" if target is None else f"track {target}"
+    console.print(f"Humanized timing (±{amount} ticks) on {label}, {kept} notes kept")
 
 
 @edit_app.command("velocity-curve")
 def velocity_curve_cmd(
     input: str = typer.Argument(...),
-    track: int = typer.Option(..., "--track"),
+    track: Optional[int] = typer.Option(None, "--track"),
+    all_tracks: bool = typer.Option(False, "--all-tracks"),
     start: int = typer.Option(..., "--start", help="Start velocity 1-127"),
     end: int = typer.Option(..., "--end", help="End velocity 1-127"),
     bar_start: Optional[int] = typer.Option(None, "--bar-start"),
     bar_end: Optional[int] = typer.Option(None, "--bar-end"),
 ) -> None:
     """Apply a linear velocity ramp across the selected bars."""
+    target = _resolve_target(track, all_tracks)
     pattern = load_pattern(input)
-    count = op_velocity_curve(pattern, track, start, end,
+    count = op_velocity_curve(pattern, target, start, end,
                                bar_start=bar_start, bar_end=bar_end)
     save_pattern(pattern, input)
-    console.print(f"Applied velocity curve {start}→{end} on {count} notes")
+    label = "all tracks" if target is None else f"track {target}"
+    console.print(f"Applied velocity curve {start}→{end} on {label}, {count} notes")
 
 
 @edit_app.command("set-velocity")
 def set_velocity_cmd(
     input: str = typer.Argument(...),
-    track: int = typer.Option(..., "--track"),
+    track: Optional[int] = typer.Option(None, "--track"),
+    all_tracks: bool = typer.Option(False, "--all-tracks"),
     velocity: int = typer.Option(..., "--velocity"),
     bar: Optional[int] = typer.Option(None, "--bar"),
     note: Optional[int] = typer.Option(None, "--note"),
 ) -> None:
     """Set velocity on matching notes."""
+    target = _resolve_target(track, all_tracks)
     pattern = load_pattern(input)
-    changed = op_set_velocity(pattern, track, velocity, bar=bar, note_filter=note)
+    changed = op_set_velocity(pattern, target, velocity, bar=bar, note_filter=note)
     save_pattern(pattern, input)
-    console.print(f"Set velocity={velocity} on {changed} notes")
+    label = "all tracks" if target is None else f"track {target}"
+    console.print(f"Set velocity={velocity} on {label}, {changed} notes")
 
 
 @edit_app.command("add-note")

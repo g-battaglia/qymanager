@@ -158,32 +158,43 @@ def op_remove_notes(
 
 def op_set_velocity(
     pattern: QuantizedPattern,
-    track_idx: int,
+    track_idx: Optional[int],
     velocity: int,
     bar: Optional[int] = None,
     note_filter: Optional[int] = None,
 ) -> int:
-    """Set velocity on matching notes. Returns count changed."""
-    track = pattern.tracks.get(track_idx)
-    if track is None:
-        raise KeyError(f"Track {track_idx} not found")
+    """Set velocity on matching notes. track_idx=None → all tracks.
+    Returns total count changed."""
     if not (1 <= velocity <= 127):
         raise ValueError("velocity must be 1-127")
 
     changed = 0
-    for n in track.notes:
-        if bar is not None and n.bar != bar:
-            continue
-        if note_filter is not None and n.note != note_filter:
-            continue
-        n.velocity = velocity
-        changed += 1
+    for track in _resolve_target_tracks(pattern, track_idx):
+        for n in track.notes:
+            if bar is not None and n.bar != bar:
+                continue
+            if note_filter is not None and n.note != note_filter:
+                continue
+            n.velocity = velocity
+            changed += 1
     return changed
 
 
 def _track_idx_to_channel(track_idx: int) -> int:
     """Inverse of CHANNEL_TO_TRACK mapping (track_idx → MIDI channel)."""
     return 9 + track_idx  # ch 9..16 for tracks 0..7
+
+
+def _resolve_target_tracks(pattern: QuantizedPattern,
+                             track_idx: Optional[int]) -> List:
+    """If track_idx is None, return all pattern tracks; else the single
+    requested track. Raises KeyError if a specific idx is not present."""
+    if track_idx is None:
+        return list(pattern.tracks.values())
+    t = pattern.tracks.get(track_idx)
+    if t is None:
+        raise KeyError(f"Track {track_idx} not found")
+    return [t]
 
 
 def op_shift_time(
@@ -303,42 +314,37 @@ def op_kit_remap(
 
 def op_humanize_velocity(
     pattern: QuantizedPattern,
-    track_idx: int,
+    track_idx: Optional[int],
     amount: int,
     seed: Optional[int] = None,
 ) -> int:
-    """Add random ±amount to velocity. Deterministic if seed is given.
-    Velocity is clamped to [1, 127]. Returns count modified."""
+    """Add random ±amount to velocity. track_idx=None → all tracks.
+    Deterministic if seed is given. Velocity clamped to [1, 127].
+    Returns total count modified."""
     import random
-    track = pattern.tracks.get(track_idx)
-    if track is None:
-        raise KeyError(f"Track {track_idx} not found")
     if amount < 0:
         raise ValueError("amount must be non-negative")
 
     rng = random.Random(seed) if seed is not None else random.Random()
     count = 0
-    for n in track.notes:
-        delta = rng.randint(-amount, amount)
-        n.velocity = max(1, min(127, n.velocity + delta))
-        count += 1
+    for track in _resolve_target_tracks(pattern, track_idx):
+        for n in track.notes:
+            delta = rng.randint(-amount, amount)
+            n.velocity = max(1, min(127, n.velocity + delta))
+            count += 1
     return count
 
 
 def op_humanize_timing(
     pattern: QuantizedPattern,
-    track_idx: int,
+    track_idx: Optional[int],
     amount_ticks: int,
     seed: Optional[int] = None,
 ) -> int:
-    """Add random ±amount_ticks to tick_on. Notes that would cross bar
-    boundaries or fall outside [0, total_ticks) are dropped. Notes stay
-    on the tick grid only approximately (fine subdivision).
-    Returns count kept."""
+    """Add random ±amount_ticks to tick_on. track_idx=None → all tracks.
+    Notes that fall outside [0, total_ticks) are dropped.
+    Returns total count kept."""
     import random
-    track = pattern.tracks.get(track_idx)
-    if track is None:
-        raise KeyError(f"Track {track_idx} not found")
     if amount_ticks < 0:
         raise ValueError("amount_ticks must be non-negative")
 
@@ -347,39 +353,39 @@ def op_humanize_timing(
     ticks_per_bar = pattern.bar_ticks
     total_ticks = pattern.bar_count * ticks_per_bar
 
-    kept: List[QuantizedNote] = []
-    for n in track.notes:
-        delta = rng.randint(-amount_ticks, amount_ticks)
-        abs_tick = n.bar * ticks_per_bar + n.tick_on + delta
-        if abs_tick < 0 or abs_tick >= total_ticks:
-            continue
-        new_bar = abs_tick // ticks_per_bar
-        new_tick_in_bar = abs_tick % ticks_per_bar
-        n.bar = new_bar
-        n.tick_on = new_tick_in_bar
-        n.beat = new_tick_in_bar // pattern.ppqn
-        n.sub = (new_tick_in_bar % pattern.ppqn) // grid_ticks
-        kept.append(n)
-    track.notes = kept
-    track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
-    return len(kept)
+    total_kept = 0
+    for track in _resolve_target_tracks(pattern, track_idx):
+        kept: List[QuantizedNote] = []
+        for n in track.notes:
+            delta = rng.randint(-amount_ticks, amount_ticks)
+            abs_tick = n.bar * ticks_per_bar + n.tick_on + delta
+            if abs_tick < 0 or abs_tick >= total_ticks:
+                continue
+            new_bar = abs_tick // ticks_per_bar
+            new_tick_in_bar = abs_tick % ticks_per_bar
+            n.bar = new_bar
+            n.tick_on = new_tick_in_bar
+            n.beat = new_tick_in_bar // pattern.ppqn
+            n.sub = (new_tick_in_bar % pattern.ppqn) // grid_ticks
+            kept.append(n)
+        track.notes = kept
+        track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+        total_kept += len(kept)
+    return total_kept
 
 
 def op_velocity_curve(
     pattern: QuantizedPattern,
-    track_idx: int,
+    track_idx: Optional[int],
     start_vel: int,
     end_vel: int,
     bar_start: Optional[int] = None,
     bar_end: Optional[int] = None,
 ) -> int:
     """Apply a linear velocity ramp from start_vel to end_vel across
-    the selected bar range (inclusive). If bar_start/bar_end are None,
-    the full pattern range is used. Velocity is clamped to [1, 127].
-    Returns count modified."""
-    track = pattern.tracks.get(track_idx)
-    if track is None:
-        raise KeyError(f"Track {track_idx} not found")
+    the selected bar range (inclusive). track_idx=None → all tracks.
+    If bar_start/bar_end are None, the full pattern range is used.
+    Velocity clamped to [1, 127]. Returns total count modified."""
     if not (1 <= start_vel <= 127) or not (1 <= end_vel <= 127):
         raise ValueError("velocities must be in [1, 127]")
 
@@ -396,14 +402,15 @@ def op_velocity_curve(
     span = max(1, t_end - t_start)
 
     count = 0
-    for n in track.notes:
-        if n.bar < b0 or n.bar > b1:
-            continue
-        abs_tick = n.bar * ticks_per_bar + n.tick_on
-        frac = (abs_tick - t_start) / span
-        interp = start_vel + (end_vel - start_vel) * frac
-        n.velocity = max(1, min(127, int(round(interp))))
-        count += 1
+    for track in _resolve_target_tracks(pattern, track_idx):
+        for n in track.notes:
+            if n.bar < b0 or n.bar > b1:
+                continue
+            abs_tick = n.bar * ticks_per_bar + n.tick_on
+            frac = (abs_tick - t_start) / span
+            interp = start_vel + (end_vel - start_vel) * frac
+            n.velocity = max(1, min(127, int(round(interp))))
+            count += 1
     return count
 
 
@@ -634,11 +641,23 @@ def cmd_remove_note(args: argparse.Namespace) -> int:
     return 0
 
 
+def _resolve_track_arg(args: argparse.Namespace) -> Optional[int]:
+    """Resolve --track / --all-tracks into a track index or None."""
+    all_flag = getattr(args, "all_tracks", False)
+    track = getattr(args, "track", None)
+    if all_flag and track is not None:
+        raise ValueError("use either --track or --all-tracks, not both")
+    if not all_flag and track is None:
+        raise ValueError("either --track N or --all-tracks is required")
+    return None if all_flag else track
+
+
 def cmd_set_velocity(args: argparse.Namespace) -> int:
+    target = _resolve_track_arg(args)
     pattern = load_pattern(args.input)
     changed = op_set_velocity(
         pattern,
-        track_idx=args.track,
+        track_idx=target,
         velocity=args.velocity,
         bar=args.bar,
         note_filter=args.note,
@@ -714,29 +733,35 @@ def cmd_kit_remap(args: argparse.Namespace) -> int:
 
 
 def cmd_humanize(args: argparse.Namespace) -> int:
+    target = _resolve_track_arg(args)
     pattern = load_pattern(args.input)
-    count = op_humanize_velocity(pattern, args.track, args.amount, seed=args.seed)
+    count = op_humanize_velocity(pattern, target, args.amount, seed=args.seed)
     save_pattern(pattern, args.input)
-    print(f"Humanized velocity (±{args.amount}) on {count} notes")
+    label = "all tracks" if target is None else f"track {target}"
+    print(f"Humanized velocity (±{args.amount}) on {label}, {count} notes")
     return 0
 
 
 def cmd_humanize_timing(args: argparse.Namespace) -> int:
+    target = _resolve_track_arg(args)
     pattern = load_pattern(args.input)
-    kept = op_humanize_timing(pattern, args.track, args.amount, seed=args.seed)
+    kept = op_humanize_timing(pattern, target, args.amount, seed=args.seed)
     save_pattern(pattern, args.input)
-    print(f"Humanized timing (±{args.amount} ticks) on track {args.track}, {kept} notes kept")
+    label = "all tracks" if target is None else f"track {target}"
+    print(f"Humanized timing (±{args.amount} ticks) on {label}, {kept} notes kept")
     return 0
 
 
 def cmd_velocity_curve(args: argparse.Namespace) -> int:
+    target = _resolve_track_arg(args)
     pattern = load_pattern(args.input)
     count = op_velocity_curve(
-        pattern, args.track, args.start, args.end,
+        pattern, target, args.start, args.end,
         bar_start=args.bar_start, bar_end=args.bar_end,
     )
     save_pattern(pattern, args.input)
-    print(f"Applied velocity curve {args.start}→{args.end} on {count} notes")
+    label = "all tracks" if target is None else f"track {target}"
+    print(f"Applied velocity curve {args.start}→{args.end} on {label}, {count} notes")
     return 0
 
 
@@ -889,7 +914,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_vel = sub.add_parser("set-velocity", help="Set velocity on matching notes")
     p_vel.add_argument("input")
-    p_vel.add_argument("--track", type=int, required=True)
+    p_vel.add_argument("--track", type=int, default=None)
+    p_vel.add_argument("--all-tracks", action="store_true",
+                        help="Apply to every track")
     p_vel.add_argument("--velocity", type=int, required=True)
     p_vel.add_argument("--bar", type=int)
     p_vel.add_argument("--note", type=int, help="Match only this MIDI note")
@@ -949,7 +976,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_hum = sub.add_parser("humanize",
                            help="Random ±amount velocity variation")
     p_hum.add_argument("input")
-    p_hum.add_argument("--track", type=int, required=True)
+    p_hum.add_argument("--track", type=int, default=None)
+    p_hum.add_argument("--all-tracks", action="store_true",
+                       help="Apply to every track")
     p_hum.add_argument("--amount", type=int, required=True,
                        help="Max absolute deviation (e.g. 10 → ±10)")
     p_hum.add_argument("--seed", type=int, default=None,
@@ -959,7 +988,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_hut = sub.add_parser("humanize-timing",
                             help="Random ±amount_ticks jitter on tick_on")
     p_hut.add_argument("input")
-    p_hut.add_argument("--track", type=int, required=True)
+    p_hut.add_argument("--track", type=int, default=None)
+    p_hut.add_argument("--all-tracks", action="store_true",
+                        help="Apply to every track")
     p_hut.add_argument("--amount", type=int, required=True,
                         help="Max absolute tick deviation (e.g. 30 → ±30 ticks)")
     p_hut.add_argument("--seed", type=int, default=None,
@@ -969,7 +1000,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_vcurve = sub.add_parser("velocity-curve",
                                help="Linear velocity ramp across bar range")
     p_vcurve.add_argument("input")
-    p_vcurve.add_argument("--track", type=int, required=True)
+    p_vcurve.add_argument("--track", type=int, default=None)
+    p_vcurve.add_argument("--all-tracks", action="store_true",
+                          help="Apply to every track")
     p_vcurve.add_argument("--start", type=int, required=True,
                           help="Starting velocity (1-127)")
     p_vcurve.add_argument("--end", type=int, required=True,

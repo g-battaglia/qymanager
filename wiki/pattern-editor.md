@@ -2,7 +2,7 @@
 
 CLI editor che opera sopra [Pipeline B](conversion-roadmap.md#pipeline-b-capture-based-new-session-19--recommended--validated) per modificare pattern catturati dal QY70 e rigenerare Q7P + SMF.
 
-**Status**: Prototipo funzionante (Session 29j, 2026-04-17) — 55 test verdi, 21 comandi CLI.
+**Status**: Prototipo funzionante (Session 29k, 2026-04-17) — 59 test verdi (123 suite), 21 comandi CLI. 5 comandi multi-track (`--all-tracks`): `shift-time`, `humanize`, `humanize-timing`, `velocity-curve`, `set-velocity`.
 
 Accessibile sia via modulo (`python3 -m midi_tools.pattern_editor <cmd>`) sia via CLI principale (`qymanager edit <cmd>`); le due interfacce condividono le stesse operazioni `op_*` pure.
 
@@ -39,10 +39,10 @@ Entry point integrato: `qymanager edit <command>` (stessa semantica via Typer)
 | `copy-bar` | Copia contenuto bar (`--append` per merge) | `copy-bar pattern.json --track 0 --src 0 --dst 2` |
 | `clear-bar` | Rimuove tutte le note di un bar | `clear-bar pattern.json --track 0 --bar 3` |
 | `kit-remap` | Rimappa nota drum-kit (es. 36→38) | `kit-remap pattern.json --track 0 --src 36 --dst 38` |
-| `humanize` | Random ±N velocity (seed opzionale) | `humanize pattern.json --track 0 --amount 8 --seed 42` |
-| `humanize-timing` | Random ±N ticks su tick_on (seed opz.) | `humanize-timing pattern.json --track 0 --amount 20 --seed 42` |
-| `velocity-curve` | Ramp velocity lineare su range bar | `velocity-curve pattern.json --track 0 --start 40 --end 120 --bar-start 0 --bar-end 3` |
-| `set-velocity` | Modifica velocity (filtri: `--bar`, `--note`) | `set-velocity pattern.json --track 0 --velocity 90 --bar 0` |
+| `humanize` | Random ±N velocity (seed opz., `--all-tracks` per tutte) | `humanize pattern.json --track 0 --amount 8 --seed 42` / `--all-tracks --amount 10` |
+| `humanize-timing` | Random ±N ticks su tick_on (seed opz., `--all-tracks`) | `humanize-timing pattern.json --track 0 --amount 20 --seed 42` |
+| `velocity-curve` | Ramp velocity lineare su range bar (`--all-tracks` possibile) | `velocity-curve pattern.json --all-tracks --start 40 --end 120` |
+| `set-velocity` | Modifica velocity (filtri: `--bar`, `--note`, `--all-tracks`) | `set-velocity pattern.json --all-tracks --velocity 88` |
 | `set-tempo` | Cambia BPM | `set-tempo pattern.json 120` |
 | `set-name` | Cambia nome pattern | `set-name pattern.json MYEDIT01` |
 | `resize` | Cambia bar count (overflow droppato) | `resize pattern.json --bars 2` |
@@ -103,7 +103,7 @@ File principali:
 | `midi_tools/build_q7p_5120.py` | Costruzione Q7P da pattern |
 | `midi_tools/capture_to_q7p.py` | SMF writer + D0/E0 encoder |
 | `cli/commands/edit.py` | Typer sub-app (`qymanager edit <cmd>`), wrap pure delle stesse `op_*` |
-| `tests/test_pattern_editor.py` | 55 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
+| `tests/test_pattern_editor.py` | 59 test: roundtrip, ciascuna op, multi-track `--all-tracks`, CLI end-to-end, Q7P build |
 
 ## Limitazioni prototipo
 
@@ -116,5 +116,5 @@ File principali:
 
 1. **Hardware test**: caricare `sgt_edited.Q7P` su QY700 con `safe_q7p_tester.py`, verificare playback
 2. **Undo/redo**: snapshot automatico prima di ogni op modificativa
-3. **Multi-track humanize**: `humanize --all`, `velocity-curve --all`
-4. **GUI**: prototipo TUI (textual) o web (Flask+D3) dopo consolidamento CLI
+3. **GUI**: prototipo TUI (textual) o web (Flask+D3) dopo consolidamento CLI
+4. **Batch / pipeline**: file `.edit.txt` con lista comandi per applicare più op in sequenza
