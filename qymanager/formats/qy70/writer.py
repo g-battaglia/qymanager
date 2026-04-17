@@ -2,6 +2,7 @@
 QY70 SysEx file writer.
 
 Writes Pattern objects to .syx files in QY70 bulk dump format.
+Also provides emit_udm_to_syx() for the Unified Data Model Device.
 """
 
 from pathlib import Path
@@ -11,6 +12,8 @@ from qymanager.models.pattern import Pattern
 from qymanager.models.section import Section, SectionType
 from qymanager.utils.yamaha_7bit import encode_7bit
 from qymanager.utils.checksum import calculate_yamaha_checksum
+
+from qymanager.model import Device, DeviceModel
 
 
 class QY70Writer:
@@ -289,3 +292,36 @@ class QY70Writer:
         msg.append(self.SYSEX_END)
 
         return bytes(msg)
+
+
+def emit_udm_to_syx(device: Device) -> bytes:
+    """Serialize a UDM Device back to QY70 .syx bulk-dump bytes.
+
+    Relies on Device._raw_passthrough for lossless roundtrip — the dense
+    bitstream QY70 encoding is not yet fully reversible from UDM alone.
+    When raw data is absent, raises NotImplementedError to signal that
+    UDM-only .syx synthesis requires completion of the dense encoder
+    (project pilastro P4d).
+
+    Args:
+        device: Device with model=QY70.
+
+    Returns:
+        .syx bytes (the original raw dump if available).
+
+    Raises:
+        ValueError: If device.model is not QY70.
+        NotImplementedError: If no _raw_passthrough is available
+            (dense bitstream synthesis from UDM is a research task).
+    """
+    if device.model != DeviceModel.QY70:
+        raise ValueError(f"emit_udm_to_syx requires QY70, got {device.model}")
+
+    if device._raw_passthrough:
+        return bytes(device._raw_passthrough)
+
+    raise NotImplementedError(
+        "UDM → .syx emission without _raw_passthrough requires the dense "
+        "bitstream encoder (Pipeline A research). For now, parse a real .syx "
+        "to obtain a Device with raw bytes, then re-emit."
+    )

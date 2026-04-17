@@ -2,7 +2,8 @@
 QY70 SysEx file reader.
 
 Reads .syx files containing QY70 style/pattern bulk dumps and
-converts them to the common Pattern model.
+converts them to the common Pattern model (legacy) or the
+Unified Data Model (UDM) Device via parse_syx_to_udm().
 """
 
 from pathlib import Path
@@ -12,6 +13,17 @@ from qymanager.models.pattern import Pattern, PatternSettings
 from qymanager.models.section import Section, SectionType
 from qymanager.models.track import Track, TrackSettings
 from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage
+
+from qymanager.model import (
+    Device,
+    DeviceModel,
+    Pattern as UdmPattern,
+    PatternTrack,
+    Section as UdmSection,
+    SectionName,
+    TimeSig,
+    Voice,
+)
 
 
 class QY70Reader:
@@ -260,3 +272,105 @@ class QY70Reader:
             )
         except Exception:
             return False
+
+
+_QY70_SECTION_MAP: dict[int, SectionName] = {
+    1: SectionName.MAIN_A,
+    2: SectionName.MAIN_B,
+    3: SectionName.FILL_AA,
+    4: SectionName.FILL_BB,
+}
+
+
+def parse_syx_to_udm(data: bytes) -> Device:
+    """Parse QY70 .syx bulk dump data into a UDM Device.
+
+    Extracts section/track structure via SysExParser (AL = section*8 + track)
+    and produces Device(model=QY70) with one Pattern containing up to 6
+    sections × 8 tracks. Sparse data (no voice/volume/pan) → default values.
+    Raw bytes preserved in Device._raw_passthrough for lossless roundtrip.
+
+    Args:
+        data: Raw .syx file contents.
+
+    Returns:
+        Device with model=QY70 containing one Pattern.
+
+    Raises:
+        ValueError: If data contains no valid QY70 bulk-dump messages.
+    """
+    parser = SysExParser()
+    messages = parser.parse_bytes(data)
+
+    style_messages = [
+        m for m in messages if m.is_style_data and m.decoded_data is not None
+    ]
+    if not style_messages:
+        raise ValueError("No QY70 style-data bulk-dump messages found")
+
+    section_data: dict[int, bytearray] = {}
+    for msg in style_messages:
+        al = msg.address_low
+        if al not in section_data:
+            section_data[al] = bytearray()
+        if msg.decoded_data is not None:
+            section_data[al].extend(msg.decoded_data)
+
+    pattern_name = ""
+    if 0x7F in section_data:
+        header_bytes = bytes(section_data[0x7F])
+        for start in range(min(len(header_bytes), 32)):
+            chunk = header_bytes[start : start + 10]
+            if all(0x20 <= b < 0x7F for b in chunk) and len(chunk) == 10:
+                pattern_name = chunk.decode("ascii").rstrip()
+                break
+
+    udm_pattern = UdmPattern(
+        index=0,
+        name=pattern_name[:10] if pattern_name else "",
+        tempo_bpm=120.0,
+        measures=4,
+        time_sig=TimeSig(numerator=4, denominator=4),
+    )
+
+    seen_section_indices: set[int] = set()
+    for al in section_data:
+        if al == 0x7F:
+            continue
+        seen_section_indices.add(al // 8)
+
+    for sec_idx in sorted(seen_section_indices):
+        section_name = _QY70_SECTION_MAP.get(sec_idx)
+        if section_name is None:
+            continue
+
+        udm_tracks: list[PatternTrack] = []
+        for track_idx in range(8):
+            al = sec_idx * 8 + track_idx
+            has_data = al in section_data and len(section_data[al]) > 0
+            default_channel = 9 if track_idx < 2 else max(0, track_idx)
+            udm_tracks.append(
+                PatternTrack(
+                    midi_channel=min(15, default_channel),
+                    voice=Voice(),
+                    mute=not has_data,
+                    volume=100,
+                    pan=64,
+                    reverb_send=40,
+                    chorus_send=0,
+                )
+            )
+
+        udm_pattern.sections[section_name] = UdmSection(
+            name=section_name,
+            tracks=udm_tracks,
+            enabled=True,
+        )
+
+    device = Device(
+        model=DeviceModel.QY70,
+        patterns=[udm_pattern],
+        source_format="syx",
+        _raw_passthrough=data,
+    )
+    return device
