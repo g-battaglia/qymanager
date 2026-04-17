@@ -2,6 +2,7 @@
 QY700 Q7P file writer.
 
 Writes Pattern objects to .Q7P binary format for loading into QY700.
+Also provides emit_udm_to_q7p() for Unified Data Model Devices.
 """
 
 from pathlib import Path
@@ -10,6 +11,9 @@ import struct
 
 from qymanager.models.pattern import Pattern
 from qymanager.models.section import Section, SectionType
+
+from qymanager.model import Device, SectionName
+from qymanager.analysis.q7p_analyzer import Q7PAnalyzer
 
 
 class QY700Writer:
@@ -241,3 +245,103 @@ def create_empty_q7p() -> bytes:
     pattern = Pattern.create_empty()
     writer = QY700Writer()
     return writer.to_bytes(pattern)
+
+
+_UDM_SECTION_ORDER: list[SectionName] = [
+    SectionName.MAIN_A,
+    SectionName.MAIN_B,
+    SectionName.MAIN_C,
+    SectionName.MAIN_D,
+    SectionName.FILL_AA,
+    SectionName.FILL_BB,
+    SectionName.FILL_CC,
+    SectionName.FILL_DD,
+]
+
+
+_TIME_SIG_RAW: dict[tuple[int, int], int] = {
+    (2, 4): 0x0C,
+    (3, 4): 0x14,
+    (4, 4): 0x1C,
+    (5, 4): 0x24,
+    (6, 4): 0x2C,
+    (3, 8): 0x1A,
+    (6, 8): 0x22,
+    (12, 8): 0x32,
+}
+
+
+def emit_udm_to_q7p(device: Device) -> bytes:
+    """Serialize a UDM Device into Q7P binary data.
+
+    Uses Device._raw_passthrough as scaffold when available; falls back to a
+    zero-filled 3072-byte buffer with YQ7PAT header otherwise. Writes the
+    UDM-managed fields (pattern name, tempo, time-sig, per-track voice +
+    volume/pan/reverb-send/chorus-send) at the offsets documented in
+    Q7PAnalyzer.OFFSETS.
+
+    Args:
+        device: Device with model=QY700 containing at least one Pattern.
+
+    Returns:
+        Q7P bytes (3072 or 5120 depending on scaffold).
+
+    Raises:
+        ValueError: If the device has no patterns.
+    """
+    if not device.patterns:
+        raise ValueError("Device has no patterns to emit")
+
+    pattern = device.patterns[0]
+
+    if device._raw_passthrough and len(device._raw_passthrough) in (3072, 5120):
+        buffer = bytearray(device._raw_passthrough)
+    else:
+        buffer = bytearray(3072)
+        buffer[0:16] = b"YQ7PAT     V1.00"
+        buffer[0x10] = pattern.index & 0xFF
+        buffer[0x11] = 0x02
+
+    file_size = len(buffer)
+    offsets = Q7PAnalyzer.OFFSETS.get(file_size, Q7PAnalyzer.OFFSETS[3072])
+
+    name = (pattern.name or "")[:10].ljust(10)
+    name_offset = offsets["PATTERN_NAME"]
+    name_bytes = name.encode("ascii", errors="replace")
+    buffer[name_offset : name_offset + 10] = name_bytes[:10]
+
+    tempo_offset = offsets["TEMPO_VALUE"]
+    tempo_raw = max(0, min(0xFFFF, int(round(pattern.tempo_bpm * 10))))
+    struct.pack_into(">H", buffer, tempo_offset, tempo_raw)
+
+    ts_tuple = (pattern.time_sig.numerator, pattern.time_sig.denominator)
+    ts_byte = _TIME_SIG_RAW.get(ts_tuple)
+    if ts_byte is not None:
+        buffer[offsets["TIME_SIG"]] = ts_byte
+
+    bank_msb_start = offsets["BANK_MSB_START"]
+    bank_lsb_start = offsets["BANK_LSB_START"]
+    program_start = offsets["PROGRAM_START"]
+    volume_start = offsets["VOLUME_DATA_START"]
+    pan_start = offsets["PAN_DATA_START"]
+    reverb_start = offsets["REVERB_DATA_START"]
+    chorus_start = offsets["CHORUS_DATA_START"]
+
+    first_section = None
+    for sname in _UDM_SECTION_ORDER:
+        sec = pattern.sections.get(sname)
+        if sec is not None and sec.enabled and sec.tracks:
+            first_section = sec
+            break
+
+    if first_section is not None:
+        for ti, track in enumerate(first_section.tracks[:16]):
+            buffer[bank_msb_start + ti] = track.voice.bank_msb & 0x7F
+            buffer[bank_lsb_start + ti] = track.voice.bank_lsb & 0x7F
+            buffer[program_start + ti] = track.voice.program & 0x7F
+            buffer[volume_start + ti] = track.volume & 0x7F
+            buffer[pan_start + ti] = track.pan & 0x7F
+            buffer[reverb_start + ti] = track.reverb_send & 0x7F
+            buffer[chorus_start + ti] = track.chorus_send & 0x7F
+
+    return bytes(buffer)
