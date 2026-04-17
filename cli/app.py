@@ -19,6 +19,15 @@ from cli.commands.phrase import phrase
 from cli.commands.edit import edit_app
 from cli.commands.edit_field import field_emit_xg, field_get, field_set
 from cli.commands.realtime import app as realtime_app
+from cli.commands.structure import (
+    chord_add,
+    chord_list,
+    pattern_list,
+    pattern_set,
+    phrase_list,
+    song_list,
+    song_set,
+)
 from cli.commands.udm_convert import udm_convert
 from cli.commands.xg import app as xg_app
 
@@ -51,6 +60,13 @@ app.command(name="field-get")(field_get)
 app.command(name="field-emit-xg")(field_emit_xg)
 app.add_typer(realtime_app, name="realtime")
 app.command(name="udm-convert")(udm_convert)
+app.command(name="pattern-set")(pattern_set)
+app.command(name="pattern-list")(pattern_list)
+app.command(name="chord-add")(chord_add)
+app.command(name="chord-list")(chord_list)
+app.command(name="song-set")(song_set)
+app.command(name="song-list")(song_list)
+app.command(name="phrase-list")(phrase_list)
 
 
 @app.command()
