@@ -1,272 +1,170 @@
-# PROMPT.md — Ralph loop instruction per qyconv-builder
+# PROMPT.md — Ralph loop instruction per qyconv-web
 
-> **Come usare**: questo file contiene il prompt da passare al comando `ralph` per invocare iterativamente l'agente `qyconv-builder` (definito in `.opencode/agents/qyconv-builder.md`) fino al completamento integrale di `PLAN.md`.
+> **Come usare**: questo file contiene il prompt da passare al comando `ralph` per
+> invocare iterativamente l'agente `qyconv-web` (definito in `.opencode/agents/qyconv-web.md`)
+> fino al completamento integrale della web GUI v1.0.
 >
-> **Modello agente**: `zai-coding-plan/glm-5.1` (GLM 5.1)
+> **Modello**: `zai-coding-plan/glm-5.1` (GLM 5.1).
 >
 > **Comando**:
 > ```bash
-> ralph --agent qyconv-builder --prompt "$(cat PROMPT.md)"
+> ralph --agent qyconv-web --prompt "$(cat PROMPT.md)"
 > ```
 >
-> Ogni iterazione ralph esegue UN micro-step del piano (1 sotto-fase, 1-3 commit), committa, e termina. Il loop continua fino a raggiungimento del criterio di stop.
+> Ogni iterazione esegue UN task granulare (tipicamente 1 task di `PROGRESS.md`, con
+> test + commit atomico). Il loop continua finché tutti i task sono `[x]` / `[~]`.
 
 ---
 
 ## Prompt
 
-Sei l'executor ossessivo del progetto QYConv. Il tuo compito è **avanzare il piano** definito in `PLAN.md` di un micro-step alla volta, in loop, fino al completamento integrale.
+Sei l'**executor del web GUI editor** del progetto QYConv. Costruisci la web GUI v1.0 sopra
+il core Python già pronto (UDM + parser + editor + converter + realtime, 428 test verdi).
+
+Il tuo compito è **avanzare `PROGRESS.md` di un task alla volta**, commit atomico, test
+verdi, fino a completamento. Il loop ralph ti richiama automaticamente.
 
 ### Contesto
 
-Il progetto mira a costruire una suite integrale di controllo programmatico dei sequencer Yamaha QY70 e QY700:
-1. **Converter perfetto** QY70 ↔ QY700 con mapping strutturale completo e lossy granulare
-2. **Editor integrale** di TUTTI i parametri, offline (file `.syx` / `.q7p` / `.q7a`) e realtime (XG Parameter Change MIDI)
-3. **Reverse engineering residuo** ossessivo: voice offsets Q7P, phrase library 4167↔3876, chord transposition layer, dense bitstream encoding, formato Q7A
+Il core Python è completo:
+- `qymanager.formats.io.load_device` / `save_device`
+- `qymanager.editor.ops.set_field` / `apply_edits` / `make_xg_messages`
+- `qymanager.editor.schema.validate` / `encode_xg` + `_FIXED_SPECS` / `_MULTI_PART_SPECS` / `_DRUM_NOTE_SPECS`
+- `qymanager.editor.realtime.RealtimeSession`
+- `qymanager.converters.udm_convert.convert_file`
+- `qymanager.converters.lossy_policy.apply_policy`
+- `qymanager.model.serialization.udm_to_dict` / `device_to_json`
+- `Device.validate()`
 
-**Stato oggi** (post Session 30i + audit 2026-04-17):
-- Pipeline B QY70 → QY700 production-ready, 164 test verdi (flat in `tests/`)
-- Pipeline A bloccata al 10% (dense encoding)
-- Editor CLI 21 sub-command, solo pattern/tempo
-- 20+ pagine wiki tecniche
-- Hardware sempre disponibile: QY70 + QY700 primario + QY700 secondario (yolo)
-- **UDM dataclass già esistono** in `qymanager/model/` (17 file). Modello **legacy** `qymanager/models/` **plurale** ancora usato dai parser → F1 è "migrazione parser legacy → UDM", NON "creazione schema"
-- File reali: `reader.py`/`writer.py` (non `q7p_reader.py`), `qymanager/utils/yamaha_7bit.py` (non `seven_bit_codec.py`)
-- `midi_tools/safe_q7p_tester.py`, `midi_tools/ground_truth_analyzer.py` già esistenti
+La GUI web è un **thin HTTP wrapper** (FastAPI) + **SPA React** (Vite + TS + shadcn +
+TanStack Query) + comando `qymanager serve` integrato.
 
-Dettagli completi: legge `STATUS.md` e `PLAN.md`.
+Il piano è in `PLAN/` (overview + 9 fasi W1-W9 + verification). I task granulari sono in
+`PROGRESS.md`.
 
 ### Istruzioni per ogni iterazione
 
-**Step 1 — Orientati** (SEMPRE come prima cosa):
+**Step 1 — Orientati** (SEMPRE prima cosa):
 
 ```bash
 cd /Volumes/Data/DK/XG/T700/qyconv
 export UV_LINK_MODE=copy
 
-# Leggi stato globale
-cat STATUS.md
-head -250 PLAN.md
-tail -200 wiki/log.md
-cat wiki/index.md
-git log --oneline -30
+cat PROGRESS.md
+ls PLAN/
+cat PLAN/00-overview.md | head -100
+git log --oneline -15
 git status
 ```
 
-Comprendi:
-- Qual è la fase corrente nel piano (F1-F12 secondo `PLAN.md` sezione 7.1 "Timeline")
-- Quale sotto-fase è l'ultima chiusa (dal log)
-- Quale sotto-fase è la prossima da aprire
-
 **Step 2 — Identifica il prossimo task**:
 
-Segui la timeline `PLAN.md` in ordine:
-- **F1** UDM schema + Q7P/syx sparse UDM-aware (~4-5 sessioni)
-- **F2** SMF + XG bulk parser UDM + roundtrip test (~3-4)
-- **F3** Editor offline System/Part/Drum/Effect CLI (~4-6)
-- **F4** Editor offline Song/Pattern/Chord/Groove/Phrase CLI (~4-6)
-- **F5** Editor realtime XG emit + --realtime flag (~3-4)
-- **F6** P4a Voice offsets Q7P RE hardware yolo (~5-10)
-- **F7** P4b Phrase library mapping integrale (~2-4)
-- **F8** P4c Chord transposition layer RE (~5-10)
-- **F9** Converter UDM-based + lossy granulare + companion (~3-5)
-- **F10** P4e Q7A format RE (~3-5)
-- **F11** Hardware test suite completa (~2-4)
-- **F12** Consolidamento + preparazione open-source (~2-3)
-- **F13** (parallelo 1-su-5) P4d Dense bitstream RE (~10-30)
+- Primo `[ ]` sequenziale in `PROGRESS.md`
+- Identifica la fase corrente (W1..W9)
+- Leggi il file `PLAN/W<N>-*.md` della fase corrente per dettagli implementativi
 
-Seleziona **UN micro-step** (non più) della fase corrente. Esempi di micro-step:
-- "Estendere dataclass `qymanager/model/system.py` aggiungendo campo X + test (schema già esistente, non ricreare)"
-- "Rifattorizzare `qymanager/formats/qy700/reader.py` per importare `qymanager.model` (UDM) invece di `qymanager.models` (legacy) e restituire `Device`"
-- "Aggiungere comando CLI `qymanager system set master-tune N` (nuovo file `cli/commands/system.py`)"
-- "Cattura ground truth GT_A (CHD2 C major) dal QY70 via `capture_dump.py`"
-- "RE voice offsets: test sweep su QY700 secondario con `safe_q7p_tester.py` (già esistente)"
+**Step 3 — Implementa UN task** (non più):
 
-**Step 3 — Pianifica il micro-step**:
+- Scrivi codice seguendo il template nel `PLAN/W<N>-*.md`
+- Aggiungi test (backend: pytest + TestClient; frontend: Vitest + RTL)
+- Verifica:
+  ```bash
+  uv run pytest tests/web/ -v              # backend test nuovi
+  uv run pytest                            # full regression (428 baseline + nuovi)
+  uv run ruff check web/backend tests/web
+  uv run black --check web/backend tests/web
+  # (dopo W4 in poi)
+  cd web/frontend && npm test && npm run typecheck && cd ../..
+  ```
 
-Scrivi mentalmente (non su file):
-- Quali file crei/modifichi
-- Quali test aggiungi
-- Quali doc aggiornare (wiki + log)
-- Quale messaggio di commit
+**Step 4 — Aggiorna progresso**:
 
-Se il micro-step è più grande di 1-3 file + 5-20 test, **dividilo** e fai solo la prima parte.
+- Marca il task `[x]` in `PROGRESS.md`
+- Se scopri un sotto-task nuovo: aggiungilo con `[ ]` + note
+- Se un task diventa obsoleto: marcalo `[~]` con nota "skipped — <ragione>"
 
-**Step 4 — Implementa**:
-
-Esegui le modifiche seguendo le **regole critiche** dell'agente `qyconv-builder`:
-
-- Hardware safety: **mai** scrivere offset Q7P non confermati sul QY700 primario
-- Code style: Black line-100, Ruff lint, mypy type check
-- No commenti WHAT, solo WHY non ovvio
-- No scope creep, no refactor fuori task
-- Test-first quando possibile (TDD per parser)
-
-Comandi utili:
-```bash
-uv run pytest                           # Test suite (oggi flat in tests/)
-uv run pytest tests/ -k "udm" -v        # Filter per topic finché subdir non esistono
-uv run pytest tests/ -k "property" -v   # Property (dopo creazione tests/property/)
-uv run pytest tests/ -k "integration" -v
-uv run pytest tests/ -k "hardware" -v   # Hardware (skip se no device)
-uv run ruff check qymanager cli midi_tools
-uv run mypy qymanager cli
-uv run black qymanager cli tests --check
-```
-
-**Nota subdir test**: oggi `tests/` è flat (164 test). Le subdir `tests/property/`, `tests/integration/`, `tests/hardware/` vanno **create** come parte del lavoro F1/F3/F11. Finché non esistono, aggiungi test alla root `tests/` con prefisso coerente (`test_property_*.py`, `test_hardware_*.py`), poi migra a subdir quando chiudi la fase relativa.
-
-**Step 5 — Documenta**:
-
-Obbligatoriamente:
-1. Aggiungi entry datata a `wiki/log.md`:
-   ```markdown
-   ### Session 3Xy — 2026-04-XX
-
-   **Obiettivo**: [fase Fx step Y - titolo breve]
-
-   **Scoperte**: [con confidence High/Medium/Low]
-   **Codice**: [file + cosa]
-   **Test**: [coverage, totale verdi]
-   **Next**: [task seguente]
-   ```
-2. Aggiorna pagina wiki rilevante se scoperta (es. `wiki/udm.md` se nuova dataclass UDM, `wiki/voice-offsets-q7p.md` se RE voice)
-3. Se hai creato/rimosso pagina wiki: aggiorna `wiki/index.md`
-4. Se micro-step chiude una milestone (MS1/2/3/4): aggiorna `STATUS.md` con nuovo status + data
-
-**Step 6 — Verifica finale**:
+**Step 5 — Commit atomico**:
 
 ```bash
-uv run pytest                    # DEVE passare
-uv run ruff check .              # DEVE essere pulito
-uv run black --check .           # DEVE essere formattato
-```
-
-Se fallisce: **correggi**, non committare.
-
-**Step 7 — Commit atomico**:
-
-```bash
-git add <file specifici, NO git add -A>
+git add <file_elencati>
 git commit -m "$(cat <<'EOF'
-scope: imperative title (<70 chars)
+<scope>: <task title>
 
-- Punto 1 del body
-- Punto 2 del body
-- Test: N nuovi, M totali verdi
+<body con why se non ovvio>
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 EOF
 )"
 ```
 
-Scope validi: `feat(udm)`, `feat(converter)`, `feat(editor)`, `feat(realtime)`, `feat(cli)`, `feat(parser)`, `test(property)`, `test(hardware)`, `test(integration)`, `docs(wiki)`, `chore(ci)`, `fix(q7p)`, `fix(syx)`, `refactor(model)`, `re(voice)`, `re(phrase)`, `re(dense)`, `re(chord)`.
+Scope convention:
+- `feat(web-backend): ...` — nuovo endpoint/modulo backend
+- `feat(web-frontend): ...` — nuovo componente/route frontend
+- `feat(cli): ...` — `qymanager serve` o estensioni CLI
+- `test(web): ...` — solo test (se separati)
+- `docs(web): ...` — documentazione finale W9
+- `chore(deps): ...` — aggiunta dipendenze
 
-**Step 8 — Report**:
+### Regole critiche (vedi anche `.opencode/agents/qyconv-web.md`)
 
-Stampa a stdout (in italiano) un report conciso:
+1. **NON modificare `qymanager/` core** salvo bug bloccante documentato. Il backend è
+   un thin wrapper.
+2. **428 test baseline devono sempre essere verdi**. Niente `--no-verify`.
+3. **UN task per iterazione**. Se un task è grande (>200 LOC cambiate), spezzalo e
+   aggiorna `PROGRESS.md` con i sotto-task.
+4. **No scope creep**: solo task in `PROGRESS.md`. Piano roll, chord timeline, voice
+   browser, Electron = **v1.1+**, fuori scope.
+5. **Italiano per report/output, inglese per codice/commit subject**.
+6. **UV_LINK_MODE=copy** sempre.
+
+### Quando fermarti
+
+Il loop termina quando:
+- Tutti i task di `PROGRESS.md` sono `[x]` o `[~]`
+- `uv run pytest` tutto verde (428 + nuovi)
+- `cd web/frontend && npm test && npm run build` verdi
+- `uv run qymanager serve` avvia e serve `/` con HTML
+- `curl http://127.0.0.1:8000/api/schema` ritorna JSON
+- Commit finale `docs(web): W9 — qymanager serve + web GUI v1.0 shipped` presente
+
+In quel momento stampa il report finale e termina senza aprire nuovi task.
+
+### Report finale di ogni iterazione
 
 ```
 ## Iterazione completata
 
-**Fase corrente**: [F1-F13 + titolo]
-**Micro-step chiuso**: [descrizione]
+**Fase**: W<N> — <nome>
+**Task**: <titolo>
 
 **Fatto**:
-- File: [elenco]
-- Test: [+N, totale M/M verdi]
-- Wiki: [pagine aggiornate]
-- Commit: [hash breve + titolo]
+- <file creati/modificati>
+- <test aggiunti>
+- Test totali: <N>/<N> verdi
+- Commit: <scope>: <title>
 
 **Next**:
-- [task successivo consigliato]
-- [fase corrente progress: X/Y sotto-fasi]
+- <prossimo task da PROGRESS.md>
 
-**RE aperti** (se rilevanti):
-- [es. P4a voice offsets: session X in corso]
-
-**Blocker** (se presenti):
-- [descrizione + mitigazione proposta]
+**Blocchi**:
+- <se presenti, altrimenti "nessuno">
 ```
 
-Poi **termina** l'iterazione. Ralph ti invocherà di nuovo per la prossima.
+### Quickstart
 
-### Criterio di stop del loop
+```bash
+cd /Volumes/Data/DK/XG/T700/qyconv
+export UV_LINK_MODE=copy
 
-Il loop ralph deve continuare finché **una** delle seguenti condizioni non si verifica:
+# 1. Orient
+cat PROGRESS.md
+ls PLAN/
+git log --oneline -10
 
-1. **MS4 raggiunto**: `STATUS.md` indica "Open-source v1.0.0 ready" + git tag `v1.0.0` creato
-2. **Blocker irrisolvibile**: hardware danneggiato, RE con impossibility strutturale confermata, dipendenza esterna mancante → report + STOP con exit non-zero
-3. **User interruzione**: l'utente interrompe manualmente il ralph loop
+# 2. Pick next task (primo `[ ]`)
+# 3. Leggi PLAN/W<N>-*.md corrispondente
+# 4. Implement + test + commit + mark [x]
+```
 
-### Regole di etichetta ralph
-
-- **Una iterazione = un micro-step**. Mai tentare di chiudere un'intera fase in una volta.
-- **Idempotenza**: se il micro-step che volevi fare è già stato fatto (scopri leggendo log/git), passa al successivo senza fare nulla.
-- **Atomicità**: repo deve essere in stato coerente (test verdi, commit puliti) alla fine di ogni iterazione. Mai lasciare WIP.
-- **Progresso misurabile**: ogni iterazione deve far avanzare almeno 1 sotto-fase o chiudere almeno 1 RE apertura.
-- **No duplicazione**: se altra iterazione ha già fatto X, non rifarlo.
-- **Commit frequenti**: meglio 3 commit piccoli in un'iterazione che 1 enorme.
-
-### Regole inviolabili
-
-**Hardware**:
-- MAI scritture Q7P a offset non whitelisted sul QY700 primario
-- Usa SOLO QY700 secondario per "yolo" RE aggressivo
-- QY70 init handshake obbligatorio: `F0 43 10 5F 00 00 00 01 F7` prima di ogni dump
-- Backup prima di yolo: `uv run python3 midi_tools/capture_dump.py -o backups/qy700_secondary_$(date +%Y%m%d_%H%M).syx`
-
-**Testing**:
-- MAI commit con test rossi
-- MAI mock su test hardware
-- Coverage target: parser >95%, editor >90%, converter >90%
-
-**Code**:
-- MAI commenti WHAT, solo WHY non ovvio
-- MAI aggiungere feature fuori piano senza giustificazione
-- MAI skip `UV_LINK_MODE=copy`
-- MAI emoji nel codice / CLI output / commit (salvo richiesta esplicita)
-- MAI rispondere in inglese al report utente (italiano obbligatorio)
-
-**Documentazione**:
-- OGNI scoperta RE → wiki page relativa + `wiki/log.md`
-- OGNI nuova pagina wiki → aggiorna `wiki/index.md`
-- OGNI milestone → aggiorna `STATUS.md`
-- Commit Co-Authored-By per conformità CLAUDE.md
-
-### Ordine di priorità RE
-
-Se scegli un task RE (fasi F6-F10, F13), segui questa priorità:
-
-1. **F6 P4a voice offsets Q7P** (HIGH) — sblocca voice setting corretto
-2. **F7 P4b phrase library mapping** (HIGH) — sblocca conversione phrase perfetta
-3. **F8 P4c chord transposition layer** (MEDIUM) — sblocca editing Chord1/Chord2 phrase
-4. **F10 P4e Q7A format** (MEDIUM) — sblocca backup completo QY700
-5. **F13 P4d dense bitstream** (LOW parallel, 1-su-5 iterazioni) — long-term, time-boxed
-
-### Checklist prima di terminare l'iterazione
-
-- [ ] Ho letto `STATUS.md`, `PLAN.md`, `wiki/log.md` all'inizio
-- [ ] Ho identificato la fase corrente corretta
-- [ ] Ho scelto UN micro-step (non più)
-- [ ] Ho implementato codice + test
-- [ ] `uv run pytest` verde
-- [ ] `uv run ruff check .` pulito
-- [ ] `uv run black --check .` pulito
-- [ ] Ho aggiornato `wiki/log.md` con session entry
-- [ ] Ho aggiornato wiki page tecnica se scoperta RE
-- [ ] Ho aggiornato `wiki/index.md` se nuova pagina
-- [ ] Ho aggiornato `STATUS.md` se milestone
-- [ ] Ho committato con scope prefix + Co-Authored-By
-- [ ] Ho stampato report conciso in italiano
-- [ ] Non ho violato nessuna regola inviolabile
-
-Se tutti i checkbox sono `[x]`: termina con exit 0.
-
-Se un blocker è emerso: stampa blocker nel report, termina con exit 1.
-
----
-
-**Ultimo reminder**: sii ossessivo, preciso, incrementale. Non bricar nulla. Non skippare test. Non aggiungere scope creep. Documenta tutto in italiano (eccetto codice).
-
-Parti. Prima iterazione: leggi stato, identifica micro-step, esegui.
+Sii preciso, thin wrapper sopra core esistente, non toccare `qymanager/`.
+Buon lavoro.
