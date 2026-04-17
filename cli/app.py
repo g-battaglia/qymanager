@@ -17,6 +17,7 @@ from cli.commands.tracks import tracks
 from cli.commands.sections import sections
 from cli.commands.phrase import phrase
 from cli.commands.edit import edit_app
+from cli.commands.xg import app as xg_app
 
 __version__ = "0.4.0"
 
@@ -41,6 +42,7 @@ app.command(name="tracks")(tracks)
 app.command(name="sections")(sections)
 app.command(name="phrase")(phrase)
 app.add_typer(edit_app, name="edit")
+app.add_typer(xg_app, name="xg")
 
 
 @app.command()
@@ -89,6 +91,15 @@ def main(
         qymanager edit export capture.json -o pattern.json
         qymanager edit transpose pattern.json --track 3 --semitones 2
         qymanager edit build pattern.json -o out --scaffold data/q7p/DECAY.Q7P
+
+    [bold]XG Protocol (Model 4C):[/bold]
+
+        qymanager xg summary capture.syx       # counts per AH/Part/AL
+        qymanager xg parse capture.syx         # decode every XG message
+        qymanager xg snapshots capture.syx     # per-preset blocks (var/parts/DS2)
+        qymanager xg diff a.syx b.syx          # find changed params
+        qymanager xg emit --ah 08 --am 00 --al 07 --data 01  # build one
+        qymanager xg voices capture.syx        # Part → voice (--all captures)
 
     Use --help with any command for more details.
     """

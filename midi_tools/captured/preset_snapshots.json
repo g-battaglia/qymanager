@@ -1,0 +1,602 @@
+[
+  {
+    "idx": 0,
+    "boundary": "XG_ON",
+    "n_msgs": 23,
+    "var_type": "0800",
+    "var_params": {},
+    "var_conn": 1,
+    "send_reverb": 1,
+    "part_modes": {
+      "0": 3,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 1,
+    "boundary": "DS_RESET",
+    "n_msgs": 22,
+    "var_type": "0500",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": 0,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 2,
+    "boundary": "DS_RESET",
+    "n_msgs": 22,
+    "var_type": null,
+    "var_params": {
+      "p1": "0930",
+      "p2": "0768",
+      "p3": "0a78",
+      "p4": "0b5c",
+      "p5": "0046"
+    },
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {},
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 3,
+    "boundary": "DS_RESET",
+    "n_msgs": 23,
+    "var_type": "0101",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 3
+    },
+    "ds2_note_count": 1,
+    "ds2_notes": [
+      44
+    ]
+  },
+  {
+    "idx": 4,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 1
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      36,
+      44
+    ]
+  },
+  {
+    "idx": 5,
+    "boundary": "DS_RESET",
+    "n_msgs": 25,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 1
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      35,
+      44
+    ]
+  },
+  {
+    "idx": 6,
+    "boundary": "DS_RESET",
+    "n_msgs": 26,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 1
+    },
+    "ds2_note_count": 4,
+    "ds2_notes": [
+      31,
+      33,
+      35,
+      44
+    ]
+  },
+  {
+    "idx": 7,
+    "boundary": "DS_RESET",
+    "n_msgs": 25,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 3
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      35,
+      44
+    ]
+  },
+  {
+    "idx": 8,
+    "boundary": "DS_RESET",
+    "n_msgs": 25,
+    "var_type": "0500",
+    "var_params": {
+      "p1": "0930",
+      "p2": "0768",
+      "p3": "0a78",
+      "p4": "0b5c",
+      "p5": "0046"
+    },
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {},
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      36,
+      44
+    ]
+  },
+  {
+    "idx": 9,
+    "boundary": "DS_RESET",
+    "n_msgs": 28,
+    "var_type": null,
+    "var_params": {
+      "p1": "1a05",
+      "p2": "0d03",
+      "p3": "2708",
+      "p4": "2708",
+      "p5": "004a"
+    },
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 1,
+    "ds2_notes": [
+      44
+    ]
+  },
+  {
+    "idx": 10,
+    "boundary": "DS_RESET",
+    "n_msgs": 22,
+    "var_type": "0800",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": 1,
+    "part_modes": {
+      "0": 3,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 11,
+    "boundary": "DS_RESET",
+    "n_msgs": 22,
+    "var_type": "0600",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": 0,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 12,
+    "boundary": "DS_RESET",
+    "n_msgs": 20,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 13,
+    "boundary": "DS_RESET",
+    "n_msgs": 43,
+    "var_type": "0500",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 8,
+    "ds2_notes": [
+      31,
+      33,
+      36,
+      38,
+      39,
+      40,
+      44,
+      46
+    ]
+  },
+  {
+    "idx": 14,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": "0600",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 15,
+    "boundary": "DS_RESET",
+    "n_msgs": 41,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 8,
+    "ds2_notes": [
+      31,
+      33,
+      36,
+      38,
+      39,
+      40,
+      44,
+      46
+    ]
+  },
+  {
+    "idx": 16,
+    "boundary": "DS_RESET",
+    "n_msgs": 20,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 17,
+    "boundary": "DS_RESET",
+    "n_msgs": 43,
+    "var_type": "0500",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 8,
+    "ds2_notes": [
+      31,
+      33,
+      36,
+      38,
+      39,
+      40,
+      44,
+      46
+    ]
+  },
+  {
+    "idx": 18,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 3,
+      "7": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 19,
+    "boundary": "DS_RESET",
+    "n_msgs": 24,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      46,
+      51
+    ]
+  },
+  {
+    "idx": 20,
+    "boundary": "DS_RESET",
+    "n_msgs": 25,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {},
+    "ds2_note_count": 3,
+    "ds2_notes": [
+      36,
+      37,
+      42
+    ]
+  },
+  {
+    "idx": 21,
+    "boundary": "DS_RESET",
+    "n_msgs": 20,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 22,
+    "boundary": "DS_RESET",
+    "n_msgs": 29,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 3,
+      "7": 1
+    },
+    "ds2_note_count": 3,
+    "ds2_notes": [
+      36,
+      37,
+      42
+    ]
+  },
+  {
+    "idx": 23,
+    "boundary": "DS_RESET",
+    "n_msgs": 24,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      46,
+      51
+    ]
+  },
+  {
+    "idx": 24,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": "0600",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 25,
+    "boundary": "DS_RESET",
+    "n_msgs": 43,
+    "var_type": "0500",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 8,
+    "ds2_notes": [
+      31,
+      33,
+      36,
+      38,
+      39,
+      40,
+      44,
+      46
+    ]
+  },
+  {
+    "idx": 26,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 3,
+      "7": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 27,
+    "boundary": "DS_RESET",
+    "n_msgs": 24,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 3,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 2,
+    "ds2_notes": [
+      46,
+      51
+    ]
+  },
+  {
+    "idx": 28,
+    "boundary": "DS_RESET",
+    "n_msgs": 25,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {},
+    "ds2_note_count": 3,
+    "ds2_notes": [
+      36,
+      37,
+      42
+    ]
+  },
+  {
+    "idx": 29,
+    "boundary": "DS_RESET",
+    "n_msgs": 17,
+    "var_type": null,
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {},
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 30,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": "0800",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 3,
+      "2": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 31,
+    "boundary": "DS_RESET",
+    "n_msgs": 21,
+    "var_type": "0500",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": null,
+    "part_modes": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  },
+  {
+    "idx": 32,
+    "boundary": "DS_RESET",
+    "n_msgs": 4,
+    "var_type": "0800",
+    "var_params": {},
+    "var_conn": null,
+    "send_reverb": 30,
+    "part_modes": {
+      "0": 3
+    },
+    "ds2_note_count": 0,
+    "ds2_notes": []
+  }
+]
