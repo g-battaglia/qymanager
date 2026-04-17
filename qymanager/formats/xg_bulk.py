@@ -1,0 +1,251 @@
+"""XG Parameter Change bulk stream ↔ UDM Device bridge.
+
+Parses a stream of Yamaha XG SysEx Parameter-Change messages (Model ID
+0x4C) into a UDM Device by applying each message to the relevant block:
+
+- AH=0x00 (System)      → device.system
+- AH=0x02 (Effects)     → device.effects.reverb / chorus / variation
+- AH=0x08 (Multi Part)  → device.multi_part[AM] (auto-grown)
+- AH=0x30/0x31 (Drum 1/2) → device.drum_setup[0/1].notes[AM]
+
+Messages that don't match known XG addresses are preserved in
+Device._raw_passthrough so that emit_udm_to_xg_bulk() can re-emit them
+byte-identical.
+
+Source of authority: wiki/xg-parameters.md, midi_tools/xg_param.py.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, replace
+from pathlib import Path
+from typing import Optional, Union
+
+from qymanager.model import (
+    ChorusBlock,
+    Device,
+    DeviceModel,
+    Effects,
+    MultiPart,
+    ReverbBlock,
+    System,
+    VariationBlock,
+    Voice,
+)
+
+
+AH_SYSTEM = 0x00
+AH_EFFECT = 0x02
+AH_MULTI_PART = 0x08
+AH_DRUM_SETUP_1 = 0x30
+AH_DRUM_SETUP_2 = 0x31
+
+
+@dataclass
+class XGRawMessage:
+    """A single XG parameter-change message (for downstream re-emit)."""
+
+    ah: int
+    am: int
+    al: int
+    data: bytes
+    raw: bytes
+
+
+def _split_sysex(blob: bytes) -> list[bytes]:
+    msgs: list[bytes] = []
+    i = 0
+    n = len(blob)
+    while i < n:
+        if blob[i] == 0xF0:
+            j = i + 1
+            while j < n and blob[j] != 0xF7:
+                j += 1
+            if j < n:
+                msgs.append(bytes(blob[i : j + 1]))
+                i = j + 1
+            else:
+                break
+        else:
+            i += 1
+    return msgs
+
+
+def _parse_xg_message(msg: bytes) -> Optional[XGRawMessage]:
+    if len(msg) < 8:
+        return None
+    if msg[0] != 0xF0 or msg[-1] != 0xF7:
+        return None
+    if msg[1] != 0x43:
+        return None  # not Yamaha
+    if (msg[2] & 0xF0) != 0x10:
+        return None  # not Parameter Change (1n)
+    if msg[3] != 0x4C:
+        return None  # not XG model
+    ah, am, al = msg[4], msg[5], msg[6]
+    data = bytes(msg[7:-1])
+    return XGRawMessage(ah=ah, am=am, al=al, data=data, raw=bytes(msg))
+
+
+def parse_xg_bulk_to_udm(
+    source: Union[bytes, str, Path],
+    *,
+    device_model: DeviceModel = DeviceModel.QY70,
+    base_device: Optional[Device] = None,
+) -> Device:
+    """Apply a stream of XG Param Change messages to a UDM Device.
+
+    Args:
+        source: .syx file path or raw bytes containing XG Param Change stream.
+        device_model: Target device model when creating a new Device.
+        base_device: If provided, apply XG updates on top of this Device
+            (additive). Otherwise create a fresh Device.
+
+    Returns:
+        A Device reflecting the cumulative XG parameter changes. Non-XG
+        SysEx messages are ignored (but preserved in _raw_passthrough if
+        `base_device` is None).
+
+    Raises:
+        ValueError: If no XG messages are found in the stream.
+    """
+    if isinstance(source, (bytes, bytearray)):
+        blob = bytes(source)
+    else:
+        blob = Path(source).read_bytes()
+
+    messages = _split_sysex(blob)
+    xg_msgs = [x for x in (_parse_xg_message(m) for m in messages) if x is not None]
+
+    if not xg_msgs:
+        raise ValueError("No XG Parameter Change messages found in stream")
+
+    device = base_device if base_device is not None else Device(
+        model=device_model,
+        effects=Effects(variation=VariationBlock()),
+        source_format="xg-bulk",
+        _raw_passthrough=blob,
+    )
+    if device.effects.variation is None:
+        device.effects.variation = VariationBlock()
+
+    for msg in xg_msgs:
+        _apply_xg_message(device, msg)
+
+    return device
+
+
+def _apply_xg_message(device: Device, msg: XGRawMessage) -> None:
+    if msg.ah == AH_SYSTEM:
+        _apply_system(device.system, msg)
+    elif msg.ah == AH_EFFECT:
+        _apply_effects(device.effects, msg)
+    elif msg.ah == AH_MULTI_PART:
+        _apply_multi_part(device, msg)
+    elif msg.ah in (AH_DRUM_SETUP_1, AH_DRUM_SETUP_2):
+        # Drum setup decoding left to later phase (needs DrumSetup model).
+        # Silently accepted; raw bytes retained in _raw_passthrough.
+        pass
+
+
+def _apply_system(system: System, msg: XGRawMessage) -> None:
+    if msg.am != 0x00:
+        return
+    if msg.al == 0x04 and msg.data:
+        system.master_volume = max(0, min(127, msg.data[0]))
+    elif msg.al == 0x06 and msg.data:
+        raw = msg.data[0]
+        system.transpose = raw - 64
+
+
+def _apply_effects(effects: Effects, msg: XGRawMessage) -> None:
+    if msg.am == 0x01:
+        # Reverb (0x00-0x1F) / Chorus (0x20-0x3F) / Variation (0x40+)
+        if msg.al == 0x00 and msg.data:
+            effects.reverb.type_code = max(0, min(10, msg.data[0]))
+        elif msg.al == 0x0C and msg.data:
+            effects.reverb.return_level = msg.data[0] & 0x7F
+        elif msg.al == 0x20 and msg.data:
+            effects.chorus.type_code = max(0, min(10, msg.data[0]))
+        elif msg.al == 0x2C and msg.data:
+            effects.chorus.return_level = msg.data[0] & 0x7F
+        elif msg.al == 0x40 and msg.data and effects.variation is not None:
+            effects.variation.type_code = max(0, min(42, msg.data[0]))
+        elif msg.al == 0x56 and msg.data and effects.variation is not None:
+            effects.variation.return_level = msg.data[0] & 0x7F
+
+        if effects.variation is not None:
+            effects.variation.params[msg.al] = msg.data[0] if msg.data else 0
+        if 0x00 <= msg.al < 0x20:
+            effects.reverb.params[msg.al] = msg.data[0] if msg.data else 0
+        elif 0x20 <= msg.al < 0x40:
+            effects.chorus.params[msg.al] = msg.data[0] if msg.data else 0
+
+
+def _ensure_part(device: Device, index: int) -> MultiPart:
+    while len(device.multi_part) <= index:
+        device.multi_part.append(
+            MultiPart(
+                part_index=len(device.multi_part),
+                rx_channel=len(device.multi_part),
+                voice=Voice(),
+            )
+        )
+    return device.multi_part[index]
+
+
+def _apply_multi_part(device: Device, msg: XGRawMessage) -> None:
+    if msg.am >= 32:
+        return
+    part = _ensure_part(device, msg.am)
+    if not msg.data:
+        return
+    value = msg.data[0]
+
+    if msg.al == 0x01:  # Bank MSB
+        part.voice = replace(part.voice, bank_msb=value & 0x7F)
+    elif msg.al == 0x02:  # Bank LSB
+        part.voice = replace(part.voice, bank_lsb=value & 0x7F)
+    elif msg.al == 0x03:  # Program
+        part.voice = replace(part.voice, program=value & 0x7F)
+    elif msg.al == 0x04:  # Rx Channel (0..15 = ch 1..16, 16 = OFF)
+        part.rx_channel = value & 0x1F
+    elif msg.al == 0x0B:  # Volume
+        part.volume = value & 0x7F
+    elif msg.al == 0x0E:  # Pan
+        part.pan = value & 0x7F
+    elif msg.al == 0x11:  # Dry Level (observed in XG PARM OUT)
+        part.dry_level = value & 0x7F
+    elif msg.al == 0x13:  # Reverb Send
+        part.reverb_send = value & 0x7F
+    elif msg.al == 0x12:  # Chorus Send
+        part.chorus_send = value & 0x7F
+    elif msg.al == 0x14:  # Variation Send
+        part.variation_send = value & 0x7F
+    elif msg.al == 0x23:  # Bend Pitch Control
+        part.bend_pitch = min(24, max(0, value - 0x40 + 2))
+
+
+def emit_udm_to_xg_bulk(device: Device) -> bytes:
+    """Re-emit the original XG bulk stream via Device._raw_passthrough.
+
+    A true UDM → XG message stream synthesis is intentionally deferred:
+    the bulk capture contains implementation-specific ordering and
+    non-UDM data that the editor realtime layer (F5) will re-emit
+    parameter-by-parameter when needed.
+
+    Args:
+        device: Device with `source_format == 'xg-bulk'`.
+
+    Returns:
+        The original raw bytes preserved during parse.
+
+    Raises:
+        ValueError: If no raw passthrough is available.
+    """
+    if not device._raw_passthrough:
+        raise ValueError(
+            "XG bulk emit requires Device._raw_passthrough; use the "
+            "F5 realtime editor to synthesize messages from UDM."
+        )
+    return bytes(device._raw_passthrough)
