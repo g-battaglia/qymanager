@@ -18,6 +18,7 @@ from midi_tools.pattern_editor import (
     op_clear_bar,
     op_copy_bar,
     op_diff_patterns,
+    op_humanize_timing,
     op_humanize_velocity,
     op_kit_remap,
     op_new_empty_pattern,
@@ -26,6 +27,7 @@ from midi_tools.pattern_editor import (
     op_set_velocity,
     op_shift_time,
     op_transpose,
+    op_velocity_curve,
     save_pattern,
 )
 from midi_tools.quantizer import export_json, load_quantized_json, quantize_capture
@@ -160,6 +162,37 @@ def humanize_cmd(
     count = op_humanize_velocity(pattern, track, amount, seed=seed)
     save_pattern(pattern, input)
     console.print(f"Humanized velocity (±{amount}) on {count} notes")
+
+
+@edit_app.command("humanize-timing")
+def humanize_timing_cmd(
+    input: str = typer.Argument(...),
+    track: int = typer.Option(..., "--track"),
+    amount: int = typer.Option(..., "--amount", help="Max ±ticks jitter"),
+    seed: Optional[int] = typer.Option(None, "--seed"),
+) -> None:
+    """Randomize tick_on ±amount ticks."""
+    pattern = load_pattern(input)
+    kept = op_humanize_timing(pattern, track, amount, seed=seed)
+    save_pattern(pattern, input)
+    console.print(f"Humanized timing (±{amount} ticks), {kept} notes kept")
+
+
+@edit_app.command("velocity-curve")
+def velocity_curve_cmd(
+    input: str = typer.Argument(...),
+    track: int = typer.Option(..., "--track"),
+    start: int = typer.Option(..., "--start", help="Start velocity 1-127"),
+    end: int = typer.Option(..., "--end", help="End velocity 1-127"),
+    bar_start: Optional[int] = typer.Option(None, "--bar-start"),
+    bar_end: Optional[int] = typer.Option(None, "--bar-end"),
+) -> None:
+    """Apply a linear velocity ramp across the selected bars."""
+    pattern = load_pattern(input)
+    count = op_velocity_curve(pattern, track, start, end,
+                               bar_start=bar_start, bar_end=bar_end)
+    save_pattern(pattern, input)
+    console.print(f"Applied velocity curve {start}→{end} on {count} notes")
 
 
 @edit_app.command("set-velocity")

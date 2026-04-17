@@ -2,7 +2,7 @@
 
 CLI editor che opera sopra [Pipeline B](conversion-roadmap.md#pipeline-b-capture-based-new-session-19--recommended--validated) per modificare pattern catturati dal QY70 e rigenerare Q7P + SMF.
 
-**Status**: Prototipo funzionante (Session 29h, 2026-04-17) — 39 test verdi, 18 comandi CLI.
+**Status**: Prototipo funzionante (Session 29i, 2026-04-17) — 47 test verdi, 20 comandi CLI.
 
 Accessibile sia via modulo (`python3 -m midi_tools.pattern_editor <cmd>`) sia via CLI principale (`qymanager edit <cmd>`); le due interfacce condividono le stesse operazioni `op_*` pure.
 
@@ -39,6 +39,8 @@ Entry point integrato: `qymanager edit <command>` (stessa semantica via Typer)
 | `clear-bar` | Rimuove tutte le note di un bar | `clear-bar pattern.json --track 0 --bar 3` |
 | `kit-remap` | Rimappa nota drum-kit (es. 36→38) | `kit-remap pattern.json --track 0 --src 36 --dst 38` |
 | `humanize` | Random ±N velocity (seed opzionale) | `humanize pattern.json --track 0 --amount 8 --seed 42` |
+| `humanize-timing` | Random ±N ticks su tick_on (seed opz.) | `humanize-timing pattern.json --track 0 --amount 20 --seed 42` |
+| `velocity-curve` | Ramp velocity lineare su range bar | `velocity-curve pattern.json --track 0 --start 40 --end 120 --bar-start 0 --bar-end 3` |
 | `set-velocity` | Modifica velocity (filtri: `--bar`, `--note`) | `set-velocity pattern.json --track 0 --velocity 90 --bar 0` |
 | `set-tempo` | Cambia BPM | `set-tempo pattern.json 120` |
 | `set-name` | Cambia nome pattern | `set-name pattern.json MYEDIT01` |
@@ -100,7 +102,7 @@ File principali:
 | `midi_tools/build_q7p_5120.py` | Costruzione Q7P da pattern |
 | `midi_tools/capture_to_q7p.py` | SMF writer + D0/E0 encoder |
 | `cli/commands/edit.py` | Typer sub-app (`qymanager edit <cmd>`), wrap pure delle stesse `op_*` |
-| `tests/test_pattern_editor.py` | 39 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
+| `tests/test_pattern_editor.py` | 47 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
 
 ## Limitazioni prototipo
 
@@ -108,13 +110,10 @@ File principali:
 - **No GUI**: solo CLI (si può pilotare da script/Makefile)
 - **Drum track uneditabile via transpose**: usare `kit-remap` per rimappare singole note
 - **Hardware loopback non testato**: output Q7P non caricato su QY700 reale ancora (Session 29f)
-- **No humanize timing**: solo velocity per ora (timing humanize richiede rebuild tick_on)
 
 ## Prossimi step (priorità)
 
 1. **Hardware test**: caricare `sgt_edited.Q7P` su QY700 con `safe_q7p_tester.py`, verificare playback
 2. **Multi-track ops**: `shift-time --all-tracks`, `humanize --all`
 3. **Pattern merge**: combinare due capture in uno
-4. **Humanize timing**: randomize tick_on entro ±N ticks
-5. **Velocity curves**: crescendo/decrescendo invece di random
-6. **GUI**: prototipo TUI (textual) o web (Flask+D3) dopo consolidamento CLI
+4. **GUI**: prototipo TUI (textual) o web (Flask+D3) dopo consolidamento CLI

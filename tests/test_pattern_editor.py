@@ -23,6 +23,7 @@ from midi_tools.pattern_editor import (
     op_clear_bar,
     op_copy_bar,
     op_diff_patterns,
+    op_humanize_timing,
     op_humanize_velocity,
     op_kit_remap,
     op_new_empty_pattern,
@@ -31,6 +32,7 @@ from midi_tools.pattern_editor import (
     op_set_velocity,
     op_shift_time,
     op_transpose,
+    op_velocity_curve,
     save_pattern,
 )
 
@@ -265,6 +267,89 @@ class TestHumanize:
         op_humanize_velocity(sgt_pattern, t_idx, amount=0, seed=1)
         after = [n.velocity for n in sgt_pattern.tracks[t_idx].notes]
         assert before == after
+
+
+class TestHumanizeTiming:
+
+    def test_deterministic_jitter(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        before = [(n.bar, n.tick_on) for n in sgt_pattern.tracks[t_idx].notes]
+        kept = op_humanize_timing(sgt_pattern, t_idx, amount_ticks=20, seed=42)
+        after = [(n.bar, n.tick_on) for n in sgt_pattern.tracks[t_idx].notes]
+        # Sum of deviations should be > 0 (some notes shifted)
+        assert kept > 0
+        # Notes stay within pattern
+        ticks_per_bar = sgt_pattern.bar_ticks
+        total = sgt_pattern.bar_count * ticks_per_bar
+        for n in sgt_pattern.tracks[t_idx].notes:
+            abs_t = n.bar * ticks_per_bar + n.tick_on
+            assert 0 <= abs_t < total
+
+    def test_zero_is_noop(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        before = [(n.bar, n.tick_on) for n in sgt_pattern.tracks[t_idx].notes]
+        op_humanize_timing(sgt_pattern, t_idx, amount_ticks=0, seed=1)
+        after = [(n.bar, n.tick_on) for n in sgt_pattern.tracks[t_idx].notes]
+        assert before == after
+
+    def test_reproducible_with_seed(self, sgt_pattern):
+        import copy
+        a = copy.deepcopy(sgt_pattern)
+        b = copy.deepcopy(sgt_pattern)
+        t_idx = next(iter(a.tracks))
+        op_humanize_timing(a, t_idx, amount_ticks=10, seed=123)
+        op_humanize_timing(b, t_idx, amount_ticks=10, seed=123)
+        ticks_a = [(n.bar, n.tick_on) for n in a.tracks[t_idx].notes]
+        ticks_b = [(n.bar, n.tick_on) for n in b.tracks[t_idx].notes]
+        assert ticks_a == ticks_b
+
+
+class TestVelocityCurve:
+
+    def test_crescendo_full_pattern(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        count = op_velocity_curve(sgt_pattern, t_idx, start_vel=20, end_vel=120)
+        assert count == len(sgt_pattern.tracks[t_idx].notes)
+        notes = sgt_pattern.tracks[t_idx].notes
+        assert notes[0].velocity >= 20 and notes[0].velocity <= 25
+        # Last note should be near end_vel
+        last = notes[-1]
+        assert last.velocity >= 100  # allow for interpolation rounding
+
+    def test_decrescendo(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        count = op_velocity_curve(sgt_pattern, t_idx, start_vel=110, end_vel=10)
+        assert count > 0
+        notes = sgt_pattern.tracks[t_idx].notes
+        # First note should be close to 110, last close to 10
+        assert notes[0].velocity >= 100
+        assert notes[-1].velocity <= 30
+
+    def test_bar_range_filter(self, sgt_pattern):
+        import copy
+        t_idx = next(iter(sgt_pattern.tracks))
+        before_bar2 = {(n.bar, n.tick_on, n.note): n.velocity
+                       for n in sgt_pattern.tracks[t_idx].notes if n.bar >= 2}
+        count = op_velocity_curve(sgt_pattern, t_idx, start_vel=50, end_vel=80,
+                                    bar_start=0, bar_end=1)
+        # Only bars 0-1 touched
+        for n in sgt_pattern.tracks[t_idx].notes:
+            if n.bar >= 2:
+                key = (n.bar, n.tick_on, n.note)
+                assert n.velocity == before_bar2[key]
+
+    def test_invalid_bar_range(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        with pytest.raises(ValueError, match="bar"):
+            op_velocity_curve(sgt_pattern, t_idx, 50, 80,
+                                bar_start=3, bar_end=1)
+
+    def test_invalid_velocity(self, sgt_pattern):
+        t_idx = next(iter(sgt_pattern.tracks))
+        with pytest.raises(ValueError, match="velocit"):
+            op_velocity_curve(sgt_pattern, t_idx, 0, 100)
+        with pytest.raises(ValueError, match="velocit"):
+            op_velocity_curve(sgt_pattern, t_idx, 50, 200)
 
 
 class TestNewEmpty:

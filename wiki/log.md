@@ -2,6 +2,60 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29i | Editor: humanize-timing, velocity-curve (20 comandi totali)
+
+### Obiettivo
+Continuazione autonoma (direttiva "procedi senza MAI fermarti"). Completare le feature di expressiveness dell'editor: randomizzazione timing + curve lineari di velocity per simulare crescendo/decrescendo naturali.
+
+### Nuove operazioni
+
+- `op_humanize_timing(pattern, track_idx, amount_ticks, seed)` — jitter random ±N tick su tick_on, preserva bar boundaries ricomputando (bar, beat, sub). Notes che esconderebbero da `[0, total_ticks)` vengono droppate. Deterministico con seed.
+- `op_velocity_curve(pattern, track_idx, start_vel, end_vel, bar_start, bar_end)` — ramp lineare di velocity attraverso range di bar (inclusive). Useful per crescendo/decrescendo. Filtro bar_start/bar_end opzionale.
+
+### CLI wiring
+
+**Argparse**:
+- `humanize-timing pattern.json --track 0 --amount 20 --seed 42`
+- `velocity-curve pattern.json --track 0 --start 40 --end 120 [--bar-start 0 --bar-end 3]`
+
+**Typer** (`qymanager edit`): identici, Rich output.
+
+Totale: **20 comandi CLI** (da 18 di Session 29h).
+
+### Test coverage
+
+`tests/test_pattern_editor.py` da 39 → **47 test**:
+- `TestHumanizeTiming` (3): deterministic jitter, zero noop, seed reproducibility
+- `TestVelocityCurve` (5): crescendo, decrescendo, bar range filter, invalid bar range, invalid velocity
+
+**Risultato suite completa**: 111/111 pytest verdi.
+
+### Workflow end-to-end validato
+
+```bash
+qymanager edit new-empty -o /tmp/test.json --bars 4 --name AUTO01
+qymanager edit add-note /tmp/test.json --track 0 --bar 0 --beat 0 --note 36
+# ... 5 note totali
+qymanager edit velocity-curve /tmp/test.json --track 0 --start 40 --end 120
+qymanager edit humanize-timing /tmp/test.json --track 0 --amount 15 --seed 42
+```
+
+Output verificato: velocity interpolata (40, 45, 60, 80, 100+), timing spostato di ~15 tick mantenendo bar bounds.
+
+### Wiki + STATUS
+
+- `wiki/pattern-editor.md` — comandi aggiornati a 20, limitazione "no humanize timing" rimossa, roadmap compattata
+- `wiki/log.md` — entry session 29i
+- `STATUS.md` — editor % progress sale, 20 comandi, 47 test editor
+
+### Limitazioni residue
+- No undo/redo
+- Multi-track ops (shift --all) ancora mancano
+- Pattern merge da implementare
+- Hardware loopback test ancora non eseguito
+
+---
+
 ## [2026-04-17] session-29h | Editor: new-empty, diff, resize (18 comandi totali)
 
 ### Obiettivo

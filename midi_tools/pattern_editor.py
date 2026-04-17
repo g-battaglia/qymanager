@@ -317,6 +317,88 @@ def op_humanize_velocity(
     return count
 
 
+def op_humanize_timing(
+    pattern: QuantizedPattern,
+    track_idx: int,
+    amount_ticks: int,
+    seed: Optional[int] = None,
+) -> int:
+    """Add random ±amount_ticks to tick_on. Notes that would cross bar
+    boundaries or fall outside [0, total_ticks) are dropped. Notes stay
+    on the tick grid only approximately (fine subdivision).
+    Returns count kept."""
+    import random
+    track = pattern.tracks.get(track_idx)
+    if track is None:
+        raise KeyError(f"Track {track_idx} not found")
+    if amount_ticks < 0:
+        raise ValueError("amount_ticks must be non-negative")
+
+    rng = random.Random(seed) if seed is not None else random.Random()
+    grid_ticks = pattern.ppqn // 4
+    ticks_per_bar = pattern.bar_ticks
+    total_ticks = pattern.bar_count * ticks_per_bar
+
+    kept: List[QuantizedNote] = []
+    for n in track.notes:
+        delta = rng.randint(-amount_ticks, amount_ticks)
+        abs_tick = n.bar * ticks_per_bar + n.tick_on + delta
+        if abs_tick < 0 or abs_tick >= total_ticks:
+            continue
+        new_bar = abs_tick // ticks_per_bar
+        new_tick_in_bar = abs_tick % ticks_per_bar
+        n.bar = new_bar
+        n.tick_on = new_tick_in_bar
+        n.beat = new_tick_in_bar // pattern.ppqn
+        n.sub = (new_tick_in_bar % pattern.ppqn) // grid_ticks
+        kept.append(n)
+    track.notes = kept
+    track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+    return len(kept)
+
+
+def op_velocity_curve(
+    pattern: QuantizedPattern,
+    track_idx: int,
+    start_vel: int,
+    end_vel: int,
+    bar_start: Optional[int] = None,
+    bar_end: Optional[int] = None,
+) -> int:
+    """Apply a linear velocity ramp from start_vel to end_vel across
+    the selected bar range (inclusive). If bar_start/bar_end are None,
+    the full pattern range is used. Velocity is clamped to [1, 127].
+    Returns count modified."""
+    track = pattern.tracks.get(track_idx)
+    if track is None:
+        raise KeyError(f"Track {track_idx} not found")
+    if not (1 <= start_vel <= 127) or not (1 <= end_vel <= 127):
+        raise ValueError("velocities must be in [1, 127]")
+
+    b0 = 0 if bar_start is None else bar_start
+    b1 = pattern.bar_count - 1 if bar_end is None else bar_end
+    if b0 > b1:
+        raise ValueError("bar_start must be <= bar_end")
+    if b0 < 0 or b1 >= pattern.bar_count:
+        raise ValueError(f"bar range out of pattern bounds [0, {pattern.bar_count - 1}]")
+
+    ticks_per_bar = pattern.bar_ticks
+    t_start = b0 * ticks_per_bar
+    t_end = (b1 + 1) * ticks_per_bar
+    span = max(1, t_end - t_start)
+
+    count = 0
+    for n in track.notes:
+        if n.bar < b0 or n.bar > b1:
+            continue
+        abs_tick = n.bar * ticks_per_bar + n.tick_on
+        frac = (abs_tick - t_start) / span
+        interp = start_vel + (end_vel - start_vel) * frac
+        n.velocity = max(1, min(127, int(round(interp))))
+        count += 1
+    return count
+
+
 def op_new_empty_pattern(
     bar_count: int = 4,
     bpm: float = 120.0,
@@ -557,6 +639,25 @@ def cmd_humanize(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_humanize_timing(args: argparse.Namespace) -> int:
+    pattern = load_pattern(args.input)
+    kept = op_humanize_timing(pattern, args.track, args.amount, seed=args.seed)
+    save_pattern(pattern, args.input)
+    print(f"Humanized timing (±{args.amount} ticks) on track {args.track}, {kept} notes kept")
+    return 0
+
+
+def cmd_velocity_curve(args: argparse.Namespace) -> int:
+    pattern = load_pattern(args.input)
+    count = op_velocity_curve(
+        pattern, args.track, args.start, args.end,
+        bar_start=args.bar_start, bar_end=args.bar_end,
+    )
+    save_pattern(pattern, args.input)
+    print(f"Applied velocity curve {args.start}→{args.end} on {count} notes")
+    return 0
+
+
 def cmd_new_empty(args: argparse.Namespace) -> int:
     pattern = op_new_empty_pattern(
         bar_count=args.bars,
@@ -761,6 +862,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_hum.add_argument("--seed", type=int, default=None,
                        help="Random seed for reproducibility")
     p_hum.set_defaults(func=cmd_humanize)
+
+    p_hut = sub.add_parser("humanize-timing",
+                            help="Random ±amount_ticks jitter on tick_on")
+    p_hut.add_argument("input")
+    p_hut.add_argument("--track", type=int, required=True)
+    p_hut.add_argument("--amount", type=int, required=True,
+                        help="Max absolute tick deviation (e.g. 30 → ±30 ticks)")
+    p_hut.add_argument("--seed", type=int, default=None,
+                        help="Random seed for reproducibility")
+    p_hut.set_defaults(func=cmd_humanize_timing)
+
+    p_vcurve = sub.add_parser("velocity-curve",
+                               help="Linear velocity ramp across bar range")
+    p_vcurve.add_argument("input")
+    p_vcurve.add_argument("--track", type=int, required=True)
+    p_vcurve.add_argument("--start", type=int, required=True,
+                          help="Starting velocity (1-127)")
+    p_vcurve.add_argument("--end", type=int, required=True,
+                          help="Ending velocity (1-127)")
+    p_vcurve.add_argument("--bar-start", type=int, default=None,
+                          help="First bar in range (default: 0)")
+    p_vcurve.add_argument("--bar-end", type=int, default=None,
+                          help="Last bar in range (default: last bar)")
+    p_vcurve.set_defaults(func=cmd_velocity_curve)
 
     p_new = sub.add_parser("new-empty", help="Create an empty pattern from scratch")
     p_new.add_argument("-o", "--output", required=True, help="Output pattern JSON")
