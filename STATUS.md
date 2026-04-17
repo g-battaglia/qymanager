@@ -3,7 +3,7 @@
 > Single-source north-star del progetto QY70 ↔ QY700 reverse engineering.
 > Aggiornato a ogni chiusura di sessione.
 
-**Ultimo aggiornamento**: 2026-04-17 (Session 29k — editor: uniformità --all-tracks su humanize/velocity-curve/set-velocity)
+**Ultimo aggiornamento**: 2026-04-17 (Session 30 — QY70 SysEx protocol validato + syx_edit.py byte-level editor applicato su hardware con successo)
 **Obiettivo finale**: Editor completo pattern + conversione bidirezionale QY700 ↔ QY70
 
 ---
@@ -26,9 +26,10 @@
 - **Metadata converter** (`qy70_to_qy700.py`): tempo, nome, volume, pan, chorus/reverb
 - **Decoder sparse** (user patterns): 100% su 7/7 casi noti (rotation R=9×(i+1))
 - **Q7P format**: read + write + validator con invariant phrase-stream (0 warnings)
-- **Hardware I/O**: Init handshake, bulk dump, send style, capture playback tutti funzionanti
+- **Hardware I/O**: Init handshake, bulk dump, send style, capture playback tutti funzionanti. **Coordinate SysEx confermate (Session 30)**: Model=0x5F, device=0, AM=0x7E (solo edit buffer; slot User rifiutato)
 - **Editor CLI prototipo** (`midi_tools/pattern_editor.py` + `cli/commands/edit.py`): **21 sub-command** — export, summary, list-notes, new-empty, add-note, remove-note, transpose, shift-time, copy-bar, clear-bar, kit-remap, humanize, humanize-timing, velocity-curve, set-velocity, set-tempo, set-name, resize, diff, merge (overlay/append), build. **5 comandi multi-track** (`--all-tracks`): `shift-time`, `humanize`, `humanize-timing`, `velocity-curve`, `set-velocity`. Accessibile via modulo (`python3 -m midi_tools.pattern_editor`) **e** CLI principale (`qymanager edit`). Test roundtrip bijective JSON ↔ QuantizedPattern
-- **Test suite**: **123 test** regression verdi (59 editor + 31 pipeline + 33 altri)
+- **Test suite**: **131 test** regression verdi (59 editor + 31 pipeline + 8 syx_edit + 33 altri)
+- **syx_edit.py** (Session 30): byte-level tempo editor per .syx QY70; bypass bitstream encoder rotto. **Verificato su hardware**: `syx_edit.py SGT.syx --tempo 120 -o out.syx` → send → dump QY70 conferma decoded[0]=0x3F, BPM=120
 
 Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decoder-status.md](wiki/decoder-status.md)
 
@@ -37,7 +38,7 @@ Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decode
 ## Cosa è bloccato (research)
 
 - **Decoder dense** (factory styles): struttura parzialmente compresa (per-beat rotation, 42B super-cycle SGT, 692B shared prefix) ma **nessun output MIDI corretto** prodotto. Structural impossibility provata su velocity encoding (Session 20). Stima: 10-30 sessioni residue, non garantito (forse serve firmware dump)
-- **Encoder dense** (Q7P → SysEx): dipende dal decoder, 0% fatto
+- **Encoder dense** (Q7P → SysEx): dipende dal decoder, 0% fatto. **Session 30 conferma**: converter `QY700ToQY70Converter.convert_bytes()` produce bulk che il QY70 riceve ma interpreta come "svuota edit buffer" invece di "carica pattern" — bitstream encoding non valido
 - **Chord transposition layer**: non decodificato — bar headers memorizzano chord-relative templates
 - **Voice writes al QY700**: offset reali sconosciuti (0x1E6/0x1F6/0x206 causavano bricking, ora disabilitati)
 

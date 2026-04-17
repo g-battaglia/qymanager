@@ -2,6 +2,108 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-30b | syx_edit.py: byte-level tempo editor con validazione hardware
+
+### Obiettivo
+Dopo aver scoperto il bug del converter Q7P→SysEx, costruire un tool alternativo che modifica .syx QY70 direttamente senza passare per il bitstream encoder. Obiettivo minimo: cambio tempo end-to-end validato su hardware.
+
+### Nuovo tool: `midi_tools/syx_edit.py`
+```bash
+uv run python3 midi_tools/syx_edit.py tests/fixtures/QY70_SGT.syx --tempo 120 -o /tmp/sgt_120.syx
+```
+
+Pipeline interna:
+1. Parse .syx → lista di messaggi SysEx
+2. Trova primo blocco bulk `AL=0x7F` (header)
+3. Decode 7-bit del payload → 128B raw
+4. Applica `compute_tempo_encoding(bpm)` → `(range_byte, offset_byte)`
+5. Sovrascrive `decoded[0]` e i MSB di `decoded[1..6]` per forzare il group header post-encoding
+6. Re-encode 7-bit, ricalcola checksum (`128 - sum(BH,BL,AH,AM,AL,data) & 0x7F`)
+7. Ricompone l'intero .syx con il messaggio modificato al posto dell'originale
+
+**Formula tempo QY70** (già nota, confermata): `BPM = range_byte * 95 - 133 + offset_byte`.
+Per default `range=2` copre 57-184 BPM. Fallback automatico a range=1/3/4 se offset fuori 0-127.
+
+### Hardware validation
+Ciclo end-to-end su QY70 (UR22C Porta 1, device=0):
+
+| Step | Comando | Risultato |
+|------|---------|-----------|
+| 1 | `syx_edit.py --tempo 120` | out: /tmp/sgt_120bpm.syx, 16292B, 0 errori checksum |
+| 2 | `send_style.py sgt_120bpm.syx --device 0` | 105/105 messaggi OK |
+| 3 | Dump edit buffer header (`F0 43 20 5F 02 7E 7F F7`) | 8374B risposta |
+| 4 | Decode 7-bit del risposta | decoded[0]=0x3F, range=2 → **BPM=120 ✓** |
+
+### Quirk hardware scoperto
+Il QY70 **accetta un solo bulk send per sessione**. Send successivi (tentato ciclo 120→151→160→100) vengono visti come "inviati" (105/105) ma l'edit buffer ritorna sempre al primo BPM accettato. Risoluzione probabile: power-cycle del QY70 oppure uscita esplicita dal modo di ricezione. Non documentato nel manuale; non risolto autonomamente.
+
+### Test coverage
+`tests/test_syx_edit.py` — 8 test:
+- `compute_tempo_encoding` per BPM 80-180
+- ValueError su BPM 500 (out of range)
+- SGT fixture baseline = 151 BPM
+- Edit 120/100/130/160/180 → dump match
+- Checksums tutti validi post-edit
+- No-op edit preserva byte-identity
+
+**Suite totale**: 123 → **131 test** pytest verdi.
+
+### Implicazione strategica
+Editor CLI per pattern note/eventi è ancora bloccato dal decoder/encoder dense (task #55/#59). Ma **tempo edit byte-level funziona oggi**, senza decoder. Altri campi editabili senza decoder: volume/pan (bytes fissi nei track headers, da validare). Il pattern name NON è ASCII puro nell'header decoded → richiede reverse engineering aggiuntivo.
+
+---
+
+## [2026-04-17] session-30 | QY70 SysEx protocol validato + converter bug isolato
+
+### Contesto
+Sessione autonoma continuativa di debug MIDI. Obiettivo utente: dimostrare workflow editor CLI → QY70 hardware. Stato iniziale: bulk "non visibile" sul display QY70; cause sconosciute.
+
+### Scoperte hardware
+
+**1. Coordinate SysEx corrette (confermate con dump request bidirezionale)**:
+- Model ID = `0x5F` (QY70)
+- Device number = `0x00` (NON 0x02 — quello è solo per Universal Identity Reply)
+- AM ricezione bulk = `0x7E` **solo**; AM=0x00-0x3F (slot User) rifiutato silenziosamente
+
+**2. Universal Identity Request anomalia**:
+Il QY70 risponde a `F0 7E 02 06 01 F7` con device **0x02** (NON 0x00):
+```
+F0 7E 7F 06 02 43 00 41 02 55 00 00 00 01 F7
+→ Family 0x4100 (XG), Member 0x5502
+```
+Divergenza: Universal proto usa device 2; Yamaha-native bulk usa device 0.
+
+**3. Bulk → edit buffer validato end-to-end**:
+- `send_style.py tests/fixtures/QY70_SGT.syx --device 0 --delay 150` carica SGT nell'edit buffer
+- Dump request AM=0x7E conferma: edit buffer BEFORE=0B, AFTER=17064B
+- Ciclo BEFORE/SEND/AFTER provato in modo binario: bulk HAS effect
+
+**4. Bulk a slot User rifiutato**:
+- `send_style.py qy70_slot10.syx` (AM=0x0A) → slot U11 resta vuoto
+- Conferma wiki `qy70-device.md:102`: solo edit buffer accetta bulk
+- **Limite hardware**: per salvare in slot serve STORE manuale (non automatizzabile via SysEx)
+
+### Bug converter isolato
+`QY700ToQY70Converter.convert_bytes()` applicato a `/tmp/sgt_edit.Q7P` → 8392B `.syx` (vs 16292B di SGT fixture) → quando inviato al QY70 **svuota** l'edit buffer invece di popolarlo.
+
+Ciclo di prova:
+1. Invia SGT fixture → dump: 17064B ✓
+2. Invia sgt_edit.syx (generato dal converter) → dump: 0B ✗
+3. Re-invia SGT fixture → dump: 17064B ✓
+
+Il bulk viene ricevuto senza errori apparenti, ma il QY70 lo interpreta come "cancella edit buffer" anziché "carica". Il converter QY700→QY70 produce bitstream non valido — coerente con memory `feedback_qy70_hang_on_bad_bitstream.md` ("file generati suonano scorretti ma NON bloccano il QY70").
+
+### Conclusione per l'obiettivo utente
+Workflow editor CLI → QY70 **bloccato** da due cause non-sovrapposte:
+1. Converter bitstream non validato (task #55/#59 in corso)
+2. Limite hardware QY70 che richiede STORE manuale per far apparire pattern in lista slot
+
+Unsticking path: usare `q7p_playback.py` (real-time MIDI) come surrogato del bulk, o risolvere il bitstream encoding.
+
+### Memoria/riferimenti aggiornati
+- Nuovo: `memory/reference_qy70_sysex_protocol.md`
+- MEMORY.md index aggiornato
+
 ## [2026-04-17] session-29k | Editor: uniformità --all-tracks su humanize/velocity-curve/set-velocity
 
 ### Obiettivo
