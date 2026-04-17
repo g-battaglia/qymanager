@@ -72,9 +72,18 @@ Output: `sgt_edited.Q7P` (5120B), `sgt_edited.mid`, 0 validator warning. PAD not
 ### File modificati
 - `midi_tools/quantizer.py` — aggiunte `pattern_to_dict`, `dict_to_pattern`, `load_quantized_json`
 - `midi_tools/pattern_editor.py` — **nuovo**, CLI + operazioni pure
-- `tests/test_pattern_editor.py` — **nuovo**, 15 test
+- `tests/test_pattern_editor.py` — **nuovo**, 24 test
 - `wiki/pattern-editor.md` — **nuovo**, documentazione editor
 - `wiki/index.md`, `STATUS.md` — aggiornamenti
+
+### Session 29g — integrazione CLI Typer
+
+Editor accessibile anche come `qymanager edit <subcmd>`:
+- Nuovo `cli/commands/edit.py`: Typer sub-app che riusa le `op_*` pure functions
+- `cli/app.py`: `app.add_typer(edit_app, name="edit")`, help aggiornato
+- Workflow: `qymanager edit export capture.json -o pattern.json` → modifiche → `qymanager edit build pattern.json -o out`
+- Verificato manualmente: entrambi entry points (`python3 -m midi_tools.pattern_editor` e `qymanager edit`) producono stesso output
+- 88/88 test continuano a passare
 
 ---
 
