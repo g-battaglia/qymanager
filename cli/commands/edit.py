@@ -21,6 +21,7 @@ from midi_tools.pattern_editor import (
     op_humanize_timing,
     op_humanize_velocity,
     op_kit_remap,
+    op_merge_patterns,
     op_new_empty_pattern,
     op_remove_notes,
     op_resize,
@@ -98,14 +99,42 @@ def transpose_cmd(
 @edit_app.command("shift-time")
 def shift_time_cmd(
     input: str = typer.Argument(...),
-    track: int = typer.Option(..., "--track"),
+    track: Optional[int] = typer.Option(None, "--track"),
+    all_tracks: bool = typer.Option(False, "--all-tracks",
+                                      help="Shift every track"),
     ticks: int = typer.Option(..., "--ticks"),
 ) -> None:
-    """Shift track notes by N ticks."""
+    """Shift track notes by N ticks (use --all-tracks for whole pattern)."""
+    if all_tracks and track is not None:
+        raise typer.BadParameter("use either --track or --all-tracks, not both")
+    if not all_tracks and track is None:
+        raise typer.BadParameter("either --track N or --all-tracks is required")
+    target = None if all_tracks else track
     pattern = load_pattern(input)
-    kept = op_shift_time(pattern, track, ticks)
+    kept = op_shift_time(pattern, target, ticks)
     save_pattern(pattern, input)
-    console.print(f"Shifted track {track} by {ticks:+d} ticks, {kept} notes kept")
+    label = "all tracks" if target is None else f"track {target}"
+    console.print(f"Shifted {label} by {ticks:+d} ticks, {kept} notes kept")
+
+
+@edit_app.command("merge")
+def merge_cmd(
+    a: str = typer.Argument(..., help="Pattern A (base)"),
+    b: str = typer.Argument(..., help="Pattern B (to merge in)"),
+    output: str = typer.Option(..., "-o", "--output"),
+    mode: str = typer.Option("overlay", "--mode",
+                              help="overlay (same bars) or append (concat)"),
+) -> None:
+    """Merge two patterns into a new JSON."""
+    if mode not in ("overlay", "append"):
+        raise typer.BadParameter("mode must be 'overlay' or 'append'")
+    pa = load_pattern(a)
+    pb = load_pattern(b)
+    merged = op_merge_patterns(pa, pb, mode=mode)
+    save_pattern(merged, output)
+    total = sum(len(t.notes) for t in merged.tracks.values())
+    console.print(f"[green]Merged ({mode}):[/green] {output} — "
+                  f"{merged.bar_count} bars, {len(merged.tracks)} tracks, {total} notes")
 
 
 @edit_app.command("copy-bar")

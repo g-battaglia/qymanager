@@ -188,37 +188,45 @@ def _track_idx_to_channel(track_idx: int) -> int:
 
 def op_shift_time(
     pattern: QuantizedPattern,
-    track_idx: int,
+    track_idx: Optional[int],
     delta_ticks: int,
 ) -> int:
     """Shift note onsets by delta_ticks. Notes crossing bar boundaries are
     recomputed (bar/beat/sub). Notes that would land before bar 0 or past
-    bar_count are dropped. Returns count kept."""
-    track = pattern.tracks.get(track_idx)
-    if track is None:
-        raise KeyError(f"Track {track_idx} not found")
+    bar_count are dropped. If track_idx is None, every track is shifted.
+    Returns total count kept across affected tracks."""
+    if track_idx is None:
+        target_tracks = list(pattern.tracks.values())
+    else:
+        t = pattern.tracks.get(track_idx)
+        if t is None:
+            raise KeyError(f"Track {track_idx} not found")
+        target_tracks = [t]
 
     grid_ticks = pattern.ppqn // 4
     ticks_per_bar = pattern.bar_ticks
     total_ticks = pattern.bar_count * ticks_per_bar
 
-    kept: List[QuantizedNote] = []
-    for n in track.notes:
-        abs_tick = n.bar * ticks_per_bar + n.tick_on + delta_ticks
-        if abs_tick < 0 or abs_tick >= total_ticks:
-            continue
-        new_bar = abs_tick // ticks_per_bar
-        new_tick_in_bar = abs_tick % ticks_per_bar
-        new_beat = new_tick_in_bar // pattern.ppqn
-        new_sub = (new_tick_in_bar % pattern.ppqn) // grid_ticks
-        n.bar = new_bar
-        n.tick_on = new_tick_in_bar
-        n.beat = new_beat
-        n.sub = new_sub
-        kept.append(n)
-    track.notes = kept
-    track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
-    return len(kept)
+    total_kept = 0
+    for track in target_tracks:
+        kept: List[QuantizedNote] = []
+        for n in track.notes:
+            abs_tick = n.bar * ticks_per_bar + n.tick_on + delta_ticks
+            if abs_tick < 0 or abs_tick >= total_ticks:
+                continue
+            new_bar = abs_tick // ticks_per_bar
+            new_tick_in_bar = abs_tick % ticks_per_bar
+            new_beat = new_tick_in_bar // pattern.ppqn
+            new_sub = (new_tick_in_bar % pattern.ppqn) // grid_ticks
+            n.bar = new_bar
+            n.tick_on = new_tick_in_bar
+            n.beat = new_beat
+            n.sub = new_sub
+            kept.append(n)
+        track.notes = kept
+        track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+        total_kept += len(kept)
+    return total_kept
 
 
 def op_copy_bar(
@@ -480,6 +488,63 @@ def op_diff_patterns(
     return out
 
 
+def op_merge_patterns(
+    a: QuantizedPattern,
+    b: QuantizedPattern,
+    mode: str = "overlay",
+) -> QuantizedPattern:
+    """Merge two patterns.
+
+    mode='overlay': same bar range; tracks on same idx concatenated,
+        b-only tracks added. Requires equal bar_count and ppqn.
+    mode='append': concatenate b after a; result has
+        a.bar_count + b.bar_count bars (up to 16).
+
+    Returns a new QuantizedPattern; inputs are not modified.
+    """
+    import copy
+    if mode not in ("overlay", "append"):
+        raise ValueError(f"unknown mode {mode!r}; use 'overlay' or 'append'")
+    if a.ppqn != b.ppqn:
+        raise ValueError(f"ppqn mismatch: {a.ppqn} vs {b.ppqn}")
+    if a.time_sig != b.time_sig:
+        raise ValueError(f"time_sig mismatch: {a.time_sig} vs {b.time_sig}")
+
+    if mode == "overlay":
+        if a.bar_count != b.bar_count:
+            raise ValueError(f"bar_count mismatch for overlay: {a.bar_count} vs {b.bar_count}")
+        out = copy.deepcopy(a)
+        for idx, tb in b.tracks.items():
+            if idx in out.tracks:
+                out.tracks[idx].notes.extend(copy.deepcopy(n) for n in tb.notes)
+                out.tracks[idx].notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+            else:
+                out.tracks[idx] = copy.deepcopy(tb)
+        return out
+
+    # mode == "append"
+    total_bars = a.bar_count + b.bar_count
+    if total_bars > 16:
+        raise ValueError(f"append would produce {total_bars} bars (max 16)")
+    out = copy.deepcopy(a)
+    out.bar_count = total_bars
+    offset = a.bar_count
+    for idx, tb in b.tracks.items():
+        shifted_notes = []
+        for n in tb.notes:
+            nn = copy.deepcopy(n)
+            nn.bar += offset
+            shifted_notes.append(nn)
+        if idx in out.tracks:
+            out.tracks[idx].notes.extend(shifted_notes)
+            out.tracks[idx].notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+        else:
+            new_track = copy.deepcopy(tb)
+            new_track.notes = shifted_notes
+            out.tracks[idx] = new_track
+    return out
+
+
 def op_resize(pattern: QuantizedPattern, new_bar_count: int) -> int:
     """Change pattern bar count. Notes in bars >= new_bar_count are dropped.
     Returns count dropped."""
@@ -600,10 +665,27 @@ def cmd_set_name(args: argparse.Namespace) -> int:
 
 
 def cmd_shift_time(args: argparse.Namespace) -> int:
+    if args.all_tracks and args.track is not None:
+        raise ValueError("use either --track or --all-tracks, not both")
+    if not args.all_tracks and args.track is None:
+        raise ValueError("either --track N or --all-tracks is required")
+    target = None if args.all_tracks else args.track
     pattern = load_pattern(args.input)
-    kept = op_shift_time(pattern, args.track, args.ticks)
+    kept = op_shift_time(pattern, target, args.ticks)
     save_pattern(pattern, args.input)
-    print(f"Shifted track {args.track} by {args.ticks:+d} ticks, {kept} notes kept")
+    label = "all tracks" if target is None else f"track {target}"
+    print(f"Shifted {label} by {args.ticks:+d} ticks, {kept} notes kept")
+    return 0
+
+
+def cmd_merge(args: argparse.Namespace) -> int:
+    a = load_pattern(args.a)
+    b = load_pattern(args.b)
+    merged = op_merge_patterns(a, b, mode=args.mode)
+    save_pattern(merged, args.output)
+    total = sum(len(t.notes) for t in merged.tracks.values())
+    print(f"Merged ({args.mode}): {args.output} — "
+          f"{merged.bar_count} bars, {len(merged.tracks)} tracks, {total} notes")
     return 0
 
 
@@ -826,10 +908,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_shift = sub.add_parser("shift-time",
                              help="Shift track notes by N ticks (drops overflow)")
     p_shift.add_argument("input")
-    p_shift.add_argument("--track", type=int, required=True)
+    p_shift.add_argument("--track", type=int, default=None,
+                         help="Track index (use --all-tracks to shift every track)")
+    p_shift.add_argument("--all-tracks", action="store_true",
+                         help="Shift every track")
     p_shift.add_argument("--ticks", type=int, required=True,
                          help="Delta in ticks (PPQN=480 → 120=16th, 240=8th, 480=quarter)")
     p_shift.set_defaults(func=cmd_shift_time)
+
+    p_merge = sub.add_parser("merge",
+                              help="Merge two patterns (overlay=same bars | append=concat)")
+    p_merge.add_argument("a", help="Pattern A (base)")
+    p_merge.add_argument("b", help="Pattern B (to merge in)")
+    p_merge.add_argument("-o", "--output", required=True, help="Output pattern JSON")
+    p_merge.add_argument("--mode", choices=["overlay", "append"], default="overlay")
+    p_merge.set_defaults(func=cmd_merge)
 
     p_copy = sub.add_parser("copy-bar", help="Copy bar contents to another bar")
     p_copy.add_argument("input")

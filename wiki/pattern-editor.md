@@ -2,7 +2,7 @@
 
 CLI editor che opera sopra [Pipeline B](conversion-roadmap.md#pipeline-b-capture-based-new-session-19--recommended--validated) per modificare pattern catturati dal QY70 e rigenerare Q7P + SMF.
 
-**Status**: Prototipo funzionante (Session 29i, 2026-04-17) — 47 test verdi, 20 comandi CLI.
+**Status**: Prototipo funzionante (Session 29j, 2026-04-17) — 55 test verdi, 21 comandi CLI.
 
 Accessibile sia via modulo (`python3 -m midi_tools.pattern_editor <cmd>`) sia via CLI principale (`qymanager edit <cmd>`); le due interfacce condividono le stesse operazioni `op_*` pure.
 
@@ -34,7 +34,8 @@ Entry point integrato: `qymanager edit <command>` (stessa semantica via Typer)
 | `add-note` | Aggiunge una nota | `add-note pattern.json --track 5 --bar 0 --beat 0 --note 60 --velocity 100` |
 | `remove-note` | Rimuove note (filtri: `--bar`, `--beat`, `--note`) | `remove-note pattern.json --track 0 --bar 2 --note 36` |
 | `transpose` | Sposta note di N semitoni (solo melody, drum rifiutato) | `transpose pattern.json --track 3 --semitones 2` |
-| `shift-time` | Sposta note di N ticks (overflow droppato) | `shift-time pattern.json --track 3 --ticks 120` |
+| `shift-time` | Sposta note di N ticks (overflow droppato, `--all-tracks` per pattern intero) | `shift-time pattern.json --track 3 --ticks 120` / `--all-tracks --ticks 240` |
+| `merge` | Unisce due pattern (`--mode overlay` o `append`) | `merge A.json B.json -o C.json --mode append` |
 | `copy-bar` | Copia contenuto bar (`--append` per merge) | `copy-bar pattern.json --track 0 --src 0 --dst 2` |
 | `clear-bar` | Rimuove tutte le note di un bar | `clear-bar pattern.json --track 0 --bar 3` |
 | `kit-remap` | Rimappa nota drum-kit (es. 36→38) | `kit-remap pattern.json --track 0 --src 36 --dst 38` |
@@ -102,7 +103,7 @@ File principali:
 | `midi_tools/build_q7p_5120.py` | Costruzione Q7P da pattern |
 | `midi_tools/capture_to_q7p.py` | SMF writer + D0/E0 encoder |
 | `cli/commands/edit.py` | Typer sub-app (`qymanager edit <cmd>`), wrap pure delle stesse `op_*` |
-| `tests/test_pattern_editor.py` | 47 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
+| `tests/test_pattern_editor.py` | 55 test: roundtrip, ciascuna op, CLI end-to-end, Q7P build |
 
 ## Limitazioni prototipo
 
@@ -114,6 +115,6 @@ File principali:
 ## Prossimi step (priorità)
 
 1. **Hardware test**: caricare `sgt_edited.Q7P` su QY700 con `safe_q7p_tester.py`, verificare playback
-2. **Multi-track ops**: `shift-time --all-tracks`, `humanize --all`
-3. **Pattern merge**: combinare due capture in uno
+2. **Undo/redo**: snapshot automatico prima di ogni op modificativa
+3. **Multi-track humanize**: `humanize --all`, `velocity-curve --all`
 4. **GUI**: prototipo TUI (textual) o web (Flask+D3) dopo consolidamento CLI

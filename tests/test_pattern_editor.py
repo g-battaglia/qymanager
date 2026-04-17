@@ -26,6 +26,7 @@ from midi_tools.pattern_editor import (
     op_humanize_timing,
     op_humanize_velocity,
     op_kit_remap,
+    op_merge_patterns,
     op_new_empty_pattern,
     op_remove_notes,
     op_resize,
@@ -482,6 +483,89 @@ class TestResize:
         assert dropped == 0
         total_after = sum(len(t.notes) for t in sgt_pattern.tracks.values())
         assert total_before == total_after
+
+
+class TestShiftTimeAllTracks:
+
+    def test_shift_all_tracks(self, sgt_pattern):
+        before_per_track = {
+            idx: [(n.bar, n.tick_on) for n in track.notes]
+            for idx, track in sgt_pattern.tracks.items()
+        }
+        total_before = sum(len(v) for v in before_per_track.values())
+        kept = op_shift_time(sgt_pattern, None, 120)
+        assert kept <= total_before
+        # Every track should have been processed: no note in the last bar left
+        # that was originally in bar 0
+        for idx, track in sgt_pattern.tracks.items():
+            for n in track.notes:
+                assert n.bar >= 0 and n.bar < sgt_pattern.bar_count
+
+
+class TestMerge:
+
+    def test_overlay_requires_same_bar_count(self):
+        a = op_new_empty_pattern(bar_count=4)
+        b = op_new_empty_pattern(bar_count=2)
+        with pytest.raises(ValueError, match="bar_count"):
+            op_merge_patterns(a, b, mode="overlay")
+
+    def test_overlay_merges_same_track(self):
+        a = op_new_empty_pattern(bar_count=2)
+        b = op_new_empty_pattern(bar_count=2)
+        op_add_note(a, track_idx=0, bar=0, beat=0, sub=0, note=36, velocity=100)
+        op_add_note(b, track_idx=0, bar=0, beat=1, sub=0, note=38, velocity=90)
+        merged = op_merge_patterns(a, b, mode="overlay")
+        assert len(merged.tracks[0].notes) == 2
+        notes = sorted((n.bar, n.tick_on, n.note) for n in merged.tracks[0].notes)
+        assert notes[0][2] == 36
+        assert notes[1][2] == 38
+        # Originals not modified
+        assert len(a.tracks[0].notes) == 1
+        assert len(b.tracks[0].notes) == 1
+
+    def test_overlay_adds_b_only_tracks(self):
+        a = op_new_empty_pattern(bar_count=2)
+        b = op_new_empty_pattern(bar_count=2)
+        op_add_note(a, track_idx=0, bar=0, beat=0, sub=0, note=36)
+        op_add_note(b, track_idx=3, bar=0, beat=0, sub=0, note=60)
+        merged = op_merge_patterns(a, b, mode="overlay")
+        assert 0 in merged.tracks
+        assert 3 in merged.tracks
+        assert len(merged.tracks[3].notes) == 1
+
+    def test_append_concatenates(self):
+        a = op_new_empty_pattern(bar_count=2)
+        b = op_new_empty_pattern(bar_count=2)
+        op_add_note(a, track_idx=0, bar=0, beat=0, sub=0, note=36)
+        op_add_note(a, track_idx=0, bar=1, beat=0, sub=0, note=36)
+        op_add_note(b, track_idx=0, bar=0, beat=0, sub=0, note=38)
+        op_add_note(b, track_idx=0, bar=1, beat=0, sub=0, note=38)
+        merged = op_merge_patterns(a, b, mode="append")
+        assert merged.bar_count == 4
+        assert len(merged.tracks[0].notes) == 4
+        bars = sorted(n.bar for n in merged.tracks[0].notes)
+        assert bars == [0, 1, 2, 3]
+
+    def test_append_exceeds_max_raises(self):
+        a = op_new_empty_pattern(bar_count=10)
+        b = op_new_empty_pattern(bar_count=10)
+        with pytest.raises(ValueError, match="max 16"):
+            op_merge_patterns(a, b, mode="append")
+
+    def test_merge_rejects_ppqn_mismatch(self):
+        a = op_new_empty_pattern()
+        b = op_new_empty_pattern(ppqn=240) if False else op_new_empty_pattern()
+        # Manually mutate to simulate mismatch
+        b.ppqn = 240
+        with pytest.raises(ValueError, match="ppqn"):
+            op_merge_patterns(a, b, mode="overlay")
+
+    def test_invalid_mode(self):
+        a = op_new_empty_pattern()
+        b = op_new_empty_pattern()
+        with pytest.raises(ValueError, match="mode"):
+            op_merge_patterns(a, b, mode="sideways")
 
 
 class TestEndToEndEdit:

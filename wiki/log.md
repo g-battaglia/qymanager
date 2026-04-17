@@ -2,6 +2,83 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29j | Editor: shift-time --all-tracks, merge (21 comandi)
+
+### Obiettivo
+Continuazione autonoma. Aggiungere le ultime feature multi-track rimaste: shift sincronizzato di tutte le tracce e merge di due pattern (overlay o append).
+
+### Modifiche
+
+**`op_shift_time` refactor**: accetta `track_idx=None` per shiftare tutte le tracce contemporaneamente (return somma note kept su ogni track). Back-compat: chiamate esistenti con int invariate.
+
+**`op_merge_patterns(a, b, mode)`**: nuova funzione pura che ritorna un nuovo `QuantizedPattern` (inputs non mutati):
+- `mode='overlay'`: richiede bar_count uguali; tracce con stesso idx unite e ordinate, tracce b-only aggiunte
+- `mode='append'`: concatena b dopo a; bar_count risultante = a + b (max 16)
+
+Validazione: ppqn / time_sig devono coincidere.
+
+### CLI wiring
+
+**shift-time estesa**: nuovo flag `--all-tracks` (mutuamente esclusivo con `--track`)
+```
+shift-time pattern.json --all-tracks --ticks 240
+```
+
+**Nuovo `merge`**:
+```
+merge A.json B.json -o C.json --mode overlay
+merge A.json B.json -o C.json --mode append
+```
+
+Entrambi i entry point (argparse + Typer `qymanager edit`) esposti.
+
+### Test coverage
+
+`tests/test_pattern_editor.py` da 47 → **55 test**:
+- `TestShiftTimeAllTracks` (1): shift su tutte le tracce, bar bounds rispettati
+- `TestMerge` (7): overlay richiede stesso bar_count, overlay unisce stessa track, overlay aggiunge b-only track, append concatena con offset bar, append max 16 bar, ppqn mismatch, invalid mode
+
+**Risultato suite completa**: 119/119 pytest verdi.
+
+### Workflow validato
+
+```bash
+# Crea due parti
+qymanager edit new-empty -o /tmp/p_a.json --bars 2 --name PART_A
+qymanager edit add-note /tmp/p_a.json --track 0 --bar 0 --beat 0 --note 36
+qymanager edit new-empty -o /tmp/p_b.json --bars 2 --name PART_B
+qymanager edit add-note /tmp/p_b.json --track 2 --bar 0 --beat 0 --note 60
+
+# Unisci overlay (stesso bar range, tracce unite)
+qymanager edit merge /tmp/p_a.json /tmp/p_b.json -o /tmp/overlay.json --mode overlay
+# Output: 2 bars, 2 tracks, 3 notes
+
+# Unisci append (concatena b dopo a)
+qymanager edit merge /tmp/p_a.json /tmp/p_b.json -o /tmp/append.json --mode append
+# Output: 4 bars, 2 tracks, 3 notes (B.note a bar 2)
+
+# Shift coordinato
+qymanager edit shift-time /tmp/append.json --all-tracks --ticks 240
+```
+
+### Wiki + STATUS
+
+- `wiki/pattern-editor.md` — 21 comandi, roadmap rinfrescata (undo/redo #1, GUI #4)
+- `wiki/log.md` — entry session 29j
+- `STATUS.md` — editor %, 21 comandi, 55 test editor
+
+### File modificati
+- `midi_tools/pattern_editor.py` — op_shift_time refactor + op_merge_patterns + cmd_merge + subparser
+- `cli/commands/edit.py` — shift-time estesa con --all-tracks, nuovo merge command
+- `tests/test_pattern_editor.py` — 8 nuovi test
+
+### Limitazioni residue
+- No undo/redo (priorità #1 ora)
+- Humanize/velocity-curve multi-track ancora non supportati
+- Hardware loopback test sempre non eseguito
+
+---
+
 ## [2026-04-17] session-29i | Editor: humanize-timing, velocity-curve (20 comandi totali)
 
 ### Obiettivo

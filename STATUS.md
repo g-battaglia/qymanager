@@ -3,7 +3,7 @@
 > Single-source north-star del progetto QY70 ↔ QY700 reverse engineering.
 > Aggiornato a ogni chiusura di sessione.
 
-**Ultimo aggiornamento**: 2026-04-17 (Session 29i — editor: humanize-timing, velocity-curve)
+**Ultimo aggiornamento**: 2026-04-17 (Session 29j — editor: shift-time --all-tracks, merge)
 **Obiettivo finale**: Editor completo pattern + conversione bidirezionale QY700 ↔ QY70
 
 ---
@@ -15,8 +15,8 @@
 | Conversione QY70 → QY700 (Pipeline B capture-based) | **Production-ready** | 100% |
 | Conversione QY70 → QY700 (Pipeline A SysEx decode) | Research-blocked | 10% |
 | Conversione QY700 → QY70 (metadata only) | Parziale (musicalmente errato) | 30% |
-| Editor pattern (CLI prototipo) | **In progress** | ~28% |
-| **Obiettivo finale complessivo** | In progress | **~40-50%** |
+| Editor pattern (CLI prototipo) | **In progress** | ~33% |
+| **Obiettivo finale complessivo** | In progress | **~42-52%** |
 
 ---
 
@@ -27,8 +27,8 @@
 - **Decoder sparse** (user patterns): 100% su 7/7 casi noti (rotation R=9×(i+1))
 - **Q7P format**: read + write + validator con invariant phrase-stream (0 warnings)
 - **Hardware I/O**: Init handshake, bulk dump, send style, capture playback tutti funzionanti
-- **Editor CLI prototipo** (`midi_tools/pattern_editor.py` + `cli/commands/edit.py`): **20 sub-command** — export, summary, list-notes, new-empty, add-note, remove-note, transpose, shift-time, copy-bar, clear-bar, kit-remap, humanize, humanize-timing, velocity-curve, set-velocity, set-tempo, set-name, resize, diff, build. Accessibile via modulo (`python3 -m midi_tools.pattern_editor`) **e** CLI principale (`qymanager edit`). Test roundtrip bijective JSON ↔ QuantizedPattern
-- **Test suite**: **111 test** regression verdi (47 editor + 31 pipeline + 33 altri)
+- **Editor CLI prototipo** (`midi_tools/pattern_editor.py` + `cli/commands/edit.py`): **21 sub-command** — export, summary, list-notes, new-empty, add-note, remove-note, transpose, shift-time (`--all-tracks` supportato), copy-bar, clear-bar, kit-remap, humanize, humanize-timing, velocity-curve, set-velocity, set-tempo, set-name, resize, diff, merge (overlay/append), build. Accessibile via modulo (`python3 -m midi_tools.pattern_editor`) **e** CLI principale (`qymanager edit`). Test roundtrip bijective JSON ↔ QuantizedPattern
+- **Test suite**: **119 test** regression verdi (55 editor + 31 pipeline + 33 altri)
 
 Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decoder-status.md](wiki/decoder-status.md)
 
@@ -77,7 +77,7 @@ Vedi [wiki/pattern-editor.md](wiki/pattern-editor.md) per comandi e workflow det
 Ordine suggerito (ciascuno = 1+ sessione):
 
 1. **Editor hardware test**: caricare Q7P editato sul QY700 con `safe_q7p_tester.py`, verificare playback
-2. **Editor features**: multi-track shift (`shift-time --all`), pattern merge, undo/redo via snapshot
+2. **Editor features**: undo/redo via snapshot, humanize/velocity-curve multi-track
 3. **Hardware**: catturare ground truth patterns A/B/C/D (chord semplici) per validare chord decoder dense
 4. **Editor GUI**: opzionale, dopo consolidamento CLI
 5. **Decoder dense** (parallelo, long-term): mappare 42B super-cycle SGT → MIDI note
