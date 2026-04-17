@@ -2,6 +2,82 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-29f | Editor CLI su Pipeline B — prototipo funzionante
+
+### Obiettivo
+Scelta strategica (già formalizzata in Session 29e): invece di continuare decoder dense (rischioso, 10-30 sessioni), prototipare editor CLI sopra Pipeline B per consegnare prodotto funzionante prima. Session 29f implementa la prima iterazione.
+
+### Implementazione (task #73)
+
+**Nuovo**: `midi_tools/pattern_editor.py` (~500 righe) con 15 sub-command:
+- `export capture.json -o pattern.json` — converte capture a formato editabile
+- `summary / list-notes` — ispezione pattern
+- `add-note / remove-note` — modifica struttura nota per nota
+- `transpose` — sposta melody di N semitoni (drum tracks rifiutate)
+- `shift-time` — sposta note di N ticks (overflow droppato, bar/beat/sub ricalcolati)
+- `copy-bar` — duplica contenuto bar su altro bar (`--append` per merge)
+- `clear-bar` — rimuove tutto un bar
+- `kit-remap` — rimappa drum-note (es. 36→38 kick→snare)
+- `humanize` — random ±N velocity (seed opzionale per riproducibilità)
+- `set-velocity / set-tempo / set-name` — modifica proprietà
+- `build pattern.json -o out --scaffold data/q7p/DECAY.Q7P` — rigenera Q7P + SMF
+
+**Quantizer esteso**: `quantizer.py` ora expone `pattern_to_dict`, `dict_to_pattern`, `load_quantized_json` (inverso di `export_json`). Refactor non-breaking: `export_json` usa ora `pattern_to_dict`.
+
+### Test coverage (nuovo file)
+
+`tests/test_pattern_editor.py` — 24 test:
+- Roundtrip serializzazione: `pattern_to_dict ↔ dict_to_pattern` preserva BPM/tracks/note_count/fields
+- File roundtrip: `export_json ↔ load_quantized_json` su SGT capture
+- Auto-detection formato: `load_pattern` distingue capture JSON da quantized JSON
+- Transpose: melody up (+2), drum rejection, out-of-range skip
+- Add/remove: sort invariant, nuova traccia auto-creata, bad-bar rejection
+- Set velocity: tutti / filtrato per bar
+- Shift-time: forward con bar recompute, backward con underflow drop
+- Copy-bar: replace-mode, same src/dst noop, signature preservata
+- Clear-bar: rimuove solo il bar target
+- Kit-remap: drum success count, melody-reject
+- Humanize: deterministic con seed, zero=noop
+- End-to-end: export → edit → build Q7P 5120B con 0 warnings
+- CLI end-to-end: `main(["export", ...])` → `main(["build", ...])`
+
+**Risultato suite completa**: 88/88 pytest verdi (24 editor + 31 pipeline + 33 core).
+
+### Validazione manuale
+
+Workflow testato su SGT capture reale:
+```bash
+pattern_editor export sgt_full_capture.json -o /tmp/sgt_edit.json
+pattern_editor transpose /tmp/sgt_edit.json --track 5 --semitones 3  # PAD +3
+pattern_editor set-tempo /tmp/sgt_edit.json 140
+pattern_editor set-name /tmp/sgt_edit.json EDITED01
+pattern_editor build /tmp/sgt_edit.json -o /tmp/sgt_edited --scaffold data/q7p/DECAY.Q7P
+```
+
+Output: `sgt_edited.Q7P` (5120B), `sgt_edited.mid`, 0 validator warning. PAD notes trasposte da `[65,67,69,71,72,74,76,77]` a `[68,70,72,74,75,77,79,80]`.
+
+### Wiki + STATUS
+
+- Nuovo `wiki/pattern-editor.md` — documentazione completa CLI, workflow, JSON format, limitazioni, roadmap
+- Aggiornato `wiki/index.md` con link editor
+- Aggiornato `STATUS.md`: Editor CLI prototipo passa da "Non iniziato 0%" → "In progress ~15%", obiettivo finale complessivo da ~30-40% → **~35-45%**
+- Prossimi step prioritari riordinati: hardware test editor output è ora #1
+
+### Limitazioni note
+
+- No time-shift / copy-paste bar / humanize (roadmap Session 30+)
+- Drum track uneditabile via transpose (serve kit-remap dedicato)
+- Hardware loopback non ancora testato (Q7P editato → QY700 → playback)
+
+### File modificati
+- `midi_tools/quantizer.py` — aggiunte `pattern_to_dict`, `dict_to_pattern`, `load_quantized_json`
+- `midi_tools/pattern_editor.py` — **nuovo**, CLI + operazioni pure
+- `tests/test_pattern_editor.py` — **nuovo**, 15 test
+- `wiki/pattern-editor.md` — **nuovo**, documentazione editor
+- `wiki/index.md`, `STATUS.md` — aggiornamenti
+
+---
+
 ## [2026-04-17] session-29 | Pipeline B estesa 6-bar, validator invariant, SGT bitstream density
 
 ### DECAY → QY70 tentativo (confermato: converter QY700→QY70 produce bitstream errato)

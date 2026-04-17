@@ -327,7 +327,14 @@ def _detect_loop_length(
 
 
 def export_json(pattern: QuantizedPattern, output_path: str) -> None:
-    """Export quantized pattern as JSON for debugging."""
+    """Export quantized pattern as JSON for debugging/editing."""
+    data = pattern_to_dict(pattern)
+    with open(output_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def pattern_to_dict(pattern: QuantizedPattern) -> dict:
+    """Serialize a QuantizedPattern to a plain dict (JSON-ready)."""
     data = {
         "bpm": pattern.bpm,
         "ppqn": pattern.ppqn,
@@ -355,9 +362,56 @@ def export_json(pattern: QuantizedPattern, output_path: str) -> None:
                 for n in track.notes
             ],
         }
+    return data
 
-    with open(output_path, "w") as f:
-        json.dump(data, f, indent=2)
+
+def dict_to_pattern(data: dict) -> QuantizedPattern:
+    """Deserialize a dict (from pattern_to_dict) back to QuantizedPattern.
+
+    This is the inverse of pattern_to_dict / export_json. Used by the
+    pattern editor to reload an edited JSON and rebuild Q7P output.
+    """
+    ppqn = int(data["ppqn"])
+    time_sig = tuple(data["time_sig"])
+    ticks_per_bar = ppqn * time_sig[0] * 4 // time_sig[1]
+
+    tracks = {}
+    for idx_str, tdata in data.get("tracks", {}).items():
+        idx = int(idx_str)
+        track = QuantizedTrack(
+            track_idx=idx,
+            channel=int(tdata["channel"]),
+            is_drum=bool(tdata.get("is_drum", False)),
+        )
+        for n in tdata.get("notes", []):
+            qn = QuantizedNote(
+                note=int(n["note"]),
+                velocity=int(n["vel"]),
+                tick_on=int(n["tick_on"]),
+                tick_dur=int(n["tick_dur"]),
+                bar=int(n["bar"]),
+                beat=int(n["beat"]),
+                sub=int(n["sub"]),
+            )
+            qn._bar_ticks = ticks_per_bar
+            track.notes.append(qn)
+        track.notes.sort(key=lambda n: (n.bar, n.tick_on, n.note))
+        tracks[idx] = track
+
+    return QuantizedPattern(
+        bpm=float(data["bpm"]),
+        ppqn=ppqn,
+        time_sig=time_sig,
+        bar_count=int(data["bar_count"]),
+        tracks=tracks,
+        name=str(data.get("name", "")),
+    )
+
+
+def load_quantized_json(path: str) -> QuantizedPattern:
+    """Load a QuantizedPattern from a JSON file written by export_json."""
+    with open(path) as f:
+        return dict_to_pattern(json.load(f))
 
 
 # --- CLI ---
