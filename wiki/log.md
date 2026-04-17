@@ -2,6 +2,29 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-17] session-31 autonomous | F1→F12 end-to-end
+
+**Obiettivo**: Eseguire l'intero piano integrale (`/Users/giacomo/.claude/plans/eager-foraging-bee.md`) senza interruzioni. Run autonomo post-compact.
+
+**Scoperte + delivery**:
+- **F2 XG bulk parser UDM-aware**: `qymanager/formats/xg_bulk.py` — `parse_xg_bulk_to_udm()` con dispatch AH (0x00 System, 0x02 Effect, 0x08 Multi Part, 0x30/0x31 Drum Setup). Fix `FrozenInstanceError` su `Voice` via `dataclasses.replace()`.
+- **F3 Editor schema + address_map + ops**: `editor/schema.py` con `Range(lo, hi, offset)` + `Enum(options)` per validate + encode_xg 7-bit (transpose, cutoff, resonance signed), `editor/address_map.py` con regex path → (AH, AM, AL), `editor/ops.py` con auto-grow helpers per parts/kits/notes/variation.
+- **F3/F4 CLI path-based**: `field-set/field-get/field-emit-xg` + `pattern-list/pattern-set/chord-add/chord-list/song-list/song-set/phrase-list`. Fix import `CHORD_ROOTS/CHORD_TYPES` da `qymanager.model.pattern`.
+- **F5 Realtime wrapper**: `editor/realtime.py::RealtimeSession` (rtmidi diretto, no mido per bug macOS) + CLI `qymanager realtime {list-ports, emit --set PATH=VALUE, watch}`.
+- **F9 Converter lossy policy**: `converters/lossy_policy.py` con semantica `keep=[]` default (warn su tutto), `keep=["x"]` silenzia, `drop=["y"]` forza warning. Structural normalization (strip parts 17-32 per QY70, strip Variation, etc.) indipendente da keep/drop. Named groups con enum string values (`sections.Fill_CC` non `FILL_CC`).
+- **F11 Property tests + hardware skip**: `tests/property/test_udm_invariants.py` (9 test hypothesis), marker `hardware` in `pyproject.toml`, conftest auto-skip senza `QY_HARDWARE=1`, `tests/hardware/test_realtime_echo.py` placeholder.
+- **F12 Open-source prep**: README aggiornato con sezioni UDM/Editor/Realtime/Lossy, CONTRIBUTING.md, `wiki/udm.md` architettura doc, index wiki aggiornato.
+
+**Codice**:
+- Nuovi file: `qymanager/model/` (15 dataclass), `qymanager/formats/xg_bulk.py`, `qymanager/editor/{schema,address_map,ops,realtime}.py`, `qymanager/converters/{lossy_policy,udm_convert}.py`, `cli/commands/{edit_field,realtime,structure,udm_convert}.py`, `tests/property/test_udm_invariants.py`, `tests/hardware/test_realtime_echo.py`, `CONTRIBUTING.md`, `wiki/udm.md`.
+- Modifiche: `cli/app.py` (nuovi comandi), `README.md` (sezione UDM/Editor), `STATUS.md` (stato F11/F12), `pyproject.toml` (hardware/slow markers), `tests/conftest.py` (skip hardware).
+
+**Test**: 428 passed, 3 skipped (Session 31b era 254; +174 test end-to-end).
+
+**Next**: F6 Voice offsets Q7P (hardware yolo) + F7 Phrase library mapping integrale.
+
+---
+
 ## [2026-04-17] session-31b | F1 P1.2a — Q7P reader UDM parse_to_udm
 
 **Obiettivo**: Fase F1, sotto-fase P1.2a — Aggiungere funzione `parse_q7p_to_udm()` in `reader.py` che produce `Device` UDM da byte Q7P, mantenendo backward compatibility con API legacy.

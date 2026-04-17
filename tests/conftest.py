@@ -1,9 +1,23 @@
 """Test configuration and fixtures."""
 
+import os
+
 import pytest
 from pathlib import Path
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip hardware tests unless QY_HARDWARE=1 is set in the environment."""
+    if os.environ.get("QY_HARDWARE") == "1":
+        return
+    skip_hw = pytest.mark.skip(
+        reason="hardware tests skipped (set QY_HARDWARE=1 to enable)"
+    )
+    for item in items:
+        if "hardware" in item.keywords:
+            item.add_marker(skip_hw)
 
 
 @pytest.fixture

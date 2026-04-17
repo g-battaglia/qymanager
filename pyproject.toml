@@ -44,6 +44,7 @@ dev = [
     "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
+    "hypothesis>=6.141.1",
 ]
 
 [project.scripts]
@@ -61,6 +62,10 @@ packages = ["qymanager", "cli"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+markers = [
+    "hardware: tests that require a physical QY70/QY700 device connected via USB-MIDI",
+    "slow: tests that take more than ~1s to execute",
+]
 
 [tool.black]
 line-length = 100

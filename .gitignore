@@ -86,3 +86,6 @@ dmypy.json
 
 # Local configuration
 *.local
+
+# ralph-opencode tool config (not project)
+.ralph/

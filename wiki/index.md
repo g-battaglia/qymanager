@@ -67,6 +67,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 - [Pattern Backup & Restore](pattern-restore.md) — Capture QY70 patterns to .syx, restore via MIDI
 - [Pattern Directory](pattern-directory.md) — AH=0x05 user pattern name list (20 × 16B)
 - [Pattern Editor](pattern-editor.md) — Pipeline B CLI editor: export/edit/build (Session 29f)
+- [Unified Data Model (UDM)](udm.md) — Format-agnostic Device schema + editor architecture (F1–F5)
 
 ## Status & History
 

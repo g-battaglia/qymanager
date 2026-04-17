@@ -10,11 +10,14 @@ QY Manager (formerly QYConv) is a Python library and CLI tool for converting, an
 
 - **Modern CLI** with Rich formatting, bar graphics, and progress indicators
 - **Complete pattern analysis** - view ALL configuration data with visual representations
-- **Bidirectional conversion** - QY70 ↔ QY700
-- **Read/Write both formats** - Parse and generate valid files
-- **Hex dump inspection** - Raw data analysis with annotated regions
-- **File structure visualization** - Visual maps and density analysis
-- **Programmatic editing** - Modify patterns via Python API
+- **Bidirectional conversion** - QY70 ↔ QY700 with granular lossy policy (`--keep/--drop`)
+- **Unified Data Model** (UDM) — single format-agnostic schema for all parsers/emitters
+- **Read/Write formats** - `.syx` (sparse + XG bulk), `.q7p`, `.blk`, `.mid` (SMF out)
+- **Complete offline editor** - System, Multi Part, Drum Setup, Effect, Song, Pattern, Chord via CLI + Python API
+- **Realtime XG editor** - every UDM edit can be emitted live over MIDI via `--realtime`
+- **Hex dump + file structure visualization** - annotated maps and density analysis
+- **Property tests** - Hypothesis-based invariants on UDM/XG roundtrip
+- **Hardware-in-the-loop markers** - opt-in `QY_HARDWARE=1` device tests
 
 ## Installation
 
@@ -346,6 +349,80 @@ qymanager convert pattern.Q7P -o style.syx
 # With template
 qymanager convert style.syx -o pattern.Q7P -t template.Q7P
 ```
+
+---
+
+## Unified Data Model (UDM) & Editor
+
+The v0.4 series introduces a **format-agnostic Device model** in `qymanager.model`.
+All parsers (Q7P, QY70 `.syx` sparse, XG bulk, SMF) decode into the same `Device` schema;
+all emitters consume it. The editor CLI and realtime XG wrapper operate on the model,
+not on raw bytes — so you can edit any parameter without caring whether the source file
+is a `.syx` or a `.q7p`.
+
+```
+Device
+├── system            # master_tune, master_volume, transpose, midi_sync, ...
+├── multi_part[16]    # voice (bank_msb/lsb/program), volume, pan, send levels, EG, ...
+├── drum_setup[2]     # per-note pitch, level, pan, send, alt-group, note-off mode
+├── effects           # reverb / chorus / variation (type + 11-43 params)
+├── songs[]           # tracks, chord track, tempo changes
+├── patterns[]        # sections, chord track, groove ref, phrase references
+└── phrases[]         # user phrases (events, category, type)
+```
+
+### Offline editing (path-based DSL)
+
+```bash
+# Edit a single field and save UDM as JSON
+qymanager field-set multi_part[0].voice.program=12 --in pattern.q7p --out pattern.json
+
+# Read a single field
+qymanager field-get multi_part[0].volume --in pattern.q7p
+
+# Emit just the XG Parameter Change bytes (no MIDI I/O)
+qymanager field-emit-xg system.master_volume --value 100
+
+# Structured commands for patterns/songs/chords
+qymanager pattern-list pattern.q7p
+qymanager pattern-set pattern.q7p --idx 0 --name NEW --tempo 128 --out out.q7p
+qymanager chord-add pattern.q7p --measure 1 --beat 1 --root C --type MAJ --out out.q7p
+qymanager song-list song.mid
+```
+
+### Realtime editing (live XG Parameter Change)
+
+```bash
+# List available MIDI ports
+qymanager realtime list-ports
+
+# Watch XG Parameter Changes coming out of the device
+qymanager realtime watch --port "UR22C Port 1"
+
+# Send one or more UDM edits as live XG
+qymanager realtime emit --port "UR22C Port 1" \
+    --set system.master_volume=100 \
+    --set multi_part[0].volume=115
+```
+
+Under the hood the CLI composes `qymanager.editor.ops.make_xg_messages(device, edits)`
+which validates against `qymanager.editor.schema`, resolves the XG `(AH, AM, AL)` triple
+via `qymanager.editor.address_map`, and sends raw SysEx via `python-rtmidi`
+(we avoid `mido` on macOS because of a known SysEx-drop bug — see
+`memory/feedback_mido_sysex_bug.md`).
+
+### Converter lossy policy
+
+```bash
+# Convert QY70 sparse → QY700 UDM JSON, warning only on fill CC/DD
+qymanager udm-convert SGT.syx -o SGT.udm.json --target-model QY700 \
+    --drop sections.Fill_CC,sections.Fill_DD --warn-file SGT.warnings.json
+```
+
+The policy distinguishes **structural normalization** (always applied when switching
+target model — e.g., parts 17-32 stripped when going to QY70) from **warning emission**
+(controlled by `--keep/--drop`). Every warning lists the UDM path that was lost or adapted,
+so a future round-trip tool can recover.
 
 ---
 
