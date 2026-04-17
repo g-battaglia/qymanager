@@ -17,6 +17,7 @@ from cli.commands.tracks import tracks
 from cli.commands.sections import sections
 from cli.commands.phrase import phrase
 from cli.commands.edit import edit_app
+from cli.commands.edit_field import field_emit_xg, field_get, field_set
 from cli.commands.xg import app as xg_app
 
 __version__ = "0.4.0"
@@ -43,6 +44,9 @@ app.command(name="sections")(sections)
 app.command(name="phrase")(phrase)
 app.add_typer(edit_app, name="edit")
 app.add_typer(xg_app, name="xg")
+app.command(name="field-set")(field_set)
+app.command(name="field-get")(field_get)
+app.command(name="field-emit-xg")(field_emit_xg)
 
 
 @app.command()
