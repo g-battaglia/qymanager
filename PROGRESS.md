@@ -160,8 +160,8 @@
 - [x] **UX.10** PatternOverview component: mixer-style track strips per section, rhythm/melodic separation
 - [x] **UX.11** Dashboard redesign: clean landing with format badges
 - [x] **UX.12** Track extraction helpers + tests (14 frontend tests total, 479 backend tests)
-- [ ] **UX.13** Multi Part overview panel (when multi_part has data)
-- [ ] **UX.14** Effects overview panel (reverb/chorus/variation type + level)
+- [x] **UX.13** Multi Part overview panel (when multi_part has data)
+- [x] **UX.14** Effects overview panel (reverb/chorus/variation type + level)
 - [ ] **UX.15** Drum Setup overview panel (when drum_setup has data)
 
 ---
