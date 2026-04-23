@@ -117,7 +117,7 @@ export default function DeviceView() {
         <main className="min-w-0 px-0 pt-4 lg:px-6 lg:pt-0">
           <div className="space-y-4">
             {selected === OVERVIEW_KEY ? (
-              <DeviceOverview device={device} />
+              <DeviceOverview device={device} onSelectNode={setSelected} />
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-border/70 bg-card px-5 py-4 shadow-sm">

@@ -3,8 +3,8 @@ import {
   countDrumNoteOverrides,
   describeImportContext,
   getFirstPattern,
-  getPatternSections,
 } from "@/lib/udm"
+import { PatternOverview } from "@/components/PatternOverview"
 
 function StatCard({
   label,
@@ -31,15 +31,7 @@ function StatCard({
   )
 }
 
-function SectionPill({ label }: { label: string }) {
-  return (
-    <span className="rounded-full border border-border/80 bg-muted/60 px-3 py-1 text-xs font-medium text-foreground/80">
-      {label}
-    </span>
-  )
-}
-
-export function DeviceOverview({ device }: { device: UdmDevice }) {
+export function DeviceOverview({ device, onSelectNode }: { device: UdmDevice; onSelectNode: (path: string) => void }) {
   const firstPattern = getFirstPattern(device)
   const firstPatternName = firstPattern?.["name"]
   const firstPatternTempo = firstPattern?.["tempo_bpm"]
@@ -56,7 +48,6 @@ export function DeviceOverview({ device }: { device: UdmDevice }) {
     typeof firstPatternName === "string" && firstPatternName.trim()
       ? firstPatternName
       : "Untitled pattern"
-  const sectionLabels = getPatternSections(device)
   const importContext = describeImportContext(device)
 
   return (
@@ -105,24 +96,7 @@ export function DeviceOverview({ device }: { device: UdmDevice }) {
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Visible In This Import
-          </p>
-          <h3 className="mt-2 text-xl font-semibold">Device structure at a glance</h3>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            The left navigator exposes the full imported UDM structure. Use it to inspect
-            system data, pattern structure, effects, phrases, utility flags, and any other
-            section present in the file.
-          </p>
-          {sectionLabels.length > 0 ? (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {sectionLabels.map((label) => (
-                <SectionPill key={label} label={label.replace(/_/g, " ")} />
-              ))}
-            </div>
-          ) : (
-            <p className="mt-5 text-sm text-muted-foreground">No named pattern sections detected.</p>
-          )}
+          <PatternOverview device={device} onSelectNode={onSelectNode} />
         </div>
 
         <div className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">

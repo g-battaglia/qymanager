@@ -138,3 +138,71 @@ export function describeImportContext(device: UdmDevice): string | null {
   }
   return null
 }
+
+export type TrackInfo = {
+  index: number
+  midiChannel: number
+  voice: { bank_msb: number; bank_lsb: number; program: number }
+  volume: number
+  pan: number
+  reverbSend: number
+  chorusSend: number
+  mute: boolean
+  transposeRule: string
+  phraseRef: number
+  path: string
+}
+
+export type SectionInfo = {
+  name: string
+  enabled: boolean
+  tracks: TrackInfo[]
+  path: string
+}
+
+export function getSectionsWithTracks(device: UdmDevice): SectionInfo[] {
+  const pattern = device.patterns[0] as Record<string, unknown> | undefined
+  if (!pattern) return []
+
+  const sections = pattern.sections as Record<string, Record<string, unknown>> | undefined
+  if (!sections) return []
+
+  return Object.entries(sections).map(([sectionName, section]) => {
+    const rawTracks = section.tracks as Record<string, unknown>[] | undefined
+    const tracks: TrackInfo[] = (rawTracks ?? []).map((t, i) => ({
+      index: i,
+      midiChannel: Number(t.midi_channel ?? 0),
+      voice: {
+        bank_msb: Number((t.voice as Record<string, unknown>)?.bank_msb ?? 0),
+        bank_lsb: Number((t.voice as Record<string, unknown>)?.bank_lsb ?? 0),
+        program: Number((t.voice as Record<string, unknown>)?.program ?? 0),
+      },
+      volume: Number(t.volume ?? 100),
+      pan: Number(t.pan ?? 64),
+      reverbSend: Number(t.reverb_send ?? 0),
+      chorusSend: Number(t.chorus_send ?? 0),
+      mute: Boolean(t.mute),
+      transposeRule: String(t.transpose_rule ?? "Bypass"),
+      phraseRef: Number(t.phrase_ref ?? 0),
+      path: `patterns[0].sections.${sectionName}.tracks[${i}]`,
+    }))
+
+    return {
+      name: String(section.name ?? sectionName),
+      enabled: Boolean(section.enabled),
+      tracks,
+      path: `patterns[0].sections.${sectionName}`,
+    }
+  })
+}
+
+export function panLabel(value: number): string {
+  if (value === 0) return "Rnd"
+  if (value < 64) return `L${64 - value}`
+  if (value > 64) return `R${value - 64}`
+  return "C"
+}
+
+export function isDrumChannel(channel: number): boolean {
+  return channel === 9
+}
