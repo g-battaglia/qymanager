@@ -310,9 +310,80 @@ def resolve_voice(req: VoiceResolveRequest) -> VoiceResolveResponse:
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
+# General MIDI drum kit note names (channel 10). Standard across XG and GM.
+GM_DRUM_NOTES: dict[int, str] = {
+    27: "Laser",
+    28: "Whip",
+    29: "Scratch Push",
+    30: "Scratch Pull",
+    31: "Stick",
+    32: "Square Click",
+    33: "Metronome Click",
+    34: "Metronome Bell",
+    35: "Kick 2",
+    36: "Kick 1",
+    37: "Side Stick",
+    38: "Snare 1",
+    39: "Hand Clap",
+    40: "Snare 2",
+    41: "Low Tom 2",
+    42: "Closed Hat",
+    43: "Low Tom 1",
+    44: "Pedal Hat",
+    45: "Mid Tom 2",
+    46: "Open Hat",
+    47: "Mid Tom 1",
+    48: "High Tom 2",
+    49: "Crash 1",
+    50: "High Tom 1",
+    51: "Ride 1",
+    52: "Chinese Cymbal",
+    53: "Ride Bell",
+    54: "Tambourine",
+    55: "Splash",
+    56: "Cowbell",
+    57: "Crash 2",
+    58: "Vibraslap",
+    59: "Ride 2",
+    60: "High Bongo",
+    61: "Low Bongo",
+    62: "Mute Hi Conga",
+    63: "Open Hi Conga",
+    64: "Low Conga",
+    65: "High Timbale",
+    66: "Low Timbale",
+    67: "High Agogo",
+    68: "Low Agogo",
+    69: "Cabasa",
+    70: "Maracas",
+    71: "Short Whistle",
+    72: "Long Whistle",
+    73: "Short Guiro",
+    74: "Long Guiro",
+    75: "Claves",
+    76: "High Wood Block",
+    77: "Low Wood Block",
+    78: "Mute Cuica",
+    79: "Open Cuica",
+    80: "Mute Triangle",
+    81: "Open Triangle",
+    82: "Shaker",
+    83: "Jingle Bell",
+    84: "Bell Tree",
+    85: "Castanets",
+    86: "Mute Surdo",
+    87: "Open Surdo",
+}
+
+
 def _note_name(note: int) -> str:
     octave = note // 12 - 1
     return f"{NOTE_NAMES[note % 12]}{octave}"
+
+
+def _drum_note_name(note: int) -> str:
+    """GM drum name for channel-10 note numbers; falls back to pitch."""
+    return GM_DRUM_NOTES.get(note, _note_name(note))
 
 
 @router.get("/devices/{did}/phrases", response_model=PhrasesResponse)
@@ -439,6 +510,7 @@ def _parse_syx_phrases(raw: bytes, device: object) -> PhrasesResponse:
         for ev in events:
             if ev["ctrl"]:
                 continue
+            name = _drum_note_name(ev["note"]) if is_drum else _note_name(ev["note"])
             phrase_events.append(
                 PhraseEventModel(
                     tick=int(ev["tick"]),
@@ -446,7 +518,7 @@ def _parse_syx_phrases(raw: bytes, device: object) -> PhrasesResponse:
                     kind="drum" if is_drum else "note",
                     data1=int(ev["note"]),
                     data2=int(ev["velocity"]),
-                    note_name=_note_name(ev["note"]),
+                    note_name=name,
                     velocity=int(ev["velocity"]) if ev["velocity"] > 0 else None,
                 )
             )

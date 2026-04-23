@@ -25,6 +25,8 @@ from qymanager.model import (
     ChorusBlock,
     Device,
     DeviceModel,
+    DrumNote,
+    DrumSetup,
     Effects,
     MultiPart,
     ReverbBlock,
@@ -272,9 +274,83 @@ def _apply_xg_message(device: Device, msg: XGRawMessage) -> None:
     elif msg.ah == AH_MULTI_PART:
         _apply_multi_part(device, msg)
     elif msg.ah in (AH_DRUM_SETUP_1, AH_DRUM_SETUP_2):
-        # Drum setup decoding left to later phase (needs DrumSetup model).
-        # Silently accepted; raw bytes retained in _raw_passthrough.
-        pass
+        _apply_drum_setup(device, msg)
+
+
+def _ensure_drum_setup(device: Device, kit_index: int) -> DrumSetup:
+    for ds in device.drum_setup:
+        if ds.kit_index == kit_index:
+            return ds
+    ds = DrumSetup(kit_index=kit_index, notes={})
+    device.drum_setup.append(ds)
+    return ds
+
+
+def _apply_drum_setup(device: Device, msg: XGRawMessage) -> None:
+    """Fold an XG Drum Setup Parameter Change (AH 0x30/0x31) into UDM.
+
+    AH=0x30 ↔ kit 1, AH=0x31 ↔ kit 2. AM = drum note (13..84). AL =
+    per-note field (see XG System Level 1 spec v1.1, table 2-5):
+
+        0x00 pitch_coarse (signed, 0x40 = 0)
+        0x01 pitch_fine   (signed, 0x40 = 0)
+        0x02 level        (0..127)
+        0x03 alt_group    (0..127)
+        0x04 pan          (0..127, 0x40 = center)
+        0x05 reverb_send  (0..127)
+        0x06 chorus_send  (0..127)
+        0x07 variation_send (0..127)
+        0x0B filter_cutoff (signed)
+        0x0C filter_resonance (signed)
+        0x0D eg_attack    (signed)
+        0x0E eg_decay1    (signed)
+        0x0F eg_decay2    (signed)
+
+    Values outside the 13..84 note range or missing data bytes are
+    ignored silently — the surrounding raw bytes stay in
+    `_raw_passthrough` so XG re-emit is lossless.
+    """
+    if not msg.data:
+        return
+    note = msg.am
+    if not 13 <= note <= 84:
+        return
+
+    kit_index = 0 if msg.ah == AH_DRUM_SETUP_1 else 1
+    ds = _ensure_drum_setup(device, kit_index)
+    drum_note = ds.notes.get(note) or DrumNote()
+    val = msg.data[0] & 0x7F
+    signed = val - 0x40  # for signed fields
+
+    if msg.al == 0x00:
+        drum_note.pitch_coarse = max(-64, min(63, signed))
+    elif msg.al == 0x01:
+        drum_note.pitch_fine = max(-64, min(63, signed))
+    elif msg.al == 0x02:
+        drum_note.level = val
+    elif msg.al == 0x03:
+        drum_note.alt_group = val
+    elif msg.al == 0x04:
+        drum_note.pan = val
+    elif msg.al == 0x05:
+        drum_note.reverb_send = val
+    elif msg.al == 0x06:
+        drum_note.chorus_send = val
+    elif msg.al == 0x07:
+        drum_note.variation_send = val
+    elif msg.al == 0x0B:
+        drum_note.filter_cutoff = max(-64, min(63, signed))
+    elif msg.al == 0x0C:
+        drum_note.filter_resonance = max(-64, min(63, signed))
+    elif msg.al == 0x0D:
+        drum_note.eg_attack = max(-64, min(63, signed))
+    elif msg.al == 0x0E:
+        drum_note.eg_decay1 = max(-64, min(63, signed))
+    elif msg.al == 0x0F:
+        drum_note.eg_decay2 = max(-64, min(63, signed))
+    else:
+        return  # unknown AL, don't alloc DrumNote for nothing
+    ds.notes[note] = drum_note
 
 
 def _apply_system(system: System, msg: XGRawMessage) -> None:
