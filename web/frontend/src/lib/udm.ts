@@ -206,3 +206,78 @@ export function panLabel(value: number): string {
 export function isDrumChannel(channel: number): boolean {
   return channel === 9
 }
+
+export type EffectsInfo = {
+  reverb: { typeCode: number; returnLevel: number; params: Record<string, number> } | null
+  chorus: { typeCode: number; returnLevel: number; params: Record<string, number> } | null
+  variation: { typeCode: number; returnLevel: number; params: Record<string, number> } | null
+}
+
+export function getEffects(device: UdmDevice): EffectsInfo {
+  const fx = device.effects as Record<string, unknown>
+  const extract = (key: string) => {
+    const block = fx[key] as Record<string, unknown> | null | undefined
+    if (!block) return null
+    return {
+      typeCode: Number(block.type_code ?? 0),
+      returnLevel: Number(block.return_level ?? 0),
+      params: (block.params ?? {}) as Record<string, number>,
+    }
+  }
+  return {
+    reverb: extract("reverb"),
+    chorus: extract("chorus"),
+    variation: extract("variation"),
+  }
+}
+
+export type MultiPartInfo = {
+  partIndex: number
+  rxChannel: number
+  voice: { bank_msb: number; bank_lsb: number; program: number }
+  volume: number
+  pan: number
+  reverbSend: number
+  chorusSend: number
+  variationSend: number
+  cutoff: number
+  resonance: number
+  egAttack: number
+  egDecay: number
+  egRelease: number
+  monoPoly: string
+  keyOnAssign: string
+  dryLevel: number
+  bendPitch: number
+  path: string
+}
+
+export function getMultiParts(device: UdmDevice): MultiPartInfo[] {
+  return device.multi_part.map((mp, i) => {
+    const voice = mp.voice as Record<string, unknown> | undefined
+    return {
+      partIndex: Number(mp.part_index ?? i),
+      rxChannel: Number(mp.rx_channel ?? 0),
+      voice: {
+        bank_msb: Number(voice?.bank_msb ?? 0),
+        bank_lsb: Number(voice?.bank_lsb ?? 0),
+        program: Number(voice?.program ?? 0),
+      },
+      volume: Number(mp.volume ?? 100),
+      pan: Number(mp.pan ?? 64),
+      reverbSend: Number(mp.reverb_send ?? 0),
+      chorusSend: Number(mp.chorus_send ?? 0),
+      variationSend: Number(mp.variation_send ?? 0),
+      cutoff: Number(mp.cutoff ?? 0),
+      resonance: Number(mp.resonance ?? 0),
+      egAttack: Number(mp.eg_attack ?? 0),
+      egDecay: Number(mp.eg_decay ?? 0),
+      egRelease: Number(mp.eg_release ?? 0),
+      monoPoly: String(mp.mono_poly ?? "poly"),
+      keyOnAssign: String(mp.key_on_assign ?? "multi"),
+      dryLevel: Number(mp.dry_level ?? 64),
+      bendPitch: Number(mp.bend_pitch ?? 2),
+      path: `multi_part[${i}]`,
+    }
+  })
+}

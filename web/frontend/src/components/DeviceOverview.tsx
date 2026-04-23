@@ -5,6 +5,7 @@ import {
   getFirstPattern,
 } from "@/lib/udm"
 import { PatternOverview } from "@/components/PatternOverview"
+import { SoundOverview } from "@/components/SoundOverview"
 
 function StatCard({
   label,
@@ -92,6 +93,10 @@ export function DeviceOverview({ device, onSelectNode }: { device: UdmDevice; on
         <StatCard label="Multi Parts" value={String(device.multi_part.length)} />
         <StatCard label="Drum Overrides" value={String(countDrumNoteOverrides(device))} />
         <StatCard label="User Phrases" value={String(device.phrases_user.length)} />
+      </section>
+
+      <section className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
+        <SoundOverview device={device} onSelectNode={onSelectNode} />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
