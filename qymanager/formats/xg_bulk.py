@@ -211,8 +211,23 @@ def parse_xg_bulk_to_udm(
     if device.effects.variation is None:
         device.effects.variation = VariationBlock()
 
+    master_tune_nibbles = [0, 0, 0, 0]
+    master_tune_seen = False
     for msg in xg_msgs:
+        if msg.ah == AH_SYSTEM and msg.am == 0x00 and 0x00 <= msg.al <= 0x03 and msg.data:
+            master_tune_nibbles[msg.al] = msg.data[0] & 0x0F
+            master_tune_seen = True
         _apply_xg_message(device, msg)
+
+    if master_tune_seen:
+        word = (
+            (master_tune_nibbles[0] << 12)
+            | (master_tune_nibbles[1] << 8)
+            | (master_tune_nibbles[2] << 4)
+            | master_tune_nibbles[3]
+        )
+        cents = int(round((word - 0x0400) * 0.05))
+        device.system.master_tune = max(-100, min(100, cents))
 
     if channel_events:
         _apply_channel_events(device, channel_events)
@@ -356,6 +371,9 @@ def _apply_drum_setup(device: Device, msg: XGRawMessage) -> None:
 def _apply_system(system: System, msg: XGRawMessage) -> None:
     if msg.am != 0x00:
         return
+    # Master Tune nibble accumulation happens in `parse_xg_bulk_to_udm`
+    # across the full stream so that a partial dump doesn't leave the
+    # system object in a half-updated state.
     if msg.al == 0x04 and msg.data:
         system.master_volume = max(0, min(127, msg.data[0]))
     elif msg.al == 0x06 and msg.data:

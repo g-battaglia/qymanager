@@ -57,6 +57,39 @@ class TestApplySystem:
         device = parse_xg_bulk_to_udm(blob)
         assert device.system.transpose == -4
 
+    def test_master_tune_centred(self):
+        # 0x0400 is the XG centre = 0 cents
+        blob = _bulk(
+            _xg(0x00, 0x00, 0x00, 0x00),
+            _xg(0x00, 0x00, 0x01, 0x04),
+            _xg(0x00, 0x00, 0x02, 0x00),
+            _xg(0x00, 0x00, 0x03, 0x00),
+        )
+        device = parse_xg_bulk_to_udm(blob)
+        assert device.system.master_tune == 0
+
+    def test_master_tune_positive(self):
+        # 0x0450 = 0x0400 + 80 → +4 cents (≈0.05 cents per step)
+        blob = _bulk(
+            _xg(0x00, 0x00, 0x00, 0x00),
+            _xg(0x00, 0x00, 0x01, 0x04),
+            _xg(0x00, 0x00, 0x02, 0x05),
+            _xg(0x00, 0x00, 0x03, 0x00),
+        )
+        device = parse_xg_bulk_to_udm(blob)
+        assert device.system.master_tune == 4
+
+    def test_master_tune_negative(self):
+        # 0x03B0 = 0x0400 - 80 → -4 cents
+        blob = _bulk(
+            _xg(0x00, 0x00, 0x00, 0x00),
+            _xg(0x00, 0x00, 0x01, 0x03),
+            _xg(0x00, 0x00, 0x02, 0x0B),
+            _xg(0x00, 0x00, 0x03, 0x00),
+        )
+        device = parse_xg_bulk_to_udm(blob)
+        assert device.system.master_tune == -4
+
 
 class TestApplyEffects:
     def test_reverb_type(self):
