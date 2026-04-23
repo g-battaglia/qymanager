@@ -2,6 +2,103 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-23] session-33d Voice RE breakthroughs: NN matcher + embedded XG propagation
+
+Due avanzamenti strutturali che alzano la copertura "dal SysEx bulk
+alone" molto oltre lo stato di inizio sessione.
+
+### 1. Nearest-neighbour voice matcher (tier 1.5)
+
+Empiricamente sul DB di 29 signature: voci melodic diverse di file
+diversi hanno `sig10` byte-diversi ma **convergono** su bit-distance
+1-3 quando mappano alla stessa voce. Drum no: `Drum Kit 26` ha 11
+sample con 0/10 byte stabili tra di loro.
+
+`_nearest_neighbor_voice(sig_hex, db, max_bit_dist=3)` in
+`syx_analyzer.py` applica:
+
+1. **Pre-filtro per class signature** (bytes 3..6 del sig10, =
+   B17..B20 del track data). Un bass non può drift-matcharsi a un
+   chord anche se Hamming distance è minore.
+2. **Hamming bit-level** sul subset class-matched. Fallback globale
+   solo se nessun class-peer esiste.
+3. **Drum suppression**: hit con `bank_msb == 127` forzano il
+   fallthrough al class tier 2 (NN noisy per drum).
+
+Il voice_name esce taggato `"(NN d=N)"`. L'API
+`/syx-analysis` espone anche `voice_bit_distance: int | null`
+(solo per NN) per trasparenza, e la UI lo renderizza inline nel
+badge come "NN d1", "NN d2", ...
+
+**Impatto**: MR. Vain 2/5 → **5/5 voci risolte dal bulk alone**
+(C1/C2/C3 chord → Pad 2 warm bit_dist 1-2). Summer 2/5 → 3/5.
+
+### 2. Embedded XG state propagation in UDM
+
+Alcuni QY70 bulk (notabilmente `SGT_backup_20260423_112505.syx` e
+altri "full machine" dumps) contengono al loro interno un blocco
+XG Multi Part (AH=0x08), XG System (AH=0x00), XG Effects
+(AH=0x02), e XG Drum Setup (AH=0x30/0x31). `SyxAnalyzer` già
+decodifica questi blocchi in `xg_voices`, `xg_system`,
+`xg_effects`, `xg_drum_setup` — ma `parse_syx_to_udm` li
+scartava.
+
+`parse_syx_to_udm` ora li fold-a nell'UDM:
+
+- `xg_voices` → `device.multi_part[ch-1]` con
+  Bank MSB/LSB/Program/Volume/Pan/Reverb/Chorus/Dry.
+- `xg_system` → `device.system.master_volume` /
+  `master_attenuator` / `master_tune` (4 nibble reassembly) /
+  `transpose`.
+- `xg_effects` → `device.effects.{reverb,chorus,variation}.type_code`
+  con clamp 10/10/42.
+- `xg_drum_setup` → `device.drum_setup[kit].notes[N]` come
+  `DrumNote` con level/pan/sends/pitch_coarse/pitch_fine/
+  filter_cutoff/filter_resonance/EG attack/decay1/decay2 e
+  alt_group.
+
+**Impatto su SGT_backup** (bulk alone, no merge-capture):
+
+```
+ch 9 B/L/P=127/0/25 vol=90 rev=40 cho=0     [Dance Kit]
+ch10 B/L/P=127/0/26 vol=60 rev=40 cho=0     [Drum Kit 26]
+ch11 B/L/P=127/0/26 vol=50 rev=40 cho=0     [Drum Kit 26]
+ch12 B/L/P=0/0/34 vol=75                    [PickBass]
+ch13 B/L/P=0/0/89 vol=90 rev=97 cho=127     [WarmPad, heavy ambient]
+ch14 B/L/P=0/0/89 vol=90 rev=97 cho=127     [WarmPad]
+ch15 B/L/P=0/40/44 vol=92                   [TremStr variant]
+ch16 B/L/P=126/0/0 vol=80                   [SFX]
+drum_setup kit 1: 11 notes (Kick 1 level=120, Side Stick 100, ...)
+```
+
+Matcha byte-per-byte la ground truth del wiki
+`session-32f-captures.md`.
+
+### Copertura finale dal SysEx bulk alone
+
+Tre classi di bulk con risoluzione totalmente diversa:
+
+| Classe | Esempi | Copertura dal bulk alone |
+|--------|--------|--------------------------|
+| **Full backup** | SGT_backup, BULK_ALL | 100 % voci + mixer + drum edits (via embedded XG) |
+| **User sparse pattern** | MR. Vain, Summer, known_pattern | Voci melodic via DB/NN class-aware (80-100 %), drum via DB+class, note events via R=9 decoder (60-100 % plausible), GM drum names |
+| **Factory style bulk** | STYLE2, AMB01 bulk | Struttura + class fallback per tutte le voci, note events dense restano blocked |
+
+### Build tool --embedded mode
+
+`midi_tools/build_signature_db.py --embedded NAME BULK.syx` estrae
+`(signature, voice)` pairs dall'`xg_voices` embedded — zero
+configurazione, senza load.json. In pratica lo stato XG embedded
+riflette il live state del QY70 al dump time, che può non
+coincidere col pattern dumpato (conflict rate 5/5 su SGT_backup),
+quindi la modalità resta disponibile per ispezione ma non merge
+automaticamente nel DB condiviso.
+
+### Test
+
+504 pass, 3 skipped. +3 regression su sparse decoder, +1 su NN
+matcher (MR. Vain C1/C2/C3 forced to Pad-family names).
+
 ## [2026-04-23] session-33a Web RE: merge-capture UI + voice-byte triangulation
 
 **Obiettivo**: rendere le voci reali recuperabili dalla UI web (non solo CLI) e
