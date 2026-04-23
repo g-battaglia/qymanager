@@ -19,11 +19,14 @@ from qymanager.model import (
     DeviceModel,
     Pattern as UdmPattern,
     PatternTrack,
+    Phrase,
     Section as UdmSection,
     SectionName,
     TimeSig,
     Voice,
 )
+from qymanager.model.event import MidiEvent
+from qymanager.model.types import EventKind, PhraseCategory
 
 
 class QY70Reader:
@@ -424,4 +427,52 @@ def parse_syx_to_udm(data: bytes) -> Device:
         source_format="syx",
         _raw_passthrough=data,
     )
+
+    # Populate phrases_user from the sparse decoder when tracks clear the
+    # plausibility guard (≥ 60 %). Dense factory styles collapse below
+    # this threshold and stay out of phrases_user to avoid ghost notes.
+    from qymanager.formats.qy70.encoder_sparse import (
+        decode_sparse_track,
+        sparse_track_plausibility,
+    )
+
+    phrase_index = 0
+    for al in sorted(section_data):
+        if al == 0x7F:
+            continue
+        td = bytes(section_data[al])
+        if len(td) < 48:
+            continue
+        events = decode_sparse_track(td)
+        if not events or sparse_track_plausibility(events) < 0.6:
+            continue
+        track_idx = al & 0x7
+        sec_idx = al >> 3
+        sec_name = _QY70_SECTION_MAP.get(sec_idx)
+        section_label = sec_name.value if sec_name else f"sec{sec_idx}"
+        track_label = ["D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"][track_idx]
+        channel = _QY70_TRACK_CHANNELS[track_idx]
+        midi_events = [
+            MidiEvent(
+                tick=int(ev["tick"]),
+                channel=int(channel),
+                kind=EventKind.NOTE_ON,
+                data1=int(ev["note"]),
+                data2=int(ev["velocity"]),
+            )
+            for ev in events
+            if not ev.get("ctrl")
+        ]
+        if not midi_events:
+            continue
+        device.phrases_user.append(
+            Phrase(
+                index=phrase_index,
+                name=f"{section_label}·{track_label}",
+                category=PhraseCategory.DA,
+                events=midi_events,
+            )
+        )
+        phrase_index += 1
+
     return device
