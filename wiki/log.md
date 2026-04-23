@@ -2,6 +2,75 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-23] session-33a Web RE: merge-capture UI + voice-byte triangulation
+
+**Obiettivo**: rendere le voci reali recuperabili dalla UI web (non solo CLI) e
+quantificare empiricamente il gap residuo per "tutto dal SysEx alone".
+
+### Web: merge-capture endpoint
+
+`POST /api/devices/{id}/merge-capture` accetta un capture XG (JSON o `.syx`)
+e lo applica via `parse_xg_bulk_to_udm(base_device=...)`. Il device esistente
+viene arricchito in-place preservando `source_format="syx"`. Un pulsante
+*Merge XG capture* nel header del Device Inspector fa lo stesso da browser.
+Verifica end-to-end su AMB#01 ground truth: ch9 drum25, ch12 PickBass/34,
+ch15 TremStr 0/40/44 tutti esatti.
+
+### XG channel-event decoding (fix)
+
+`parse_xg_bulk_to_udm` ora scansiona anche i channel events (`Bn 00 MSB`,
+`Bn 20 LSB`, `Cn PROG`, CC 7/10/91/93/94) con running-status, applicandoli
+al `MultiPart` del rx_channel corrispondente. Era il pezzo mancante: il
+QY70 XG PARM OUT emette i Bank/Program come channel events, non come XG
+Parameter Change, e il parser li ignorava. Dopo il fix, `load_device` su
+un `.syx` mergiato popola `multi_part` completamente.
+
+### Signature DB expansion
+
+`midi_tools/build_signature_db.py`: tool che prende coppie `(bulk.syx,
+load.json)` ed estende `data/voice_signature_db.json` con signature
+10-byte (bytes 14-24 del track data) mappate a `(msb/lsb/prog)` letti
+dal capture. Run su AMB01 + STYLE2: 23 → 28 entry, 16 sample seen,
+9 reinforced, 2 conflict (voce diversa per stessa signature).
+
+### Voice-byte triangulation (empirical finding)
+
+Analisi byte-level su 16 `(track, voice)` data point dal dataset
+2026-04-23:
+
+- **Offset 17-20** discrimina categoria (drum/bass/chord) in modo
+  binario consistente — match con la 4-byte class signature B17-B20
+  già nota.
+- **Offset 28-47** ha variazione alta (11-16 valori unici per offset
+  su 16 sample) ma AMB01 D2 e PC, con stesso `(msb,lsb,prog) = 127/0/26`,
+  mostrano byte completamente diversi in tutto l'intervallo.
+- Conclusione empirica: il voice encoding è un **pacchetto ~20 byte**
+  che contiene il ROM index più parameter override voice-level
+  (filter, envelope, transpose, ecc.). Non è un mapping 1:1 byte →
+  program. Due track con stessa voce logica hanno byte-pattern
+  diversi perché gli override sono specifici al track context.
+- Implicazione: estendere la signature DB oltre la 10-byte non
+  dis-ambigua le voci — non esiste una signature "voice-specific"
+  stabile nel bulk. Restano come workaround solo il merge-capture
+  (ora via UI) o un firmware dump.
+
+### Gap residuo oggettivo per "tutto dal SysEx alone"
+
+Recuperabile dal **bulk alone** dopo questa sessione: canali (ch9-16),
+label QY70 (D1/D2/PC/BA/C1-C4), tempo, time sig, effects (nomi
+risolti come Hall 1 / Chorus 1), sections attive, tracks attive per
+sezione, voci via DB (28 signature) o class fallback, SysEx stats.
+
+**Non** recuperabile dal bulk alone (confermato empiricamente):
+
+| Dato | Blocco | Workaround |
+|------|--------|------------|
+| Bank MSB/LSB/Program reali | ROM voice table opaca | merge-capture (fatto) o firmware dump |
+| Volume/Pan/Rev/Cho reali | Non nel bulk | merge-capture (fatto) |
+| Note events dense | Session 19/20 structural impossibility | Pipeline B (capture playback) |
+| Time signature byte | Nessun pattern ≠ 4/4 nel dataset | Capture 3/4 o 6/8 |
+| Bar count byte | Nessun multi-bar noto | Capture multi-bar |
+
 ## [2026-04-23] session-32i Ralph-loop final | CLI unification, extensive XG parsing, audit reporting
 
 **Obiettivo**: massimizzare completezza di estrazione SysEx + renderla discoverable via CLI.
