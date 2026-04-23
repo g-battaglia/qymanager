@@ -336,6 +336,121 @@ def display_syx_info(
         )
     )
 
+    # Extended XG Multi Part parameters (beyond the basic voice/vol/pan/fx
+    # shown in the Track Configuration table). Only show COLUMNS that have data.
+    if analysis.xg_voices:
+        EXTENDED_KEYS = [
+            "note_shift", "detune", "note_limit_low", "note_limit_high",
+            "dry_level", "variation", "filter_cutoff", "filter_resonance",
+            "mono_poly", "rcv_channel",
+        ]
+        # Determine which columns have at least one value populated in QY70 parts (8-15)
+        populated_keys = []
+        for k in EXTENDED_KEYS:
+            if any(k in analysis.xg_voices.get(p, {}) for p in range(8, 16)):
+                populated_keys.append(k)
+        if populated_keys:
+            # Abbreviate column names for compactness
+            COL_ABBREV = {
+                "note_shift": "Shift", "detune": "Det",
+                "note_limit_low": "Lo", "note_limit_high": "Hi",
+                "dry_level": "Dry", "variation": "Var",
+                "filter_cutoff": "Cut", "filter_resonance": "Res",
+                "mono_poly": "M/P", "rcv_channel": "Rcv",
+            }
+            ext_table = Table(
+                title="Extended XG Multi Part parameters (QY70 parts 8-15 = ch9-16)",
+                box=box.ROUNDED,
+                show_header=True,
+                header_style="bold yellow",
+            )
+            ext_table.add_column("Track", style="cyan", width=6)
+            ext_table.add_column("Ch", width=3)
+            for k in populated_keys:
+                ext_table.add_column(COL_ABBREV[k], width=5, justify="right")
+            track_names = ["D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"]
+            rows_shown = 0
+            for i, trk_name in enumerate(track_names):
+                part_num = 8 + i
+                v = analysis.xg_voices.get(part_num, {})
+                if not any(k in v for k in populated_keys):
+                    continue
+                row = [trk_name, str(part_num + 1)]
+                for k in populated_keys:
+                    val = v.get(k)
+                    row.append(str(val) if val is not None else "-")
+                ext_table.add_row(*row)
+                rows_shown += 1
+            if rows_shown > 0:
+                console.print(ext_table)
+
+    # XG System parameters (AH=0x00 AM=0x00 in Model 4C)
+    if analysis.xg_system:
+        sys_lines = []
+        for k in ["master_volume", "master_attenuator", "master_transpose",
+                  "xg_system_on", "drum_setup_reset", "all_parameter_reset"]:
+            if k in analysis.xg_system:
+                v = analysis.xg_system[k]
+                label = k.replace("_", " ").title()
+                sys_lines.append(f"  {label}: {v}")
+        # Master tune if all 4 nibbles present
+        tune_nibbles = [analysis.xg_system.get(f"master_tune_nibble_{i}") for i in range(4)]
+        if all(n is not None for n in tune_nibbles):
+            raw = (tune_nibbles[0] << 12) | (tune_nibbles[1] << 8) | (tune_nibbles[2] << 4) | tune_nibbles[3]
+            cents = raw - 0x8000
+            sys_lines.append(f"  Master Tune: {cents:+d} cents (raw 0x{raw:04X})")
+        if sys_lines:
+            console.print(
+                Panel("\n".join(sys_lines),
+                      title="[bold yellow]XG System[/bold yellow]",
+                      border_style="yellow", expand=False)
+            )
+
+    # XG Drum Setup per-note overrides (AH=0x30/0x31)
+    if analysis.xg_drum_setup:
+        drum_lines = []
+        for setup_num in sorted(analysis.xg_drum_setup.keys()):
+            drum_lines.append(f"  Setup {setup_num + 1}: {len(analysis.xg_drum_setup[setup_num])} note(s) customized")
+            for note_num in sorted(analysis.xg_drum_setup[setup_num].keys()):
+                params = analysis.xg_drum_setup[setup_num][note_num]
+                param_strs = [f"{k}={v}" for k, v in sorted(params.items())]
+                drum_lines.append(f"    note {note_num:3d}: {', '.join(param_strs)}")
+        console.print(
+            Panel("\n".join(drum_lines),
+                  title="[bold red]XG Drum Setup overrides[/bold red]",
+                  border_style="red", expand=False)
+        )
+
+    # Voice edit dumps (AH=0x00 AM=0x40 — QY70 UTILITY → BULK OUT → Voice)
+    if analysis.voice_edit_dumps:
+        lines = []
+        for i, vd in enumerate(analysis.voice_edit_dumps):
+            lines.append(
+                f"  [{i + 1}] class=[cyan]{vd['voice_class']}[/cyan] "
+                f"size={vd['size_bytes']}B al=0x{vd['al_address']:02X}"
+            )
+        console.print(
+            Panel("\n".join(lines),
+                  title="[bold red]Voice Edit Dumps (AH=0x00 AM=0x40)[/bold red]",
+                  border_style="red", expand=False)
+        )
+
+    # Pattern name directory (AH=0x05 data, if captured alongside)
+    if analysis.pattern_directory:
+        dir_lines = []
+        for slot_idx in sorted(analysis.pattern_directory.keys()):
+            name = analysis.pattern_directory[slot_idx]
+            dir_lines.append(f"  U{slot_idx + 1:02d}: {name}")
+        dir_content = "\n".join(dir_lines) if dir_lines else "(all slots empty)"
+        console.print(
+            Panel(
+                dir_content,
+                title="[bold magenta]Pattern Name Directory (AH=0x05)[/bold magenta]",
+                border_style="magenta",
+                expand=False,
+            )
+        )
+
     # QY70 Sections table (6 sections)
     if analysis.qy70_sections:
         section_table = Table(
@@ -385,12 +500,19 @@ def display_syx_info(
         track_table.add_column("Status", width=8)
 
         for track in analysis.qy70_tracks:
-            status_str = "[green]Active[/green]" if track.has_data else "[dim]Empty[/dim]"
+            # A track is "Active" if it has pattern events. But even an empty
+            # track can carry a valid XG voice assignment — still show it so
+            # nothing is hidden when the .syx carries XG state.
+            has_xg_voice = bool(track.voice_name) and "class" not in (track.voice_name or "").lower() and "(DB)" not in (track.voice_name or "")
+            status_str = "[green]Active[/green]" if track.has_data else (
+                "[cyan]Voice-only[/cyan]" if has_xg_voice else "[dim]Empty[/dim]"
+            )
+            show_voice = track.has_data or has_xg_voice
 
             # Voice info
-            if track.has_data and track.voice_name:
+            if show_voice and track.voice_name:
                 voice_str = track.voice_name[:18]
-            elif track.has_data:
+            elif show_voice:
                 if track.is_drum_track:
                     voice_str = f"Drum Kit {track.program}"
                 else:
@@ -398,18 +520,10 @@ def display_syx_info(
             else:
                 voice_str = "[dim]---[/dim]"
 
-            # Volume
-            vol_str = str(track.volume) if track.has_data else "[dim]---[/dim]"
-
-            # Pan (use shared pan_to_string for consistent display)
-            if track.has_data:
-                pan_str = pan_to_string(track.pan)
-            else:
-                pan_str = "[dim]---[/dim]"
-
-            # Effect sends
-            rev_str = str(track.reverb_send) if track.has_data else "[dim]---[/dim]"
-            cho_str = str(track.chorus_send) if track.has_data else "[dim]---[/dim]"
+            vol_str = str(track.volume) if show_voice else "[dim]---[/dim]"
+            pan_str = pan_to_string(track.pan) if show_voice else "[dim]---[/dim]"
+            rev_str = str(track.reverb_send) if show_voice else "[dim]---[/dim]"
+            cho_str = str(track.chorus_send) if show_voice else "[dim]---[/dim]"
 
             track_table.add_row(
                 track.name,
@@ -423,6 +537,34 @@ def display_syx_info(
             )
 
         console.print(track_table)
+
+        # Detect if voice info is partial. Three annotations are possible on voice_name:
+        #   (class ...)  — only 4-byte class signature matched (drum/bass/chord generic)
+        #   (DB)         — 10-byte signature DB hit (known pattern, prog correct)
+        #   no tag       — XG Parameter Change data present (ground truth)
+        has_class_fallback = any(
+            t.voice_name and "(class" in t.voice_name.lower()
+            for t in analysis.qy70_tracks
+        )
+        has_db_hit = any(
+            t.voice_name and "(DB)" in t.voice_name
+            for t in analysis.qy70_tracks
+        )
+        if has_class_fallback:
+            console.print(
+                "[yellow]⚠ Voice info partial. [/yellow]"
+                "[dim]This .syx contains only pattern bulk bytes; voice Bank MSB/LSB/Prog\n"
+                "  are encoded as an opaque ROM index in the bulk header.[/dim]\n"
+                "[dim]  - Tracks tagged [white](DB)[/dim][dim] come from a pre-trained signature database (23 signatures).\n"
+                "  - Tracks tagged [white](class)[/dim][dim] only have the voice category (drum/bass/chord).\n"
+                "  - For full Bank/LSB/Prog/Vol/Pan/Rev/Chor, capture XG state alongside bulk:[/dim]\n"
+                "[dim]      uv run python3 midi_tools/capture_complete.py -o out.syx[/dim]"
+            )
+        elif has_db_hit:
+            console.print(
+                "[dim]Voice info via signature DB (pre-trained on 3 patterns). "
+                "For exact ground-truth, capture XG state alongside bulk.[/dim]"
+            )
 
     # Message statistics (compact)
     stats_table = Table(title="SysEx Message Statistics", box=box.ROUNDED, show_header=False)

@@ -777,7 +777,8 @@ def info(
     raw: bool = typer.Option(False, "--raw", "-r", help="Show unknown/reserved areas"),
     messages: bool = typer.Option(False, "--messages", "-m", help="Show individual SysEx messages"),
     sections: bool = typer.Option(
-        True, "--sections/--no-sections", "-s", help="Show section details"
+        False, "--sections/--no-sections", "-s",
+        help="Show raw Section Data table (by AL Address — debug/analysis only)"
     ),
     json_output: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
 ) -> None:
@@ -835,8 +836,29 @@ def info(
             analyzer = SyxAnalyzer()
             analysis = analyzer.analyze_file(str(file))
 
+            # Detect multi-slot "BULK_ALL" files (many AH=0x02 AM=0x00-0x3F messages,
+            # no AM=0x7E edit buffer). These don't fit the single-pattern info view.
+            multi_slot_ams = set()
+            has_edit_buffer = False
+            for msg in analyzer.messages:
+                if msg.address_high == 0x02:
+                    if msg.address_mid < 0x40:
+                        multi_slot_ams.add(msg.address_mid)
+                    elif msg.address_mid == 0x7E:
+                        has_edit_buffer = True
+
             if json_output:
                 _output_json(analysis)
+            elif not has_edit_buffer and len(multi_slot_ams) >= 2:
+                console.print(
+                    f"[yellow]Multi-slot bulk detected: {len(multi_slot_ams)} pattern slots populated, "
+                    "no edit buffer (AM=0x7E).[/yellow]"
+                )
+                console.print(
+                    "[dim]`qymanager info` is designed for single-pattern files. "
+                    "For a per-slot summary, run:[/dim]\n"
+                    f"[cyan]  uv run python3 midi_tools/bulk_all_summary.py {file}[/cyan]"
+                )
             else:
                 display_syx_info(
                     analysis, show_sections=sections, show_messages=messages, show_hex=hex

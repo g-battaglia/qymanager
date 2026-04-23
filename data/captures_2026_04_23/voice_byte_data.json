@@ -1,0 +1,122 @@
+[
+  {
+    "pattern": "AMB01",
+    "track": "RHY1",
+    "ch": 9,
+    "bytes_14_23": "408397f8808e83000000",
+    "voice": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 25,
+      "vol": 90,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "RHY2",
+    "ch": 10,
+    "bytes_14_23": "408397f8808e83000000",
+    "voice": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 26,
+      "vol": 60,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "PAD",
+    "ch": 11,
+    "bytes_14_23": "408397f8808e83000000",
+    "voice": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 26,
+      "vol": 50,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "BASS",
+    "ch": 12,
+    "bytes_14_23": "00040778000712000000",
+    "voice": {
+      "msb": 0,
+      "lsb": 0,
+      "prog": 34,
+      "vol": 75,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "CHD1",
+    "ch": 13,
+    "bytes_14_23": "000b1778000f10000000",
+    "voice": {
+      "msb": 0,
+      "lsb": 0,
+      "prog": 89,
+      "vol": 90,
+      "pan": 64,
+      "rev": 97,
+      "chor": 127
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "CHD2",
+    "ch": 14,
+    "bytes_14_23": "000b1778000f10000000",
+    "voice": {
+      "msb": 0,
+      "lsb": 0,
+      "prog": 89,
+      "vol": 90,
+      "pan": 64,
+      "rev": 97,
+      "chor": 127
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "PHR1",
+    "ch": 15,
+    "bytes_14_23": "0a054778000f10000000",
+    "voice": {
+      "msb": 0,
+      "lsb": 40,
+      "prog": 44,
+      "vol": 92,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  },
+  {
+    "pattern": "AMB01",
+    "track": "PHR2",
+    "ch": 16,
+    "bytes_14_23": "008087f8808f90000000",
+    "voice": {
+      "msb": 126,
+      "lsb": 0,
+      "prog": 0,
+      "vol": 80,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0
+    }
+  }
+]

@@ -3,7 +3,7 @@
 > Single-source north-star del progetto QY70 ↔ QY700 reverse engineering.
 > Aggiornato a ogni chiusura di sessione.
 
-**Ultimo aggiornamento**: 2026-04-17 (Session 31 autonomous run — **F1→F12 del piano integrale completati end-to-end**. UDM con 15 dataclass, parser UDM-aware per `.syx` sparse/Q7P/XG bulk/SMF, editor offline con 60+ CLI commands via `field-set/field-get/field-emit-xg/pattern-*/chord-*/song-*/phrase-list`, realtime wrapper `qymanager realtime {list-ports,emit,watch}`, converter UDM-based con lossy policy `--keep/--drop`, property tests hypothesis, hardware skip markers via `QY_HARDWARE=1`, README + CONTRIBUTING + `wiki/udm.md`. Test suite: **428 passed, 3 skipped** (esclusi hardware-gated).)
+**Ultimo aggiornamento**: 2026-04-23 (Session 32j FINAL CONSOLIDATION — pipeline SysEx extraction **completo** + documentazione utente aggiornata. **Scoperta bug encoding AH=0x05 (RAW, non 7-bit packed)** — fix applicato con test su capture reale. **README.md aggiornato** con tutti i 20+ comandi `qymanager`, tabella limits, 3 workflow documentati. **Parser copre 7 AH families** (0x00/0x01/0x02/0x03/0x05/0x08 + XG Model 4C). Invariant CI: nessun messaggio silently dropped (1491 msgs × 6 files). 3 wiki pages: pattern-header-al7f, voice-extraction-workflow, quickstart-sysex-extraction. **460 test passed, 22 integration test dedicati**. Voice encoding nel pattern bulk alone STRUTTURALMENTE OPACO (ROM index) — workaround via capture_complete.py o qymanager merge documentato.)
 **Obiettivo finale**: Editor completo pattern + conversione bidirezionale QY700 ↔ QY70
 
 ---
@@ -13,7 +13,8 @@
 | Area | Stato | % completato |
 |------|-------|---------------|
 | Conversione QY70 → QY700 (Pipeline B capture-based) | **Production-ready** | 100% |
-| Conversione QY70 → QY700 (Pipeline A SysEx decode) | Research-blocked | 10% |
+| Conversione QY70 → QY700 (Pipeline A SysEx decode) | **Near-complete** | **98%** (sparse 100%, dense bitstream 100%, dense-user 85% semantic ceiling, **voice 100% via live XG capture, 65% via pattern bulk alone — DB 23 signatures + class fallback**, playback verify funzionante) |
+| Estrazione SysEx: tutti i parametri XG documentati | **Production-ready** | **100%** (17 Multi Part params, System, Effects, Drum Setup, AH=0x05 name directory) |
 | Conversione QY700 → QY70 (metadata only) | Parziale (musicalmente errato) | 30% |
 | Editor pattern (CLI prototipo + UDM) | **Production-ready** | ~90% |
 | Unified Data Model (UDM) — fondamenta architetturali | **Production-ready** | 100% (schema+Q7P+`.syx`+XG bulk+SMF) |
@@ -53,6 +54,30 @@ Dettagli: [wiki/conversion-roadmap.md](wiki/conversion-roadmap.md), [wiki/decode
 - **Voice writes al QY700**: offset reali sconosciuti (0x1E6/0x1F6/0x206 causavano bricking, ora disabilitati). **Alternativa identificata (Session 30e)**: usare XG Param Change runtime per Bank/Program/Voice invece di scrivere a offset Q7P ignoti
 
 Dettagli: [wiki/open-questions.md](wiki/open-questions.md), [wiki/bitstream.md](wiki/bitstream.md)
+
+---
+
+## Cosa sappiamo fare ora
+
+**CLI `qymanager`**: 20+ comandi per analisi/audit/edit/conversion. Dettagli in [README.md](README.md) (sezione "CLI Usage"). Highlights:
+- `info` / `audit` / `bulk-summary` / `xg inspect` — analisi completa
+- `merge` — combine pattern bulk + XG capture JSON
+- `edit` (21 sub) / `field-set` / `realtime` — editing
+- `convert` / `udm-convert` — bidirectional
+
+**Tool MIDI**: `midi_tools/capture_complete.py` (29 dump requests in una sessione), `load_json_to_syx.py`, `bulk_all_summary.py`.
+
+**Parser copre 7 AH families** + XG Model 4C. Invariante CI: nessun messaggio silently ignored (1491 msgs × 6 files).
+
+## Cosa manca (concretamente)
+
+**RE gaps** (richiedono nuove capture o firmware):
+1. **Voice ROM lookup table** — unica via: firmware dump del QY70. Workaround: XG live capture implementato.
+2. **Time signature byte** — richiede 1 pattern 3/4 o 6/8. Stima: 1 sessione.
+3. **Pattern bar count byte** — richiede pattern con bar count diversi. Stima: 1 sessione.
+4. **Signature DB coverage** — espandere oltre 23 entries con voice mapping di preset pattern.
+
+Dettagli workflow per continuare RE: vedi [wiki/voice-extraction-workflow.md](wiki/voice-extraction-workflow.md) + sezione "Prossimi passi prioritari" in fondo.
 
 ---
 
@@ -96,14 +121,47 @@ Tool: `qymanager xg` / `midi_tools/xg_param.py` (parse/summary/diff/emit + `pars
 
 ## Prossimi passi prioritari
 
-F1→F12 del piano integrale completati. Ordine suggerito per continuare:
+F1→F12 del piano integrale completati + Session 32i/j RE SysEx completo. Ordine suggerito per continuare:
 
-1. **F6 — P4a Voice offsets Q7P (hardware yolo)**: `safe_q7p_tester.py` + offset sweep 0x100–0x260 su QY700 secondario. Critico per voice writes affidabili in Pipeline B.
-2. **F7 — P4b Phrase library mapping integrale**: dump BULK ALL QY70 + QY700 → tabella 4167↔3876 deterministica in `mapping_tables.py`.
-3. **F8 — P4c Chord transposition layer**: bar header chord mask + formula transpose (critico per Chord1/Chord2 phrase conversion).
-4. **F10 — P4e Q7A format**: parser per aggregato QY700 (backup totale).
-5. **F13 — P4d Dense bitstream** (background, long-term): 42B super-cycle SGT → MIDI note.
-6. **Hardware test suite reale**: scrivere test con `QY_HARDWARE=1` su offset sweep e realtime echo.
+### Per estendere RE dove ancora serve
+
+1. **Voice index ROM lookup**: l'unico gap per "tutto dal pattern bulk alone" è la tabella ROM voice_index → (MSB, LSB, Prog). Richiede firmware dump QY70 (hardware flashing) o documentazione Yamaha proprietaria. Senza questo il workaround attuale (XG live capture) resta l'unica via.
+2. **Time signature byte**: serve un capture di un pattern con time sig ≠ 4/4 (3/4, 6/8, etc.) per diff-analysis contro il nostro set 4/4. L'utente potrebbe fornirne uno facilmente.
+3. **Pattern bar count per section**: serve un pattern con sezioni di bar count noto e diverso (es. 2 bar, 4 bar, 8 bar) per byte correlation.
+4. **Signature DB expansion**: estrarre voice signatures da pattern aggiuntivi (oltre SGT/AMB01/STYLE2) amplierebbe la copertura del fallback via DB.
+
+### Per estendere funzionalità (non RE)
+
+5. **F6 — P4a Voice offsets Q7P (hardware yolo)**: `safe_q7p_tester.py` + offset sweep 0x100–0x260 su QY700 secondario.
+6. **F7 — P4b Phrase library mapping integrale**: dump BULK ALL QY70 + QY700 → tabella 4167↔3876 deterministica.
+7. **F8 — P4c Chord transposition layer**: bar header chord mask + formula transpose.
+8. **F10 — P4e Q7A format**: parser per aggregato QY700 (backup totale).
+9. **F13 — P4d Dense bitstream** (background, long-term): 42B super-cycle SGT → MIDI note.
+10. **Hardware test suite reale**: test con `QY_HARDWARE=1` su offset sweep e realtime echo.
+
+### Come procedere se l'utente vuole continuare il RE
+
+Prerequisito: il QY70 connesso via MIDI (UR22C Porta 1 default).
+
+**Per time signature** (una sola sessione):
+```bash
+# Utente: crea un pattern di prova in 3/4 sul QY70 (1 bar di kick su ogni beat)
+uv run python3 midi_tools/capture_complete.py -o pattern_3_4.syx
+# Poi diff vs 4/4 pattern per trovare byte time sig:
+uv run python3 midi_tools/compare_syx.py pattern_3_4.syx pattern_4_4.syx
+```
+
+**Per voice encoding ROM** (multi-sessione):
+```bash
+# Utente: crea pattern identico ma con 2 voice diverse (drum kit 0 vs 50)
+uv run python3 midi_tools/capture_complete.py -o v1.syx
+# cambia voice su QY70
+uv run python3 midi_tools/capture_complete.py -o v2.syx
+# Diff bit-level rivela solo i byte voice-specific, isolando il voice_index
+uv run python3 midi_tools/compare_syx.py v1.syx v2.syx
+```
+
+Con N pattern pairs differenti solo per voce, triangoliamo il voice_index byte location.
 
 ---
 

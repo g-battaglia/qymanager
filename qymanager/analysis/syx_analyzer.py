@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from collections import Counter
+import json
 
 from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage, MessageType
 from qymanager.utils.yamaha_7bit import decode_7bit
@@ -26,6 +27,34 @@ from qymanager.utils.xg_effects import (
     get_drum_kit_name,
     XG_DEFAULTS,
 )
+
+
+_SIGNATURE_DB: Optional[Dict[str, Dict[str, int]]] = None
+
+
+def _load_signature_db() -> Dict[str, Dict[str, int]]:
+    """Load the 10-byte voice signature → (msb, lsb, prog) lookup database.
+
+    Built from known patterns (SGT, AMB01, STYLE2) captured via hardware on
+    2026-04-23. The 10-byte signature is B14-B23 of each track header and is
+    a stable fingerprint that correlates with the voice assigned on the QY70.
+
+    The signature encodes ROM-internal voice index and cannot be decoded to
+    MSB/LSB/Prog analytically — only via lookup of patterns we've already
+    correlated. For unknown signatures we fall back to 4-byte class signature.
+    """
+    global _SIGNATURE_DB
+    if _SIGNATURE_DB is None:
+        # data/voice_signature_db.json lives at project root
+        db_path = Path(__file__).resolve().parent.parent.parent / "data" / "voice_signature_db.json"
+        if db_path.exists():
+            try:
+                _SIGNATURE_DB = json.loads(db_path.read_text())
+            except Exception:
+                _SIGNATURE_DB = {}
+        else:
+            _SIGNATURE_DB = {}
+    return _SIGNATURE_DB
 
 
 def midi_note_to_name(midi_note: int) -> str:
@@ -156,6 +185,19 @@ class SyxAnalysis:
     time_signature: Tuple[int, int] = (4, 4)
     time_signature_raw: int = 0
 
+    # Pattern-slot name directory (from AH=0x05 dump), slot_index → name
+    pattern_directory: Dict[int, str] = field(default_factory=dict)
+
+    # Voice edit dumps (AH=0x00 AM=0x40 AL=0x20 = user voice edit bulk dump)
+    # List of {class_signature, size_bytes, raw_hex_preview}
+    voice_edit_dumps: List[Dict[str, Any]] = field(default_factory=list)
+
+    # XG state parsed from Model 4C messages (when .syx has them)
+    xg_voices: Dict[int, Dict[str, int]] = field(default_factory=dict)
+    xg_effects: Dict[str, int] = field(default_factory=dict)
+    xg_system: Dict[str, int] = field(default_factory=dict)
+    xg_drum_setup: Dict[int, Dict[int, Dict[str, int]]] = field(default_factory=dict)
+
     # AL address distribution
     al_addresses: List[int] = field(default_factory=list)
     al_histogram: Dict[int, int] = field(default_factory=dict)
@@ -227,9 +269,11 @@ class SyxAnalyzer:
         "Chord 4",
     ]
 
-    # Default MIDI channels for QY70 tracks
-    # D1=10, D2=10, PC=3, BA=2, C1=4, C2=5, C3=6, C4=7
-    DEFAULT_CHANNELS = [10, 10, 3, 2, 4, 5, 6, 7]
+    # Default MIDI channels for QY70 tracks (PATT OUT CH=9~16 mode, verified 2026-04-23)
+    # D1/RHY1=ch9, D2/RHY2=ch10, PC/PAD=ch11, BA/BASS=ch12
+    # C1/CHD1=ch13, C2/CHD2=ch14, C3/PHR1=ch15, C4/PHR2=ch16
+    # Source: hardware playback capture user QY70 + wiki/session-32f-captures.md
+    DEFAULT_CHANNELS = [9, 10, 11, 12, 13, 14, 15, 16]
 
     # Section names (6 sections: Intro, MainA, MainB, FillAB, FillBA, Ending)
     STYLE_SECTION_NAMES = ["Intro", "Main A", "Main B", "Fill AB", "Fill BA", "Ending"]
@@ -267,11 +311,206 @@ class SyxAnalyzer:
         self.data = data
         return self._analyze(name)
 
+    def _parse_xg_multi_part(self) -> Dict[int, Dict[str, int]]:
+        """Parse XG Parameter Change messages (Model 4C) for Multi Part info.
+
+        Returns {part_number: {bank_msb, bank_lsb, program, volume, pan, reverb, chorus, part_mode}}
+
+        XG Parameter Change format: F0 43 1n 4C <AH> <AM> <AL> <data> F7
+        Multi Part AH=0x08. AM=part number. AL=field:
+          0x01 Bank MSB, 0x02 Bank LSB, 0x03 Program
+          0x0B Volume, 0x0E Pan, 0x13 Reverb send, 0x12 Chorus send
+          0x07 Part Mode
+
+        Also captures XG Effect block (AH=0x02, AM=0x01) Reverb/Chorus/Variation
+        type MSB/LSB into self.xg_effects {reverb_type_msb, reverb_type_lsb, ...}.
+
+        Also parses channel events Bank Select (CC#0/32) + Program Change,
+        which carry the actual voice info per XG Multi Part stream.
+        """
+        voices: Dict[int, Dict[str, int]] = {}
+        # Effects: reverb/chorus/variation type codes (MSB/LSB pair per effect)
+        self.xg_effects: Dict[str, int] = {}
+        # System: master tune/volume/transpose (from XG System AH=0x00 AM=0x00)
+        self.xg_system: Dict[str, int] = {}
+        # Drum Setup: per-note overrides (from AH=0x30/0x31 drum setup 1/2)
+        # Structure: {setup_num: {note_num: {param: value}}}
+        self.xg_drum_setup: Dict[int, Dict[int, Dict[str, int]]] = {}
+        raw = self.data
+
+        # Scan for SysEx messages F0 ... F7 and channel messages
+        i = 0
+        while i < len(raw):
+            b = raw[i]
+            if b == 0xF0:
+                # Find F7
+                j = i + 1
+                while j < len(raw) and raw[j] != 0xF7:
+                    j += 1
+                if j >= len(raw):
+                    break
+                msg = raw[i:j+1]
+                # XG Parameter Change: F0 43 1n 4C AH AM AL data F7
+                if (len(msg) >= 9 and msg[1] == 0x43 and msg[3] == 0x4C and
+                        (msg[2] & 0xF0) == 0x10):
+                    ah, am, al, data_val = msg[4], msg[5], msg[6], msg[7]
+                    if ah == 0x08:  # Multi Part
+                        part = am
+                        voices.setdefault(part, {})
+                        # Core voice selection
+                        if al == 0x01:
+                            voices[part]["bank_msb"] = data_val
+                        elif al == 0x02:
+                            voices[part]["bank_lsb"] = data_val
+                        elif al == 0x03:
+                            voices[part]["program"] = data_val
+                        # Channel/mode
+                        elif al == 0x04:
+                            voices[part]["rcv_channel"] = data_val
+                        elif al == 0x05:
+                            voices[part]["mono_poly"] = data_val
+                        elif al == 0x07:
+                            voices[part]["part_mode"] = data_val
+                        # Note range / shift
+                        elif al == 0x08:
+                            voices[part]["note_shift"] = data_val
+                        elif al == 0x09:
+                            voices[part]["detune"] = data_val
+                        elif al == 0x0F:
+                            voices[part]["note_limit_low"] = data_val
+                        elif al == 0x10:
+                            voices[part]["note_limit_high"] = data_val
+                        # Mixer
+                        elif al == 0x0B:
+                            voices[part]["volume"] = data_val
+                        elif al == 0x0E:
+                            voices[part]["pan"] = data_val
+                        elif al == 0x11:
+                            voices[part]["dry_level"] = data_val
+                        # Effect sends
+                        elif al == 0x12:
+                            voices[part]["chorus"] = data_val
+                        elif al == 0x13:
+                            voices[part]["reverb"] = data_val
+                        elif al == 0x14:
+                            voices[part]["variation"] = data_val
+                        # Filter
+                        elif al == 0x23:
+                            voices[part]["filter_cutoff"] = data_val
+                        elif al == 0x24:
+                            voices[part]["filter_resonance"] = data_val
+                    elif ah == 0x02 and am == 0x01:  # Effect block
+                        # AL 0x00-0x01 = Reverb type MSB/LSB
+                        # AL 0x20-0x21 = Chorus type MSB/LSB
+                        # AL 0x40-0x41 = Variation type MSB/LSB
+                        if al == 0x00:
+                            self.xg_effects["reverb_type_msb"] = data_val
+                        elif al == 0x01:
+                            self.xg_effects["reverb_type_lsb"] = data_val
+                        elif al == 0x20:
+                            self.xg_effects["chorus_type_msb"] = data_val
+                        elif al == 0x21:
+                            self.xg_effects["chorus_type_lsb"] = data_val
+                        elif al == 0x40:
+                            self.xg_effects["variation_type_msb"] = data_val
+                        elif al == 0x41:
+                            self.xg_effects["variation_type_lsb"] = data_val
+                    elif 0x30 <= ah <= 0x3F:  # Drum Setup (AH=0x30=setup1, 0x31=setup2)
+                        # AM = note number (0x0D=13 through 0x5B=91 drum range)
+                        # AL = parameter
+                        setup_num = ah - 0x30
+                        note_num = am
+                        self.xg_drum_setup.setdefault(setup_num, {})
+                        self.xg_drum_setup[setup_num].setdefault(note_num, {})
+                        DRUM_PARAM_NAMES = {
+                            0x00: "pitch_coarse",
+                            0x01: "pitch_fine",
+                            0x02: "level",
+                            0x03: "alt_group",
+                            0x04: "pan",
+                            0x05: "reverb_send",
+                            0x06: "chorus_send",
+                            0x07: "variation_send",
+                            0x08: "key_assign",
+                            0x09: "rcv_note_off",
+                            0x0A: "rcv_note_on",
+                            0x0B: "filter_cutoff",
+                            0x0C: "filter_resonance",
+                            0x0D: "eg_attack",
+                            0x0E: "eg_decay1",
+                            0x0F: "eg_decay2",
+                        }
+                        pname = DRUM_PARAM_NAMES.get(al, f"al_0x{al:02X}")
+                        self.xg_drum_setup[setup_num][note_num][pname] = data_val
+                    elif ah == 0x00 and am == 0x00:  # XG System
+                        # AL 0x00-0x03 = Master Tune (4 nibbles, signed)
+                        # AL 0x04 = Master Volume
+                        # AL 0x05 = Master Attenuator
+                        # AL 0x06 = Master Transpose (signed, 0x40 = 0)
+                        # AL 0x7D = Drum Setup Reset
+                        # AL 0x7E = XG System On
+                        # AL 0x7F = All Parameter Reset
+                        if al <= 0x03:
+                            self.xg_system[f"master_tune_nibble_{al}"] = data_val
+                        elif al == 0x04:
+                            self.xg_system["master_volume"] = data_val
+                        elif al == 0x05:
+                            self.xg_system["master_attenuator"] = data_val
+                        elif al == 0x06:
+                            self.xg_system["master_transpose"] = data_val
+                        elif al == 0x7D:
+                            self.xg_system["drum_setup_reset"] = data_val
+                        elif al == 0x7E:
+                            self.xg_system["xg_system_on"] = data_val
+                        elif al == 0x7F:
+                            self.xg_system["all_parameter_reset"] = data_val
+                i = j + 1
+            elif 0x80 <= b <= 0xEF:
+                # Channel message
+                status = b
+                kind = status & 0xF0
+                ch = status & 0x0F  # 0-15 = part 0-15
+                if kind == 0xB0 and i + 2 < len(raw):  # CC
+                    cc, val = raw[i+1], raw[i+2]
+                    voices.setdefault(ch, {})
+                    if cc == 0:
+                        voices[ch]["bank_msb"] = val
+                    elif cc == 32:
+                        voices[ch]["bank_lsb"] = val
+                    elif cc == 7:
+                        voices[ch]["volume"] = val
+                    elif cc == 10:
+                        voices[ch]["pan"] = val
+                    elif cc == 91:
+                        voices[ch]["reverb"] = val
+                    elif cc == 93:
+                        voices[ch]["chorus"] = val
+                    i += 3
+                elif kind == 0xC0 and i + 1 < len(raw):  # Program Change
+                    voices.setdefault(ch, {})
+                    voices[ch]["program"] = raw[i+1]
+                    i += 2
+                elif kind in (0x80, 0x90, 0xA0, 0xE0):
+                    i += 3
+                elif kind in (0xD0,):
+                    i += 2
+                else:
+                    i += 1
+            else:
+                i += 1
+
+        return voices
+
     def _analyze(self, filepath: str) -> SyxAnalysis:
         """Perform complete analysis."""
 
-        # Parse messages
+        # Parse Model 5F messages (pattern bulk)
         self.messages = self.parser.parse_bytes(self.data)
+
+        # Parse XG Parameter Change for voice data (Multi Part + channel events)
+        # Works for .syx files that contain XG stream (pattern-load capture,
+        # bulk backup with XG Multi Part dump, merged captures).
+        self.xg_voices = self._parse_xg_multi_part()
 
         analysis = SyxAnalysis(
             filepath=filepath,
@@ -426,10 +665,93 @@ class SyxAnalyzer:
             if self.TRACK_SECTION_START <= al <= self.TRACK_SECTION_END:
                 analysis.track_sections[al] = data
 
+        # Parse pattern directory from AH=0x05 if present
+        analysis.pattern_directory = self._parse_pattern_directory()
+
+        # Parse voice edit dumps (AH=0x00 AM=0x40 from UTILITY → BULK OUT → Voice)
+        VOICE_CLASS_MAP = {
+            b"\xf8\x80\x8e\x83": "Drum Standard Kit",
+            b"\xf8\x80\x8f\x90": "Drum SFX Kit",
+            b"\x78\x00\x07\x12": "Bass voice",
+            b"\x78\x00\x0f\x10": "Chord/Melodic voice",
+            b"\x78\x00\x0e\x03": "Chord variant",
+        }
+        for msg in self.messages:
+            if msg.address_high == 0x00 and msg.address_mid == 0x40 and msg.decoded_data:
+                d = msg.decoded_data
+                # Find voice class signature (typically at pos 10 from earlier analysis)
+                cls = None
+                for sig, label in VOICE_CLASS_MAP.items():
+                    if sig in d[:20]:
+                        cls = label
+                        break
+                analysis.voice_edit_dumps.append({
+                    "al_address": msg.address_low,
+                    "size_bytes": len(d),
+                    "voice_class": cls or "unknown",
+                    "hex_preview": d[:20].hex(),
+                })
+
+        # Copy XG parser state onto analysis (so display layer can see it)
+        analysis.xg_voices = dict(self.xg_voices)
+        analysis.xg_effects = dict(getattr(self, "xg_effects", {}))
+        analysis.xg_system = dict(getattr(self, "xg_system", {}))
+        analysis.xg_drum_setup = {k: {n: dict(v) for n, v in notes.items()}
+                                  for k, notes in getattr(self, "xg_drum_setup", {}).items()}
+
+        # Apply XG Effects overrides if present (from Model 4C AH=0x02 AM=0x01)
+        xg_fx = getattr(self, "xg_effects", {})
+        if "reverb_type_msb" in xg_fx:
+            analysis.reverb_type_msb = xg_fx["reverb_type_msb"]
+            analysis.reverb_type_lsb = xg_fx.get("reverb_type_lsb", 0)
+            analysis.reverb_type = get_reverb_type_name(
+                analysis.reverb_type_msb, analysis.reverb_type_lsb
+            )
+        if "chorus_type_msb" in xg_fx:
+            analysis.chorus_type_msb = xg_fx["chorus_type_msb"]
+            analysis.chorus_type_lsb = xg_fx.get("chorus_type_lsb", 0)
+            analysis.chorus_type = get_chorus_type_name(
+                analysis.chorus_type_msb, analysis.chorus_type_lsb
+            )
+        if "variation_type_msb" in xg_fx:
+            analysis.variation_type_msb = xg_fx["variation_type_msb"]
+            analysis.variation_type_lsb = xg_fx.get("variation_type_lsb", 0)
+            analysis.variation_type = get_variation_type_name(
+                analysis.variation_type_msb, analysis.variation_type_lsb
+            )
+
         # Analyze QY70-specific structures (8 tracks, 6 sections)
         self._analyze_qy70_structure(analysis)
 
         return analysis
+
+    def _parse_pattern_directory(self) -> Dict[int, str]:
+        """Parse AH=0x05 (Pattern Name Directory) if present in the file.
+
+        The QY70 pattern directory is sent as RAW 7-bit-ASCII bytes (no Yamaha
+        MSB packing, since every byte already has bit 7 clear for ASCII).
+        Each slot is 16 bytes: 8 ASCII name + 8 metadata.
+
+        Empty slots (8 × '*' = 0x2A) are excluded from the result.
+        """
+        directory: Dict[int, str] = {}
+        for msg in self.messages:
+            if not (msg.address_high == 0x05 and msg.data):
+                continue
+            # Use RAW payload bytes, not decoded_data: AH=0x05 isn't 7-bit packed.
+            body = bytes(msg.data)
+            for slot_idx in range(len(body) // 16):
+                raw_name = body[slot_idx * 16:slot_idx * 16 + 8]
+                # Filter out empty marker (8 × 0x2A = '*')
+                if raw_name == b"\x2a" * 8:
+                    continue
+                try:
+                    name = raw_name.decode("ascii", errors="replace").rstrip()
+                except Exception:
+                    name = raw_name.hex()
+                if name and name != "*" * 8:
+                    directory[slot_idx] = name
+        return directory
 
     def _detect_format(self, analysis: SyxAnalysis) -> str:
         """
@@ -542,65 +864,86 @@ class SyxAnalyzer:
             voice_name = ""
 
             if first_track_data and len(first_track_data) > 24:
-                # Extract from track header (bytes after common 12-byte prefix)
-                # Based on reverse engineering analysis:
+                # Voice encoding in track header (verified 2026-04-23 via hardware capture)
                 #
-                # Bytes 14-15 encoding patterns:
-                # - 0x40 0x80 = Drum track "use default kit" marker (D1, D2, PC)
-                # - 0x00 0x04 = Bass track marker (BA) - voice stored elsewhere
-                # - Other values = Bank MSB + Program for melody/chord tracks (C1-C4)
+                # Track header layout (24 bytes pre-preamble):
+                #   B0-B13:  slot/track metadata (largely constant)
+                #   B14-B16: voice variant/config (3 bytes)
+                #   B17-B20: **voice class signature** (4 bytes) — THIS identifies voice type
+                #   B21-B22: mix params (pan/volume flag)
+                #   B23:     trailer (usually 0x00)
                 #
-                # For BA track:
-                # - bytes 14-15 = 0x00 0x04 is a fixed marker, NOT the voice
-                # - The actual voice (e.g., SynBass1 + variation) may be in header
-                # - Byte 26 may contain Bank LSB (e.g., 0x60 = 96 for "Hammer" variation)
-                # - Currently we use SynBass1 (Program 38) as default for BA tracks
+                # Voice class signatures observed (B17-B20 hex):
+                #   f8 80 8e 83 → DRUM kit
+                #   78 00 07 12 → BASS voice
+                #   78 00 0f 10 → CHORD/MELODIC voice (standard)
+                #   78 00 0e 03 → CHORD variant (alt)
+                #   0b b5 8a 7b → XG extended (non-GM, LSB-encoded)
+                #
+                # IMPORTANT: Bank MSB/LSB/Program are NOT directly byte-encoded in
+                # the pattern bulk. Exact voice (e.g., "Drum Kit 26" vs "Standard Kit 1")
+                # is only retrievable via live XG Multi Part query or capturing the
+                # pattern-load PC/CC stream when QY70 switches patterns.
+                #
+                # See wiki/session-32f-captures.md for full voice mapping of
+                # SGT/AMB01/STYLE2 patterns.
 
-                raw_b14 = first_track_data[14] if len(first_track_data) > 14 else 0
-                raw_b15 = first_track_data[15] if len(first_track_data) > 15 else 0
-
-                is_drum_default = raw_b14 == 0x40 and raw_b15 == 0x80
-                is_bass_marker = raw_b14 == 0x00 and raw_b15 == 0x04
-
-                if is_drum_default:
-                    # D1, D2, PC = Drums with default kit
-                    if is_drum:
-                        bank_msb = 127
-                        program = 0
-                        voice_name = get_drum_kit_name(program)
-                    else:
-                        # PC track with drum default - use Standard Kit
-                        bank_msb = 127
-                        program = 0
-                        voice_name = get_drum_kit_name(program)
-                elif is_bass_marker and track_name == "BA":
-                    # BA track: bytes 14-15 = 00 04 is a marker, not the voice
-                    # The actual bass voice is likely SynBass1 (Program 38)
-                    # with a variation from Bank LSB (possibly at byte 26)
-                    bank_msb = 0
-                    program = 38  # Synth Bass 1 (SynBass1)
-                    # Try to extract Bank LSB from byte 26 if available
-                    if len(first_track_data) > 26:
-                        potential_bank_lsb = first_track_data[26]
-                        # Bank LSB should be in valid MIDI range
-                        if 0 <= potential_bank_lsb <= 127:
-                            bank_lsb = potential_bank_lsb
-                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
-                elif track_name == "BA":
-                    # BA track with non-standard encoding - use defaults
-                    bank_msb = 0
-                    program = 38  # Synth Bass 1
-                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
+                if len(first_track_data) >= 21:
+                    voice_class = first_track_data[17:21]
                 else:
-                    # Chord/melody tracks (C1-C4): bytes 14-15 = Bank MSB + Program
-                    raw_bank = raw_b14
-                    raw_program = raw_b15
-                    # Valid MIDI values are 0-127
-                    if raw_bank < 128 and raw_program < 128:
-                        bank_msb = raw_bank
-                        program = raw_program
-                    # Get voice name (correct parameter order: program, bank_msb, bank_lsb, channel)
-                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
+                    voice_class = b""
+
+                VOICE_CLASS_SIGNATURES = {
+                    b"\xf8\x80\x8e\x83": ("drum", 127, 0),
+                    b"\xf8\x80\x8f\x90": ("drum-sfx", 126, 0),
+                    b"\x78\x00\x07\x12": ("bass", 0, 0),
+                    b"\x78\x00\x0f\x10": ("chord", 0, 0),
+                    b"\x78\x00\x0e\x03": ("chord-variant", 0, 0),
+                    b"\x78\x00\x07\x10": ("chord-short", 0, 0),
+                }
+
+                # Tier 1: try 10-byte signature DB lookup (unambiguous hits only)
+                # The signature encodes an internal voice reference. Multiple voices
+                # can share a signature (e.g. "Analog Kit" vs "Standard Kit" via
+                # same drum-slot code), so trust DB only when confidence == 1.0.
+                voice_sig10 = first_track_data[14:24].hex() if len(first_track_data) >= 24 else ""
+                sig_db = _load_signature_db()
+                sig_hit = sig_db.get(voice_sig10) if voice_sig10 else None
+                sig_confident = sig_hit and sig_hit.get("confidence", 0) >= 0.99
+
+                if sig_confident:
+                    bank_msb = sig_hit.get("msb", 0)
+                    bank_lsb = sig_hit.get("lsb", 0)
+                    program = sig_hit.get("prog", 0)
+                    if bank_msb == 127:
+                        voice_name = get_drum_kit_name(program) + " (DB)"
+                        if voice_name.startswith("Unknown"):
+                            voice_name = f"Drum Kit {program} (DB)"
+                    elif bank_msb == 126:
+                        voice_name = f"SFX Kit {program} (DB)"
+                    else:
+                        resolved = get_voice_name(program, bank_msb, bank_lsb)
+                        voice_name = f"{resolved} (DB)" if resolved else f"Voice {program}/{bank_msb}/{bank_lsb} (DB)"
+                elif voice_class in VOICE_CLASS_SIGNATURES:
+                    # Tier 2: fallback to 4-byte class signature
+                    cls, dflt_msb, dflt_prog = VOICE_CLASS_SIGNATURES[voice_class]
+                    bank_msb = dflt_msb
+                    program = dflt_prog
+                    if cls == "drum":
+                        voice_name = get_drum_kit_name(program) + " (class)"
+                    elif cls == "drum-sfx":
+                        voice_name = "Drum SFX Kit (class — exact via XG query)"
+                    elif cls == "bass":
+                        voice_name = "Bass voice (class — exact via XG query)"
+                    elif cls in ("chord", "chord-short"):
+                        voice_name = "Chord/Melodic (class — exact via XG query)"
+                    elif cls == "chord-variant":
+                        voice_name = "Chord variant (class — exact via XG query)"
+                    else:
+                        voice_name = f"Class {voice_class.hex()}"
+                else:
+                    # Tier 3: unknown class — might be XG extended or unrecognized
+                    voice_name = f"Unknown (B17-B20={voice_class.hex()})" if voice_class else "Unknown"
 
                 # Try to extract pan from offset 22 (based on analysis showing 0x40=64=center)
                 # But for RHY1, offset 21-22 are 0x00 0x00, which means use default
@@ -639,6 +982,35 @@ class SyxAnalyzer:
                     track_data_density = (
                         (non_zero / len(seq_data) * 100) if len(seq_data) > 0 else 0
                     )
+
+            # Override from XG Parameter Change data if available (captured from pattern load)
+            # Channel = part+1 (ch9 = part 8 idx); XG voices keyed on 0-indexed part
+            xg_part_idx = default_channel - 1  # ch9 → part 8
+            xg_voice = getattr(self, 'xg_voices', {}).get(xg_part_idx, {})
+            if xg_voice and "program" in xg_voice:
+                # XG data available: override with exact values
+                bank_msb = xg_voice.get("bank_msb", bank_msb)
+                bank_lsb = xg_voice.get("bank_lsb", bank_lsb)
+                program = xg_voice["program"]
+                # Resolve exact voice name via xg_voices catalog
+                if bank_msb == 127:
+                    voice_name = get_drum_kit_name(program)
+                    if voice_name == "Unknown" or not voice_name:
+                        voice_name = f"Drum Kit {program}"
+                elif bank_msb == 126:
+                    # SFX bank — separate naming table than regular drums
+                    voice_name = f"SFX Kit {program}"
+                else:
+                    voice_name = get_voice_name(program, bank_msb, bank_lsb)
+                # Override mix params
+                if "volume" in xg_voice:
+                    volume = xg_voice["volume"]
+                if "pan" in xg_voice:
+                    pan = xg_voice["pan"]
+                if "reverb" in xg_voice:
+                    reverb_send = xg_voice["reverb"]
+                if "chorus" in xg_voice:
+                    chorus_send = xg_voice["chorus"]
 
             track_info = QY70TrackInfo(
                 number=track_idx + 1,

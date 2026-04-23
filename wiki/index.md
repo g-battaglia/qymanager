@@ -54,6 +54,9 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 
 - [Track Structure](track-structure.md) — Track layout, slot names, AL addressing
 - [Header Section](header-section.md) — Global pattern/style header (AL=0x7F, 640 bytes)
+- **[Pattern Header AL=0x7F](pattern-header-al7f.md)** — 640B structural map + why voice is NOT byte-extractable
+- **[Voice Extraction Workflow](voice-extraction-workflow.md)** — **3 workflows per "ottenere tutto dal SysEx"**
+- **[Quickstart SysEx Extraction](quickstart-sysex-extraction.md)** — **One-liner recipes + decision tree**
 - [Bitstream Encoding](bitstream.md) — R=9 rotation, 9-bit field packing, preambles
 - [Bar Structure](bar-structure.md) — 13-byte bar headers, DC/9E delimiters
 - [Event Fields](event-fields.md) — F0-F5 field decomposition, beat counter, chord mask (1FA3)

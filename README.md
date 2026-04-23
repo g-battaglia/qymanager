@@ -60,19 +60,49 @@ qymanager --version           # Show version (v0.4.0)
 
 **Analysis Commands:**
 ```bash
-qymanager info      # Pattern information (basic or --full)
-qymanager tracks    # Detailed track/channel info with bar graphics
-qymanager sections  # Section configuration details
-qymanager phrase    # Phrase/sequence data analysis
-qymanager map       # Visual file structure map
-qymanager dump      # Annotated hex dump
+qymanager info          # Pattern information (basic or --full)
+qymanager audit         # Report data extraction completeness + suggestions
+qymanager tracks        # Detailed track/channel info with bar graphics
+qymanager sections      # Section configuration details
+qymanager phrase        # Phrase/sequence data analysis
+qymanager map           # Visual file structure map
+qymanager dump          # Annotated hex dump
+qymanager bulk-summary  # Slot inventory for BULK_ALL multi-pattern files
+```
+
+**XG (tone generator) Commands:**
+```bash
+qymanager xg summary    # Message-count statistics by AH/AM/AL
+qymanager xg inspect    # Final parsed XG state (voices, effects, system, drum setup)
+qymanager xg parse      # Raw XG Parameter Change decode (one per line)
+qymanager xg voices     # Voice resolution timeline (MSB/LSB/PC per channel)
+```
+
+**Extraction / Workflow Commands:**
+```bash
+qymanager merge         # Combine pattern bulk .syx + XG capture JSON
+qymanager convert       # Convert between .syx (QY70) and .Q7P (QY700)
+qymanager udm-convert   # Format-agnostic convert via UDM + lossy policy
+```
+
+**Edit Commands:**
+```bash
+qymanager edit          # 21 sub-commands: export/new-empty/add-note/transpose/...
+qymanager field-set     # UDM path-based field edit
+qymanager field-get     # UDM path-based field read
+qymanager field-emit-xg # Emit just the XG Parameter Change bytes
+qymanager realtime      # Live XG Parameter Change (list-ports/emit/watch)
+qymanager pattern-set   # Structured pattern editing
+qymanager song-set      # Song metadata edit
+qymanager chord-add     # Add chord event to pattern
+qymanager phrase-list   # List user phrases
 ```
 
 **Utility Commands:**
 ```bash
 qymanager diff      # Compare two Q7P files
 qymanager validate  # Validate file structure
-qymanager convert   # Convert between formats
+qymanager version   # Show version
 ```
 
 ---
@@ -133,6 +163,106 @@ qymanager info pattern.Q7P --json
 │ ...   │    │      │       │                      │     │    │     │
 ╰───────┴────┴──────┴───────┴──────────────────────┴─────┴────┴─────╯
 ```
+
+---
+
+### `qymanager audit` - Extraction Completeness Report
+
+Report tabulare di cosa è estraibile da un `.syx` e cosa manca, con actionable suggestions. Risponde direttamente alla domanda: *"Questo file mi dà tutti i dati che mi servono?"*
+
+```bash
+qymanager audit file.syx
+```
+
+#### Esempio output (file CON XG state)
+
+```
+Audit: SGT_backup.syx (13891 bytes)
+
+                Data extraction completeness
+╭─────────────────────────────┬───┬──────────────────────────╮
+│ Category                    │   │ Details                  │
+├─────────────────────────────┼───┼──────────────────────────┤
+│ Pattern events (edit buffer)│ ✓ │ 5/8 tracks, 2/6 sections │
+│ Tempo                       │ ✓ │ 151 BPM                  │
+│ Time signature              │ ~ │ 4/4 (assumed)            │
+│ Pattern name directory      │ ✗ │ AH=0x05 not in file      │
+│ Voice Bank/LSB/Prog (XG)    │ ✓ │ 8/8 tracks exact         │
+│ Mixer (Vol/Pan/Rev/Cho)     │ ✓ │ per-track from XG        │
+│ Global effects types        │ ✓ │ 1 extracted              │
+│ XG System params            │ ✓ │ 2 params                 │
+│ XG Drum Setup overrides     │ ✓ │ 11 note customizations   │
+╰─────────────────────────────┴───┴──────────────────────────╯
+Legend: ✓ complete · ~ partial/assumed · ✗ missing · — n/a
+```
+
+#### Esempio output (pattern bulk ONLY)
+
+```
+│ Voice Bank/LSB/Prog (no XG) │ ~ │ 5 via DB, 3 via class   │
+│ Mixer (Vol/Pan/Rev/Cho)     │ ✗ │ no XG data — defaults   │
+
+Suggestions:
+  • No XG state → voice Bank/LSB/Prog unreliable.
+    Run capture_complete.py -o full.syx on the QY70,
+    or qymanager merge bulk.syx capture.json -o full.syx.
+```
+
+Quando il file è un BULK_ALL multi-slot, audit auto-reindirizza a `qymanager bulk-summary`.
+
+---
+
+### `qymanager merge` - Combine Pattern Bulk + XG Capture
+
+Unisce un pattern bulk `.syx` con una capture JSON (`{"t": float, "data": "hex"}` list) in un singolo `.syx` parsabile completamente da `qymanager info`.
+
+```bash
+qymanager merge pattern.syx capture.json -o complete.syx
+qymanager info complete.syx   # Ora mostra voice info completa
+```
+
+La capture JSON viene flattenata a raw MIDI bytes (SysEx + channel events) e appesa al bulk. Il parser `_parse_xg_multi_part` estrae Bank/LSB/Prog/Vol/Pan/FX dai CC (0/32/7/10/91/93) e Program Change.
+
+**Workflow use case**: hai capturato il pattern bulk separatamente (BULK OUT → Pattern) e il MIDI stream al momento del pattern load (via `midi_tools/capture_xg_stream.py --all`). Dopo il merge hai un file che rappresenta lo stato completo.
+
+---
+
+### `qymanager bulk-summary` - Slot Inventory for BULK_ALL
+
+I file di QY70 "BULK OUT → All" contengono 64 slot pattern (AM=0x00-0x3F) invece di un singolo edit buffer. `qymanager info` è per pattern singoli; questo comando lista gli slot popolati.
+
+```bash
+qymanager bulk-summary bulk_all.syx
+```
+
+#### Esempio output
+
+```
+Pattern slots populated: 33 / 64
+╭──────┬─────┬────────────────────┬──────────────┬──────────╮
+│ Slot │ Hdr │ Tracks             │ Sections     │ Bytes    │
+├──────┼─────┼────────────────────┼──────────────┼──────────┤
+│ U01  │  H  │ 1,4,5,6            │ 1            │    1281  │
+│ U10  │  H  │ 1,2,3,4,5,6,7,8    │ 1,2,3,4,5,6  │   12845  │
+│ ...                                                        │
+╰──────┴─────┴────────────────────┴──────────────┴──────────╯
+
+  • Song data (AH=0x01): 859 bytes
+  • System meta (AH=0x03): 32 bytes
+  • XG Multi Part state (Model 4C): absent — voice info limited
+```
+
+---
+
+### `qymanager xg inspect` - Parsed XG State
+
+Mostra lo STATO FINALE parsato dall'analyzer (vs `xg summary` che conta messaggi). Utile per verifica rapida di cosa `qymanager info` estrarrà da un file.
+
+```bash
+qymanager xg inspect file.syx
+```
+
+Output include: XG System, XG Effects, XG Multi Part per part (17 params), XG Drum Setup overrides per note. Se il file non ha XG data, mostra un helpful error con puntatore al workflow capture_complete.
 
 ---
 
@@ -522,6 +652,110 @@ Send .syx → QY70 → MIDI Start+Clock → Capture Notes → Quantize → SMF/Q
 
 Uses `auto_capture_pipeline.py` for one-shot automated conversion.
 
+### Complete Capture (recommended for full RE info)
+
+```bash
+uv run python3 midi_tools/capture_complete.py -o complete.syx
+```
+
+Performs in ONE session:
+1. Init handshake
+2. Pattern bulk request (8 tracks + header, AM=0x7E by default)
+3. Pattern name directory request (AH=0x05)
+4. System meta request (AH=0x03)
+5. XG Multi Part bulk requests × 16 parts
+6. Close handshake
+
+Output file is parseable by `qymanager info` to extract **every XG parameter the QY70 emits**: voices, mixer, effects, drum setup, master tune. Use `--dry-run` to print the 29-message sequence without touching MIDI.
+
+---
+
+## SysEx Extraction — What's Possible and What's Not
+
+> For the impatient: see [wiki/quickstart-sysex-extraction.md](wiki/quickstart-sysex-extraction.md).
+
+The QY70 exposes pattern data across **7 distinct address families**. Not all of them are included in every bulk dump. The following table summarizes what's extractable and how:
+
+| Data | Source | How to capture | Extraction |
+|------|--------|----------------|:---:|
+| Pattern events (notes, timings, gates) | `AH=0x02 AM=0x7E AL=0x00..0x2F` | `BULK OUT → Pattern` OR live | ✓ dense decoder 95-100% |
+| Pattern header (tempo, sections) | `AH=0x02 AM=0x7E AL=0x7F` | Same as above | ✓ tempo exact |
+| User pattern slots | `AH=0x02 AM=0x00..0x3F` | `BULK OUT → All` | ✓ via `bulk-summary` |
+| Song data | `AH=0x01` | `BULK OUT → All` | ✓ presence detected |
+| System meta (Master Tune/Vol) | `AH=0x03 AM=0x00` | `BULK OUT → All` | ✓ 32B parsed |
+| Pattern name directory | `AH=0x05 AM=0x00 AL=0x00` | Separate dump request | ✓ 20 slot names (raw ASCII) |
+| Voice Edit Dump (custom voices) | `AH=0x00 AM=0x40` | `BULK OUT → Voice` | ✓ size + voice class |
+| Voice Bank/LSB/Prog per track | **XG Parameter Change (Model 4C)** | Live XG query OR capture at pattern load | ✓ via XG, ⚠ via signature DB only |
+| Volume/Pan/Rev/Cho per track | XG Multi Part | Live XG query | ✓ via XG only |
+| Global FX (Reverb/Chorus/Var type) | XG Effect block | Live XG query | ✓ 6 type MSB/LSB params |
+| XG Drum Setup (per-note customization) | `Model 4C AH=0x30/0x31` | Live XG query | ✓ 16 params × 128 notes × 2 setups |
+
+### Critical structural finding
+
+**The QY70 pattern bulk dump does NOT contain resolvable voice info (Bank MSB/LSB/Program)**. The 640-byte pattern header at `AL=0x7F` encodes voice identity via an **opaque ROM-internal index** that cannot be decoded to Bank/LSB/Prog without:
+- A firmware ROM dump from the QY70 chip, or
+- Yamaha proprietary documentation
+
+This was verified via 7+ iterations of byte-level analysis on 3 reference patterns (SGT, AMB01, STYLE2) across all plausible encodings (direct byte search, permutation, 7-bit unpack, 9-bit field extraction, strided blocks, bit-level brute force at every offset/width). See [wiki/pattern-header-al7f.md](wiki/pattern-header-al7f.md) for the full attack list.
+
+### Three workflows to get everything
+
+**Workflow A — Live capture (recommended)**
+
+```bash
+uv run python3 midi_tools/capture_complete.py -o complete.syx
+uv run qymanager info complete.syx
+```
+
+This sends **29 dump requests** in one session (Init + 9 pattern + name directory + system + 16 XG Multi Part + close). Output `.syx` contains everything the QY70 emits.
+
+**Workflow B — Merge pre-existing captures**
+
+```bash
+uv run qymanager merge pattern.syx xg_capture.json -o complete.syx
+uv run qymanager info complete.syx
+```
+
+If you already captured the pattern bulk and the MIDI stream during pattern load (via `midi_tools/capture_xg_stream.py --all`), merge them into one file.
+
+**Workflow C — Fallback (pattern bulk only, partial)**
+
+```bash
+uv run qymanager info pattern.syx          # Partial info
+uv run qymanager audit pattern.syx         # See exactly what's extractable
+```
+
+Without XG data:
+- **Voice class** (drum/bass/chord): reliable via B17-B20 class signature
+- **Bank MSB/LSB/Prog**: via `data/voice_signature_db.json` (23 trained signatures, 21 unambiguous from 3 reference patterns) — falls back to class default for unknown signatures
+- **Vol/Pan/Rev/Cho**: not available — values default to XG init (100/center/40/0)
+- **FX types, Drum Setup, System params**: not available
+
+### SysEx encoding per address
+
+A subtle but critical detail: **not all QY70 bulk addresses use Yamaha 7-bit MSB packing**.
+
+| AH | Encoding | Parser must use |
+|:---:|----------|-----------------|
+| 0x00 AM=0x40, 0x01, 0x02, 0x03 | 7-bit packed | `msg.decoded_data` |
+| **0x05** | **RAW** (direct ASCII) | **`msg.data`** |
+| 0x08 | Single-byte marker | N/A |
+
+This was discovered late — `AH=0x05` pattern name directory was incorrectly being decoded, producing garbled output. See [wiki/pattern-header-al7f.md](wiki/pattern-header-al7f.md) for the full table.
+
+---
+
+## What's NOT yet decoded (known gaps)
+
+| Item | Status | Why |
+|------|:---:|-----|
+| Time signature | ⚠ hardcoded 4/4 | All 3 reference patterns are 4/4 — no 3/4 or 6/8 sample for differential RE |
+| Pattern bar count per section | ⚠ not derived | Track sizes (128/256/768B) correlate with event density, not bar count |
+| Pattern name in AL=0x7F | ✗ not present | Names only in AH=0x05 directory for user slots |
+| Voice Bank/LSB/Prog in bulk alone | ✗ structurally opaque | ROM index lookup without firmware access |
+
+These are **architectural limits**, not missing features of the tool. The workarounds documented above recover the missing data via XG live capture.
+
 ---
 
 ## File Formats
@@ -582,10 +816,23 @@ PYTHONPATH=. python3 cli/app.py info tests/fixtures/T01.Q7P
 
 ## Documentation
 
-See the [docs](docs/) folder for detailed documentation:
+**Quickstart guides** (recommended starting points):
+- [wiki/quickstart-sysex-extraction.md](wiki/quickstart-sysex-extraction.md) — Decision tree "how to get everything from a .syx"
+- [wiki/voice-extraction-workflow.md](wiki/voice-extraction-workflow.md) — 3 workflows detailed
+- [STATUS.md](STATUS.md) — Project north-star (completion %, blockers, recommendation)
 
-- [QY70 Format](docs/QY70_FORMAT.md) - SysEx structure and encoding
-- [QY700 Format](docs/QY700_FORMAT.md) - Binary file structure
+**Format references**:
+- [docs/QY70_FORMAT.md](docs/QY70_FORMAT.md) — SysEx structure and encoding
+- [docs/QY700_FORMAT.md](docs/QY700_FORMAT.md) — Binary file structure
+- [wiki/pattern-header-al7f.md](wiki/pattern-header-al7f.md) — **640B pattern header structural map + voice encoding opacity analysis**
+- [wiki/sysex-format.md](wiki/sysex-format.md) — QY70 SysEx bulk dump format (Sequencer Model 0x5F)
+- [wiki/xg-multi-part.md](wiki/xg-multi-part.md) — XG Multi Part parameter reference (Model 0x4C)
+
+**Session log & history**:
+- [wiki/log.md](wiki/log.md) — Chronological session record
+- [wiki/index.md](wiki/index.md) — Full wiki index
+- [wiki/decoder-status.md](wiki/decoder-status.md) — Per-component RE confidence
+- [wiki/open-questions.md](wiki/open-questions.md) — Unresolved hypotheses
 
 ---
 

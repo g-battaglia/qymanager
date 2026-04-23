@@ -202,6 +202,74 @@ def snapshots_cmd(
         console.print(f"  [dim]... ({len(snaps) - limit} more)[/dim]")
 
 
+@app.command("inspect")
+def inspect_cmd(
+    file: Path = typer.Argument(..., help="Path to .syx containing XG state"),
+) -> None:
+    """Show the RESULTING XG state after parsing all Parameter Change messages.
+
+    Unlike `xg summary` (message counts), this shows the ACTUAL per-part voice,
+    mixer, filter, effects, drum-setup values from the analyzer's 3-tier
+    resolver. Useful to verify what qymanager info would extract.
+    """
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+
+    a = SyxAnalyzer()
+    a.analyze_file(str(file))
+
+    console.print(f"[bold]{file}[/bold]")
+    console.print()
+
+    # System
+    if a.xg_system:
+        console.print("[bold yellow]XG System[/bold yellow]")
+        for k, v in sorted(a.xg_system.items()):
+            console.print(f"  {k}: {v}")
+        console.print()
+
+    # Effects
+    if a.xg_effects:
+        console.print("[bold green]XG Effects[/bold green]")
+        for k, v in sorted(a.xg_effects.items()):
+            console.print(f"  {k}: {v}")
+        console.print()
+
+    # Multi Part per channel
+    if a.xg_voices:
+        console.print("[bold cyan]XG Multi Part state[/bold cyan]")
+        track_names = ["", "", "", "", "", "", "", "",
+                       "D1", "D2", "PC", "BA", "C1", "C2", "C3", "C4"]
+        for part_num in sorted(a.xg_voices.keys()):
+            v = a.xg_voices[part_num]
+            if not v:
+                continue
+            tname = f"{track_names[part_num]}/" if part_num >= 8 and track_names[part_num] else ""
+            ch = part_num + 1
+            console.print(f"  [cyan]Part {part_num} ({tname}ch{ch})[/cyan]")
+            for k, val in sorted(v.items()):
+                console.print(f"    {k}: {val}")
+        console.print()
+
+    # Drum Setup
+    if a.xg_drum_setup:
+        console.print("[bold red]XG Drum Setup overrides[/bold red]")
+        for setup_num in sorted(a.xg_drum_setup.keys()):
+            console.print(f"  [red]Setup {setup_num + 1}[/red]")
+            for note_num in sorted(a.xg_drum_setup[setup_num].keys()):
+                params = a.xg_drum_setup[setup_num][note_num]
+                ps = ", ".join(f"{k}={v}" for k, v in sorted(params.items()))
+                console.print(f"    note {note_num:3d}: {ps}")
+        console.print()
+
+    # Report nothing if no XG data
+    if not (a.xg_system or a.xg_effects or a.xg_voices or a.xg_drum_setup):
+        console.print(
+            "[yellow]No XG state captured in this file.[/yellow]\n"
+            "[dim]This .syx contains only pattern bulk (Model 5F). "
+            "For XG state, capture with capture_complete.py or merge a load-stream JSON.[/dim]"
+        )
+
+
 @app.command("voices")
 def voices_cmd(
     file: Path = typer.Argument(..., help="Path to .syx/.bin captured with --all"),

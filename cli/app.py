@@ -16,6 +16,9 @@ from cli.commands.map import map as map_cmd
 from cli.commands.tracks import tracks
 from cli.commands.sections import sections
 from cli.commands.phrase import phrase
+from cli.commands.merge import merge
+from cli.commands.bulk_summary import bulk_summary
+from cli.commands.audit import audit
 from cli.commands.edit import edit_app
 from cli.commands.edit_field import field_emit_xg, field_get, field_set
 from cli.commands.realtime import app as realtime_app
@@ -53,6 +56,9 @@ app.command(name="map")(map_cmd)
 app.command(name="tracks")(tracks)
 app.command(name="sections")(sections)
 app.command(name="phrase")(phrase)
+app.command(name="merge")(merge)
+app.command(name="bulk-summary")(bulk_summary)
+app.command(name="audit")(audit)
 app.add_typer(edit_app, name="edit")
 app.add_typer(xg_app, name="xg")
 app.command(name="field-set")(field_set)

@@ -1,0 +1,93 @@
+{
+  "source": "QY70 SGT U01 pattern \u2014 user recording 2026-04-23",
+  "mapping": {
+    "ch9_RHY1": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 26,
+      "label": "Drum Kit 26 (non-standard)",
+      "vol": 75,
+      "pan": 64,
+      "rev": 0,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "00 00 00 00 00 00 00 00 00"
+    },
+    "ch10_RHY2": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 26,
+      "label": "Drum Kit 26",
+      "vol": 60,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "40 80 87 f8 80 8e 83 00 08"
+    },
+    "ch11_PAD": {
+      "msb": 127,
+      "lsb": 0,
+      "prog": 26,
+      "label": "Drum Kit 26",
+      "vol": 63,
+      "pan": 64,
+      "rev": 60,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "40 80 87 f8 80 8e 83 01 40"
+    },
+    "ch12_BASS": {
+      "msb": 0,
+      "lsb": 96,
+      "prog": 38,
+      "label": "SynBass1 (XG LSB96)",
+      "vol": 95,
+      "pan": 64,
+      "rev": 0,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "00 04 07 78 00 07 12 00 00"
+    },
+    "ch13_CHD1": {
+      "msb": 0,
+      "lsb": 0,
+      "prog": 81,
+      "label": "SawLd",
+      "vol": 60,
+      "pan": 64,
+      "rev": 70,
+      "chor": 55,
+      "pattern_bytes_B14-B22": "00 00 07 78 00 0f 10 40 20"
+    },
+    "ch14_CHD2": {
+      "msb": 0,
+      "lsb": 16,
+      "prog": 89,
+      "label": "Pad variant (LSB=16)",
+      "vol": 95,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "04 0b 17 78 00 0e 03 41 40"
+    },
+    "ch15_PHR1": {
+      "msb": 0,
+      "lsb": 0,
+      "prog": 24,
+      "label": "NylonGtr",
+      "vol": 50,
+      "pan": 64,
+      "rev": 40,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "00 00 07 78 00 0f 10 40 20"
+    },
+    "ch16_PHR2": {
+      "msb": 0,
+      "lsb": 35,
+      "prog": 98,
+      "label": "SciFi variant (LSB=35)",
+      "vol": 45,
+      "pan": 64,
+      "rev": 0,
+      "chor": 0,
+      "pattern_bytes_B14-B22": "50 ce bd 0b b5 8a 7b dc 1a"
+    }
+  }
+}

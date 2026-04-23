@@ -89,3 +89,22 @@ dmypy.json
 
 # ralph-opencode tool config (not project)
 .ralph/
+
+# Claude Code user config (per-user, not project state)
+.claude/
+
+# Large analysis scratch data (≥5MB) — regenerable
+data/probes/
+data/probes_pb/
+data/sgt_rounds/
+data/stored_slots/
+data/overwrite_test/
+data/qy70_bitstream_lab/probe_*/
+data/captures_2026_04_23/R_tables_all.json
+# Other transient analysis JSONs
+data/unified_decoder_results.json
+data/template_library.json
+data/template_library_v2.json
+data/sgt_user_play.json
+data/sgt_user_playback.json
+data/user_recording.json
