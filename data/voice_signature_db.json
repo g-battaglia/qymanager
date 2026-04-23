@@ -9,29 +9,42 @@
         "voice_name": "Glockenspiel"
       }
     ],
-    "confidence": 0.5,
+    "confidence": 0.25,
     "lsb": 0,
     "msb": 0,
     "prog": 89,
-    "sample_count": 2,
+    "sample_count": 4,
     "sources": [
       "STYLE2"
     ],
     "voice_name": "Pad 2 (warm)"
   },
   "00000778000f10414000": {
-    "confidence": 0.3333333333333333,
+    "alternates": [
+      {
+        "lsb": 0,
+        "msb": 0,
+        "prog": 24,
+        "source": "SGT",
+        "voice_name": "Acoustic Guitar (nylon)"
+      }
+    ],
+    "confidence": 0.16666666666666666,
     "lsb": 0,
     "msb": 0,
     "prog": 81,
-    "sample_count": 3
+    "sample_count": 5,
+    "sources": [
+      "SGT"
+    ],
+    "voice_name": "Lead 2 (sawtooth)"
   },
   "00040778000712000000": {
     "confidence": 1.0,
     "lsb": 0,
     "msb": 0,
     "prog": 34,
-    "sample_count": 2,
+    "sample_count": 3,
     "sources": [
       "AMB01"
     ],
@@ -42,7 +55,7 @@
     "lsb": 66,
     "msb": 0,
     "prog": 38,
-    "sample_count": 1,
+    "sample_count": 2,
     "sources": [
       "STYLE2"
     ],
@@ -60,7 +73,7 @@
     "lsb": 0,
     "msb": 0,
     "prog": 89,
-    "sample_count": 4,
+    "sample_count": 6,
     "sources": [
       "AMB01"
     ],
@@ -71,7 +84,7 @@
     "lsb": 0,
     "msb": 126,
     "prog": 0,
-    "sample_count": 2,
+    "sample_count": 3,
     "sources": [
       "AMB01"
     ],
@@ -82,14 +95,18 @@
     "lsb": 16,
     "msb": 0,
     "prog": 89,
-    "sample_count": 1
+    "sample_count": 2,
+    "sources": [
+      "SGT"
+    ],
+    "voice_name": "Pad 2 (warm) (var.16)"
   },
   "046a1778000f10402000": {
     "confidence": 1.0,
     "lsb": 32,
     "msb": 0,
     "prog": 56,
-    "sample_count": 1,
+    "sample_count": 2,
     "sources": [
       "STYLE2"
     ],
@@ -100,7 +117,7 @@
     "lsb": 40,
     "msb": 0,
     "prog": 44,
-    "sample_count": 2,
+    "sample_count": 3,
     "sources": [
       "AMB01"
     ],
@@ -118,7 +135,7 @@
     "lsb": 66,
     "msb": 0,
     "prog": 38,
-    "sample_count": 1,
+    "sample_count": 2,
     "sources": [
       "STYLE2"
     ],
@@ -150,9 +167,10 @@
     "lsb": 0,
     "msb": 127,
     "prog": 26,
-    "sample_count": 3,
+    "sample_count": 5,
     "sources": [
-      "STYLE2"
+      "STYLE2",
+      "SGT"
     ],
     "voice_name": "Drum Kit 26"
   },
@@ -161,7 +179,7 @@
     "lsb": 0,
     "msb": 127,
     "prog": 26,
-    "sample_count": 2,
+    "sample_count": 4,
     "sources": [
       "STYLE2"
     ],
@@ -184,15 +202,26 @@
         "voice_name": "Drum Kit 25"
       }
     ],
-    "confidence": 0.3333333333333333,
+    "confidence": 0.16666666666666666,
     "lsb": 0,
     "msb": 127,
     "prog": 26,
-    "sample_count": 6,
+    "sample_count": 9,
     "sources": [
       "AMB01"
     ],
     "voice_name": "Drum Kit 26"
+  },
+  "4083a7f8808e83414000": {
+    "confidence": 1.0,
+    "lsb": 35,
+    "msb": 0,
+    "prog": 98,
+    "sample_count": 1,
+    "sources": [
+      "SGT"
+    ],
+    "voice_name": "FX 3 (crystal) (var.35)"
   },
   "4dc40a0363042a280f8d": {
     "confidence": 1.0,

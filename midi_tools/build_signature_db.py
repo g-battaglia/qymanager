@@ -252,15 +252,78 @@ def merge_into_db(
     return stats
 
 
+def pair_to_entries_manual(
+    name: str,
+    bulk_path: Path,
+    voices_by_channel: Dict[int, Dict[str, int]],
+) -> List[Tuple[str, Dict[str, object]]]:
+    """Same as `pair_to_entries` but voices come from an inline dict.
+
+    Useful when there is no `_load.json` capture but the pattern's voice
+    assignments are documented elsewhere (wiki / capture log).
+    `voices_by_channel` uses 1-based MIDI channels (9..16 for QY70).
+    Each entry: `{msb, lsb, prog, volume?, pan?, reverb_send?, chorus_send?}`.
+    """
+    tracks = load_bulk_tracks(bulk_path)
+    sigs = first_signature_per_track(tracks)
+
+    entries: List[Tuple[str, Dict[str, object]]] = []
+    for track_idx, sig_hex in sigs.items():
+        midi_ch = track_idx + 9
+        voice = voices_by_channel.get(midi_ch)
+        if voice is None:
+            continue
+        msb, lsb, prog = voice["msb"], voice["lsb"], voice["prog"]
+        is_drum = msb == 127
+        is_sfx = msb == 126 or msb == 64
+        if is_drum:
+            voice_name = f"Drum Kit {prog}"
+        elif is_sfx:
+            voice_name = f"SFX Kit {prog}"
+        else:
+            voice_name = get_voice_name(prog, msb, lsb) or f"Voice {msb}/{lsb}/{prog}"
+        entries.append(
+            (
+                sig_hex,
+                {
+                    "msb": msb,
+                    "lsb": lsb,
+                    "prog": prog,
+                    "voice_name": voice_name,
+                    "volume": voice.get("volume", 100),
+                    "pan": voice.get("pan", 64),
+                    "reverb_send": voice.get("reverb_send", 40),
+                    "chorus_send": voice.get("chorus_send", 0),
+                    "source": name,
+                    "track_index": track_idx,
+                    "midi_channel": midi_ch,
+                },
+            )
+        )
+    return entries
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--pair",
         action="append",
         nargs=3,
+        default=[],
         metavar=("NAME", "BULK_SYX", "LOAD_JSON"),
-        required=True,
         help="repeatable: source label + bulk .syx + load .json",
+    )
+    parser.add_argument(
+        "--manual",
+        action="append",
+        nargs=3,
+        default=[],
+        metavar=("NAME", "BULK_SYX", "VOICES_JSON"),
+        help=(
+            "repeatable: bulk + a JSON with `{\"9\": {\"msb\":..,\"lsb\":..,"
+            "\"prog\":..}, \"10\": ..., ...}` for wiki-documented pairs that "
+            "don't have a `_load.json` capture"
+        ),
     )
     parser.add_argument(
         "--output",
@@ -274,6 +337,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="Print the merge plan but do not write the DB",
     )
     args = parser.parse_args(argv)
+    if not args.pair and not args.manual:
+        parser.error("need at least one --pair or --manual")
 
     db: Dict[str, Dict[str, object]] = {}
     if args.output.exists():
@@ -290,6 +355,25 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(
             f"{name:10s} {len(entries):3d} tracks  "
             f"added={s['added']} reinforced={s['reinforced']} conflict={s['conflict']}"
+        )
+        for k, v in s.items():
+            totals[k] = totals.get(k, 0) + v
+    for name, bulk, voices_json in args.manual:
+        try:
+            raw = json.loads(Path(voices_json).read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"! {name}: cannot read {voices_json}: {exc}", file=sys.stderr)
+            continue
+        voices = {
+            int(k): v
+            for k, v in raw.items()
+            if not k.startswith("_") and k.isdigit()
+        }
+        entries = pair_to_entries_manual(name, Path(bulk), voices)
+        s = merge_into_db(db, entries)
+        print(
+            f"{name:10s} {len(entries):3d} tracks  "
+            f"added={s['added']} reinforced={s['reinforced']} conflict={s['conflict']}  [manual]"
         )
         for k, v in s.items():
             totals[k] = totals.get(k, 0) + v

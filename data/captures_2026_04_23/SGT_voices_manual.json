@@ -1,0 +1,11 @@
+{
+  "_source": "wiki/session-32f-captures.md INDEX.md, verified 2026-04-23 via PATT OUT capture",
+  "9":  {"msb": 127, "lsb": 0,  "prog": 26, "volume": 90, "reverb_send": 40, "chorus_send": 0},
+  "10": {"msb": 127, "lsb": 0,  "prog": 26, "volume": 60, "reverb_send": 40, "chorus_send": 0},
+  "11": {"msb": 127, "lsb": 0,  "prog": 26, "volume": 63, "reverb_send": 60, "chorus_send": 0},
+  "12": {"msb": 0,   "lsb": 96, "prog": 38, "volume": 95, "reverb_send": 40, "chorus_send": 0},
+  "13": {"msb": 0,   "lsb": 0,  "prog": 81, "volume": 60, "reverb_send": 70, "chorus_send": 55},
+  "14": {"msb": 0,   "lsb": 16, "prog": 89, "volume": 95, "reverb_send": 40, "chorus_send": 0},
+  "15": {"msb": 0,   "lsb": 0,  "prog": 24, "volume": 50, "reverb_send": 40, "chorus_send": 0},
+  "16": {"msb": 0,   "lsb": 35, "prog": 98, "volume": 45, "reverb_send": 40, "chorus_send": 0}
+}
