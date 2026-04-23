@@ -17,6 +17,8 @@ from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage
 from qymanager.model import (
     Device,
     DeviceModel,
+    DrumNote,
+    DrumSetup,
     MultiPart,
     Pattern as UdmPattern,
     PatternTrack,
@@ -459,6 +461,82 @@ def parse_syx_to_udm(data: bytes) -> Device:
                 part.chorus_send = fields["chorus"] & 0x7F
             if "dry_level" in fields:
                 part.dry_level = fields["dry_level"] & 0x7F
+
+    # Embedded XG System: master_volume / master_tune / transpose
+    # when the bulk carries an AH=0x00 block.
+    xg_system = getattr(analysis, "xg_system", {}) or {}
+    if xg_system:
+        if "master_volume" in xg_system:
+            device.system.master_volume = max(
+                0, min(127, int(xg_system["master_volume"]))
+            )
+        if "master_attenuator" in xg_system:
+            device.system.master_attenuator = max(
+                0, min(127, int(xg_system["master_attenuator"]))
+            )
+        if "master_transpose" in xg_system:
+            device.system.transpose = int(xg_system["master_transpose"]) - 64
+        if any(f"master_tune_nibble_{i}" in xg_system for i in range(4)):
+            nibbles = [int(xg_system.get(f"master_tune_nibble_{i}", 0)) & 0x0F for i in range(4)]
+            word = (nibbles[0] << 12) | (nibbles[1] << 8) | (nibbles[2] << 4) | nibbles[3]
+            device.system.master_tune = max(-100, min(100, int(round((word - 0x0400) * 0.05))))
+
+    # Embedded XG Effects: reverb / chorus / variation type codes.
+    xg_effects = getattr(analysis, "xg_effects", {}) or {}
+    if xg_effects:
+        if "reverb_type_msb" in xg_effects:
+            device.effects.reverb.type_code = max(0, min(10, int(xg_effects["reverb_type_msb"])))
+        if "chorus_type_msb" in xg_effects:
+            device.effects.chorus.type_code = max(0, min(10, int(xg_effects["chorus_type_msb"])))
+        if (
+            "variation_type_msb" in xg_effects
+            and device.effects.variation is not None
+        ):
+            device.effects.variation.type_code = max(
+                0, min(42, int(xg_effects["variation_type_msb"]))
+            )
+
+    # Embedded XG Drum Setup: populate device.drum_setup[kit].notes
+    xg_drum_setup = getattr(analysis, "xg_drum_setup", {}) or {}
+    for kit_idx, notes_dict in xg_drum_setup.items():
+        if not isinstance(notes_dict, dict) or not notes_dict:
+            continue
+        # Find or create DrumSetup for this kit
+        ds = None
+        for existing in device.drum_setup:
+            if existing.kit_index == kit_idx:
+                ds = existing
+                break
+        if ds is None:
+            ds = DrumSetup(kit_index=kit_idx, notes={})
+            device.drum_setup.append(ds)
+        for note_num, fields in notes_dict.items():
+            if not isinstance(fields, dict) or not (13 <= note_num <= 84):
+                continue
+            dn = ds.notes.get(note_num) or DrumNote()
+            if "level" in fields:
+                dn.level = int(fields["level"]) & 0x7F
+            if "pan" in fields:
+                dn.pan = int(fields["pan"]) & 0x7F
+            if "reverb_send" in fields:
+                dn.reverb_send = int(fields["reverb_send"]) & 0x7F
+            if "chorus_send" in fields:
+                dn.chorus_send = int(fields["chorus_send"]) & 0x7F
+            for signed_key in (
+                "pitch_coarse",
+                "pitch_fine",
+                "filter_cutoff",
+                "filter_resonance",
+                "eg_attack",
+                "eg_decay1",
+                "eg_decay2",
+            ):
+                if signed_key in fields:
+                    raw = int(fields[signed_key]) & 0x7F
+                    setattr(dn, signed_key, max(-64, min(63, raw - 0x40)))
+            if "alt_group" in fields:
+                dn.alt_group = int(fields["alt_group"]) & 0x7F
+            ds.notes[note_num] = dn
 
     # Populate phrases_user from the sparse decoder when tracks clear the
     # plausibility guard (≥ 60 %). Dense factory styles collapse below

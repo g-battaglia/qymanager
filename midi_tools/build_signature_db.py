@@ -303,6 +303,68 @@ def pair_to_entries_manual(
     return entries
 
 
+def pair_to_entries_embedded(
+    name: str, bulk_path: Path
+) -> List[Tuple[str, Dict[str, object]]]:
+    """Extract (signature, voice) pairs from a bulk that already carries
+    an XG Multi Part bulk block inside itself (AH=0x08 AM=part AL=field).
+
+    This is the zero-configuration path: no load.json, no manual
+    voices dict. SyxAnalyzer already decodes the embedded XG state
+    into `analysis.xg_voices`; we re-use that as ground truth.
+    """
+    # Local import so the CLI help output doesn't depend on syx_analyzer
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+
+    tracks = load_bulk_tracks(bulk_path)
+    sigs = first_signature_per_track(tracks)
+
+    analysis = SyxAnalyzer().analyze_file(str(bulk_path))
+    xg_voices = getattr(analysis, "xg_voices", {}) or {}
+    if not xg_voices:
+        return []
+
+    entries: List[Tuple[str, Dict[str, object]]] = []
+    for track_idx, sig_hex in sigs.items():
+        # QY70 track_idx 0..7 ↔ XG Multi Part index 8..15 (ch 9..16)
+        part_idx = track_idx + 8
+        fields = xg_voices.get(part_idx)
+        if not fields:
+            continue
+        msb = fields.get("bank_msb", 0) or 0
+        lsb = fields.get("bank_lsb", 0) or 0
+        prog = fields.get("program", 0) or 0
+        if msb == 0 and lsb == 0 and prog == 0:
+            continue  # empty part
+        is_drum = msb == 127
+        is_sfx = msb == 126 or msb == 64
+        if is_drum:
+            voice_name = f"Drum Kit {prog}"
+        elif is_sfx:
+            voice_name = f"SFX Kit {prog}"
+        else:
+            voice_name = get_voice_name(prog, msb, lsb) or f"Voice {msb}/{lsb}/{prog}"
+        entries.append(
+            (
+                sig_hex,
+                {
+                    "msb": msb,
+                    "lsb": lsb,
+                    "prog": prog,
+                    "voice_name": voice_name,
+                    "volume": fields.get("volume", 100),
+                    "pan": fields.get("pan", 64),
+                    "reverb_send": fields.get("reverb", 40),
+                    "chorus_send": fields.get("chorus", 0),
+                    "source": name,
+                    "track_index": track_idx,
+                    "midi_channel": track_idx + 9,
+                },
+            )
+        )
+    return entries
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -326,6 +388,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         ),
     )
     parser.add_argument(
+        "--embedded",
+        action="append",
+        nargs=2,
+        default=[],
+        metavar=("NAME", "BULK_SYX"),
+        help=(
+            "repeatable: a bulk that embeds XG Multi Part block inside "
+            "itself (SGT_backup-style). Voice mapping is pulled straight "
+            "out of `SyxAnalyzer.xg_voices`, no external ground truth "
+            "needed"
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_DB,
@@ -337,8 +412,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="Print the merge plan but do not write the DB",
     )
     args = parser.parse_args(argv)
-    if not args.pair and not args.manual:
-        parser.error("need at least one --pair or --manual")
+    if not args.pair and not args.manual and not args.embedded:
+        parser.error("need at least one --pair, --manual or --embedded")
 
     db: Dict[str, Dict[str, object]] = {}
     if args.output.exists():
@@ -358,6 +433,22 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         for k, v in s.items():
             totals[k] = totals.get(k, 0) + v
+    for name, bulk in args.embedded:
+        entries = pair_to_entries_embedded(name, Path(bulk))
+        if not entries:
+            print(
+                f"! {name}: no embedded XG Multi Part block found in {bulk}",
+                file=sys.stderr,
+            )
+            continue
+        s = merge_into_db(db, entries)
+        print(
+            f"{name:10s} {len(entries):3d} tracks  "
+            f"added={s['added']} reinforced={s['reinforced']} conflict={s['conflict']}  [embedded]"
+        )
+        for k, v in s.items():
+            totals[k] = totals.get(k, 0) + v
+
     for name, bulk, voices_json in args.manual:
         try:
             raw = json.loads(Path(voices_json).read_text())
