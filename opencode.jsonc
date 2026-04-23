@@ -1,6 +1,0 @@
-// opencode config — QYConv web GUI project
-// Schema: https://opencode.ai/config.json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "agent": "qyconv-web"
-}
