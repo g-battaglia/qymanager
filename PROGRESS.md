@@ -146,9 +146,29 @@
 
 ---
 
+## Post-MVP UX improvements
+
+- [x] **UX.1** Serialization fix: `_convert_value()` handles list/dict recursion for full UDM JSON
+- [x] **UX.2** Enum key fix: dict keys with Enum values serialize as `.value` (e.g. `Main_A` not `SectionName.MAIN_A`)
+- [x] **UX.3** DeviceOverview component: stat cards, import context notes, editable scope summary
+- [x] **UX.4** SelectionPanel component: focused node inspector with schema badge, preview grid, raw JSON
+- [x] **UX.5** UDMTree rewrite: search/filter, expand/collapse, humanized labels, selected state highlighting
+- [x] **UX.6** FieldEditor improvements: boolean support, humanized labels, raw value editor
+- [x] **UX.7** DeviceView rewrite: sidebar navigator + overview/selection layout, meta pills
+- [x] **UX.8** UDM utility library (`lib/udm.ts`): humanizeKey, getNodeSummary, formatPathLabel, etc.
+- [x] **UX.9** SPA route fallback in backend (non-API routes serve index.html)
+- [x] **UX.10** PatternOverview component: mixer-style track strips per section, rhythm/melodic separation
+- [x] **UX.11** Dashboard redesign: clean landing with format badges
+- [x] **UX.12** Track extraction helpers + tests (14 frontend tests total, 479 backend tests)
+- [ ] **UX.13** Multi Part overview panel (when multi_part has data)
+- [ ] **UX.14** Effects overview panel (reverb/chorus/variation type + level)
+- [ ] **UX.15** Drum Setup overview panel (when drum_setup has data)
+
+---
+
 ## Note
 
-- **Non toccato `qymanager/` core** — zero modifiche al codice esistente.
+- **Core modification**: `qymanager/model/serialization.py` — fixed `_convert_value()` to handle list/dict recursion and enum dict keys. Required for full UDM JSON serialization.
 - **Adattamento API**: `set_field` muta Device in-place e ritorna il valore, non il Device. `convert_file` prende file path, non Device — export usa `apply_policy` + `save_device` direttamente.
 - **shadcn v4** usa `@base-ui/react` (non Radix) — API diversa (no asChild, `onValueCommitted`, etc.)
 - **Tailwind v4** usa CSS-based config con `@tailwindcss/vite` plugin.
