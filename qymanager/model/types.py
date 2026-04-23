@@ -31,6 +31,7 @@ class NoteOffMode(str, Enum):
 
 
 class SectionName(str, Enum):
+    INTRO = "Intro"
     MAIN_A = "Main_A"
     MAIN_B = "Main_B"
     MAIN_C = "Main_C"
@@ -39,6 +40,9 @@ class SectionName(str, Enum):
     FILL_BB = "Fill_BB"
     FILL_CC = "Fill_CC"
     FILL_DD = "Fill_DD"
+    FILL_AB = "Fill_AB"
+    FILL_BA = "Fill_BA"
+    ENDING = "Ending"
 
 
 class PhraseCategory(str, Enum):

@@ -274,21 +274,39 @@ class QY70Reader:
             return False
 
 
+# QY70 section layout confirmed via SGT dump + hardware capture (Session 32).
+# AL = section_index * 8 + track_index. Sections 0..5 match the on-device
+# playback positions (Intro, Main A, Main B, Fill AB, Fill BA, Ending).
 _QY70_SECTION_MAP: dict[int, SectionName] = {
+    0: SectionName.INTRO,
     1: SectionName.MAIN_A,
     2: SectionName.MAIN_B,
-    3: SectionName.FILL_AA,
-    4: SectionName.FILL_BB,
+    3: SectionName.FILL_AB,
+    4: SectionName.FILL_BA,
+    5: SectionName.ENDING,
 }
+
+
+# QY70 PATT OUT mapping verified 2026-04-23 via hardware playback capture.
+# track_index 0..7 → MIDI channel 9..16 (0-indexed 8..15). The old
+# `track_idx < 2 ? 9 : track_idx` logic produced wrong channels for
+# tracks 2-7.
+_QY70_TRACK_CHANNELS = [8, 9, 10, 11, 12, 13, 14, 15]
 
 
 def parse_syx_to_udm(data: bytes) -> Device:
     """Parse QY70 .syx bulk dump data into a UDM Device.
 
-    Extracts section/track structure via SysExParser (AL = section*8 + track)
-    and produces Device(model=QY70) with one Pattern containing up to 6
-    sections × 8 tracks. Sparse data (no voice/volume/pan) → default values.
-    Raw bytes preserved in Device._raw_passthrough for lossless roundtrip.
+    Delegates structural parsing to `SyxAnalyzer` (which already resolves
+    tempo, section map, track channels, and voice confidence via the
+    signature DB / class fallback) and translates the result into UDM.
+    Sparse fields that the bulk does not carry (real XG Bank/LSB/Prog,
+    CC volume/pan/sends) stay at Voice() / 100 / 64 / 40 / 0 defaults
+    unless a later merge-capture fills them in.
+
+    Raw bytes are preserved in `Device._raw_passthrough` so that
+    `emit_udm_to_syx` and `/api/devices/{id}/syx-analysis` can re-read
+    them byte-for-byte.
 
     Args:
         data: Raw .syx file contents.
@@ -299,6 +317,8 @@ def parse_syx_to_udm(data: bytes) -> Device:
     Raises:
         ValueError: If data contains no valid QY70 bulk-dump messages.
     """
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+
     parser = SysExParser()
     messages = parser.parse_bytes(data)
 
@@ -316,8 +336,10 @@ def parse_syx_to_udm(data: bytes) -> Device:
         if msg.decoded_data is not None:
             section_data[al].extend(msg.decoded_data)
 
-    pattern_name = ""
-    if 0x7F in section_data:
+    analysis = SyxAnalyzer().analyze_bytes(data, name="parse_syx_to_udm")
+
+    pattern_name = analysis.pattern_name or ""
+    if not pattern_name and 0x7F in section_data:
         header_bytes = bytes(section_data[0x7F])
         for start in range(min(len(header_bytes), 32)):
             chunk = header_bytes[start : start + 10]
@@ -325,13 +347,43 @@ def parse_syx_to_udm(data: bytes) -> Device:
                 pattern_name = chunk.decode("ascii").rstrip()
                 break
 
+    time_sig_num, time_sig_den = analysis.time_signature or (4, 4)
+
     udm_pattern = UdmPattern(
         index=0,
         name=pattern_name[:10] if pattern_name else "",
-        tempo_bpm=120.0,
+        tempo_bpm=float(analysis.tempo) if analysis.tempo else 120.0,
         measures=4,
-        time_sig=TimeSig(numerator=4, denominator=4),
+        time_sig=TimeSig(numerator=time_sig_num, denominator=time_sig_den),
     )
+
+    # Per-track voice hints resolved by the analyzer (DB signature hits at
+    # confidence 1.0 + class fallback). Keyed by track_index 0..7.
+    track_voices: dict[int, Voice] = {}
+    track_volumes: dict[int, int] = {}
+    track_pans: dict[int, int] = {}
+    track_revs: dict[int, int] = {}
+    track_chos: dict[int, int] = {}
+    for t in analysis.qy70_tracks:
+        if not t.has_data:
+            continue
+        # Only trust DB-resolved voices: class fallback puts the
+        # category name in voice_name but leaves msb/lsb/prog at 0.
+        is_db_resolved = (
+            t.voice_name
+            and "(DB)" in t.voice_name
+            and (t.bank_msb != 0 or t.bank_lsb != 0 or t.program != 0)
+        )
+        if is_db_resolved:
+            track_voices[t.number - 1] = Voice(
+                bank_msb=t.bank_msb & 0x7F,
+                bank_lsb=t.bank_lsb & 0x7F,
+                program=t.program & 0x7F,
+            )
+        track_volumes[t.number - 1] = t.volume
+        track_pans[t.number - 1] = t.pan
+        track_revs[t.number - 1] = t.reverb_send
+        track_chos[t.number - 1] = t.chorus_send
 
     seen_section_indices: set[int] = set()
     for al in section_data:
@@ -348,16 +400,15 @@ def parse_syx_to_udm(data: bytes) -> Device:
         for track_idx in range(8):
             al = sec_idx * 8 + track_idx
             has_data = al in section_data and len(section_data[al]) > 0
-            default_channel = 9 if track_idx < 2 else max(0, track_idx)
             udm_tracks.append(
                 PatternTrack(
-                    midi_channel=min(15, default_channel),
-                    voice=Voice(),
+                    midi_channel=_QY70_TRACK_CHANNELS[track_idx],
+                    voice=track_voices.get(track_idx, Voice()),
                     mute=not has_data,
-                    volume=100,
-                    pan=64,
-                    reverb_send=40,
-                    chorus_send=0,
+                    volume=track_volumes.get(track_idx, 100),
+                    pan=track_pans.get(track_idx, 64),
+                    reverb_send=track_revs.get(track_idx, 40),
+                    chorus_send=track_chos.get(track_idx, 0),
                 )
             )
 

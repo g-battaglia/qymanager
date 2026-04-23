@@ -45,9 +45,15 @@ class TestParseSyxBasic:
 
 
 class TestParseSyxPatternFields:
-    def test_pattern_has_default_tempo(self, qy70_sysex_data):
+    def test_pattern_tempo_is_extracted(self, qy70_sysex_data):
+        # `parse_syx_to_udm` now delegates tempo extraction to
+        # SyxAnalyzer. The fixture SGT pattern runs at 151 BPM; any
+        # plausible musical tempo (30..300) is acceptable here. The
+        # old stub returned 120.0 unconditionally, which was a bug.
         device = parse_syx_to_udm(qy70_sysex_data)
-        assert device.patterns[0].tempo_bpm == 120.0
+        bpm = device.patterns[0].tempo_bpm
+        assert 30.0 <= bpm <= 300.0
+        assert bpm != 120.0, "tempo should come from the bulk header, not a hardcoded default"
 
     def test_pattern_time_sig_4_4(self, qy70_sysex_data):
         device = parse_syx_to_udm(qy70_sysex_data)
@@ -71,12 +77,22 @@ class TestParseSyxSections:
         for key in device.patterns[0].sections:
             assert isinstance(key, SectionName)
 
-    def test_no_intro_or_ending(self, qy70_sysex_data):
-        # UDM schema has no INTRO/ENDING semantics — QY70 legacy idx 0 and 5
-        # must be mapped or dropped (we drop them).
+    def test_section_map_covers_qy70_layout(self, qy70_sysex_data):
+        # Session 33a enum extension: UDM now carries INTRO/FILL_AB/
+        # FILL_BA/ENDING alongside the QY700 MAIN/FILL set. Sections
+        # 0-5 on a QY70 bulk are preserved verbatim instead of being
+        # dropped.
         device = parse_syx_to_udm(qy70_sysex_data)
         section_names = set(device.patterns[0].sections.keys())
-        assert SectionName.MAIN_A in section_names
+        qy70_ok = {
+            SectionName.INTRO,
+            SectionName.MAIN_A,
+            SectionName.MAIN_B,
+            SectionName.FILL_AB,
+            SectionName.FILL_BA,
+            SectionName.ENDING,
+        }
+        assert section_names.issubset(qy70_ok)
 
     def test_section_has_8_tracks(self, qy70_sysex_data):
         device = parse_syx_to_udm(qy70_sysex_data)
@@ -85,13 +101,21 @@ class TestParseSyxSections:
             for trk in sec.tracks:
                 assert isinstance(trk, PatternTrack)
 
-    def test_track_has_default_voice(self, qy70_sysex_data):
+    def test_track_voice_populated_when_db_match(self, qy70_sysex_data):
+        # Session 33a: when the SyxAnalyzer resolves a track's voice
+        # via the 23-signature DB (confidence 1.0), the Voice is
+        # populated with the real Bank MSB/LSB/Program. Tracks without
+        # a DB match fall back to the zero-Voice default.
         device = parse_syx_to_udm(qy70_sysex_data)
+        any_populated = False
         for sec in device.patterns[0].sections.values():
             for trk in sec.tracks:
                 assert isinstance(trk.voice, Voice)
-                assert trk.voice.bank_msb == 0
-                assert trk.voice.program == 0
+                if trk.voice.bank_msb or trk.voice.bank_lsb or trk.voice.program:
+                    any_populated = True
+        # The SGT fixture is in the DB, so at least one track must
+        # surface real voice data.
+        assert any_populated
 
 
 class TestParseSyxValidation:

@@ -381,7 +381,9 @@ class TestUtilityFlags:
 
 class TestEnums:
     def test_section_names(self):
-        assert len(SectionName) == 8
+        # QY700 MAIN_A..D + FILL_AA..DD (8) plus QY70-specific INTRO,
+        # FILL_AB, FILL_BA, ENDING (4) = 12.
+        assert len(SectionName) == 12
 
     def test_phrase_categories(self):
         assert len(PhraseCategory) == 15
