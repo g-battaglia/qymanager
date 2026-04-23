@@ -384,37 +384,108 @@ def _parse_q7p_phrases(raw: bytes) -> PhrasesResponse:
 
 
 def _parse_syx_phrases(raw: bytes, device: object) -> PhrasesResponse:
-    from qymanager.formats.qy70.sysex_parser import parse_qy70_sysex
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+    from qymanager.formats.qy70.sysex_parser import SysExParser
+    from qymanager.formats.qy70.encoder_sparse import (
+        decode_sparse_track,
+        sparse_track_plausibility,
+    )
 
-    try:
-        messages = parse_qy70_sysex(raw)
-    except Exception:
+    parser = SysExParser()
+    messages = parser.parse_bytes(raw)
+    if not messages:
+        return PhrasesResponse(
+            source="syx", phrases=[], note="No SysEx messages found in this file.",
+        )
+
+    section_data: dict[int, bytearray] = {}
+    for msg in messages:
+        if not msg.is_style_data or msg.decoded_data is None:
+            continue
+        if msg.address_low == 0x7F:
+            continue
+        section_data.setdefault(msg.address_low, bytearray()).extend(msg.decoded_data)
+
+    analysis = SyxAnalyzer().analyze_bytes(raw, name="phrases")
+    track_labels = SyxAnalyzer.TRACK_NAMES  # D1, D2, PC, BA, C1..C4
+    default_channels = SyxAnalyzer.DEFAULT_CHANNELS  # 9..16
+
+    phrases: list[PhraseModel] = []
+    decoded_tracks = 0
+    plausibility_sum = 0.0
+
+    for al in sorted(section_data):
+        td = bytes(section_data[al])
+        if len(td) < 48:
+            continue
+        track_idx = al & 0x7
+        sec_idx = al >> 3
+        sec_name = SyxAnalyzer.STYLE_SECTION_NAMES[sec_idx] if sec_idx < len(SyxAnalyzer.STYLE_SECTION_NAMES) else f"sec{sec_idx}"
+        track_label = track_labels[track_idx] if track_idx < len(track_labels) else f"T{track_idx}"
+
+        events = decode_sparse_track(td)
+        if not events:
+            continue
+        ratio = sparse_track_plausibility(events)
+        # Guard-rail: plausible only when ≥60% of events land in the drum
+        # / melodic note range. Factory dense styles collapse well below
+        # this threshold (~15-25% random chance).
+        if ratio < 0.6:
+            continue
+
+        channel = default_channels[track_idx] if track_idx < len(default_channels) else 0
+        is_drum = track_idx < 2 or channel == 10
+        phrase_events: list[PhraseEventModel] = []
+        for ev in events:
+            if ev["ctrl"]:
+                continue
+            phrase_events.append(
+                PhraseEventModel(
+                    tick=int(ev["tick"]),
+                    channel=int(channel - 1),
+                    kind="drum" if is_drum else "note",
+                    data1=int(ev["note"]),
+                    data2=int(ev["velocity"]),
+                    note_name=_note_name(ev["note"]),
+                    velocity=int(ev["velocity"]) if ev["velocity"] > 0 else None,
+                )
+            )
+
+        if not phrase_events:
+            continue
+
+        phrases.append(
+            PhraseModel(
+                name=f"{sec_name} · {track_label}",
+                tempo=analysis.tempo or 120,
+                note_count=len(phrase_events),
+                event_count=len(events),
+                events=phrase_events,
+            )
+        )
+        decoded_tracks += 1
+        plausibility_sum += ratio
+
+    if not phrases:
         return PhrasesResponse(
             source="syx",
             phrases=[],
             note=(
-                "This QY70 SysEx file could not be parsed for phrase-level events. "
-                "Sparse QY70 dumps encode pattern structure and track settings but "
-                "phrase event data is in a compressed format not yet extractable by "
-                "the web editor. Pattern structure and voice assignments are available "
-                "in the main device view."
+                "No user-sparse tracks decoded. This file likely contains factory "
+                "dense encoding (SGT / style bulk), which fails the R=9 barrel-"
+                "rotation decoder (see wiki/decoder-status.md Session 19/20). "
+                "Pattern structure and voice assignments remain available in the "
+                "main device view; note decoding for dense styles requires the "
+                "Pipeline B capture path."
             ),
         )
 
-    if not messages:
-        return PhrasesResponse(
-            source="syx",
-            phrases=[],
-            note="No SysEx messages found in this file.",
-        )
-
-    return PhrasesResponse(
-        source="syx",
-        phrases=[],
-        note=(
-            f"Parsed {len(messages)} SysEx messages. QY70 sparse dumps encode "
-            "phrase data in a compressed format that is not yet extracted into "
-            "individual note events by the web editor. Pattern structure and "
-            "voice assignments are available in the main device view."
-        ),
+    avg_ratio = plausibility_sum / max(1, decoded_tracks)
+    note = (
+        f"Decoded {decoded_tracks} user-sparse track{'s' if decoded_tracks != 1 else ''} "
+        f"via R=9×(i+1) barrel rotation (avg plausibility {avg_ratio*100:.0f}%). "
+        "Proven on known_pattern.syx 7/7 (Session 14) and validated against user "
+        "patterns like MR. Vain. Dense factory styles are skipped because their "
+        "encoding is not solved (see wiki/decoder-status.md)."
     )
+    return PhrasesResponse(source="syx", phrases=phrases, note=note)

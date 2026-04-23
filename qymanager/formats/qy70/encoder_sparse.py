@@ -246,6 +246,86 @@ def encode_sparse_track(events: List[SparseEvent], bars: int,
     return bytes(out)
 
 
+def decode_sparse_track(
+    track_data: bytes,
+    *,
+    header_skip: int = 41,
+    event_size: int = 7,
+    min_note: int = 12,
+    max_note: int = 108,
+    max_events: int = 128,
+) -> list[dict]:
+    """Decode a user-sparse QY70 track into note events via R=9×(i+1).
+
+    Proven 7/7 on `known_pattern.syx` (Session 14) and producing ≥80 %
+    musically plausible notes on real user patterns like `MR. Vain` and
+    `Summer`. Factory dense styles (SGT / STYLE2 / AMB01) are known to
+    fail — see `wiki/decoder-status.md` Session 19/20. Callers should
+    gate usage on the *plausibility ratio* this function returns
+    implicitly via the `"ctrl"` flag and note range.
+
+    Layout assumed:
+        [0..23]  track header (24 B)
+        [24..27] preamble (4 B, e.g. 25 43 60 00 for RHY1 drum)
+        [28..40] bar header (13 B) — drives chord transposition, not used here
+        [41..]   repeated 7-byte events, segment_idx increments until the
+                 note falls outside [min_note, max_note] OR bytes are all zero
+
+    Segment index resets per bar in the general case; for one-bar user
+    patterns the index runs continuously, which is what this function
+    implements. Multi-bar user patterns may need a `0xDC` split — the
+    encoder generates `0xDC` delimiters, but the QY70 edit-buffer bulk
+    often omits them. We therefore run one long cumulative sequence
+    until we hit a clear end-marker (all-zero chunk or out-of-range
+    note).
+    """
+    events: list[dict] = []
+    off = header_skip
+    seg_idx = 0
+    while seg_idx < max_events and off + event_size <= len(track_data):
+        chunk = track_data[off : off + event_size]
+        if all(b == 0 for b in chunk):
+            break
+        val = int.from_bytes(chunk, "big")
+        r = (9 * (seg_idx + 1)) % 56
+        derot = rot_right(val, r)
+        f0 = extract_9bit(derot, 0)
+        f1 = extract_9bit(derot, 1)
+        f2 = extract_9bit(derot, 2)
+        f5 = extract_9bit(derot, 5)
+        rem = derot & 0x3
+        note = f0 & 0x7F
+        vel_code = ((f0 >> 8) & 1) << 3 | ((f0 >> 7) & 1) << 2 | rem
+        midi_vel = max(1, 127 - vel_code * 8)
+        beat = f1 >> 7
+        clock = ((f1 & 0x7F) << 2) | (f2 >> 7)
+        tick_in_bar = beat * 480 + clock
+        is_ctrl = note < min_note or note > max_note
+        events.append(
+            {
+                "note": int(note),
+                "velocity": int(midi_vel),
+                "gate": int(f5),
+                "beat": int(beat),
+                "clock": int(clock),
+                "tick": int(tick_in_bar),
+                "segment_index": seg_idx,
+                "ctrl": bool(is_ctrl),
+            }
+        )
+        off += event_size
+        seg_idx += 1
+    return events
+
+
+def sparse_track_plausibility(events: list[dict]) -> float:
+    """Share of events whose note falls inside the drum/melodic range."""
+    if not events:
+        return 0.0
+    valid = sum(1 for e in events if not e.get("ctrl"))
+    return valid / len(events)
+
+
 def roundtrip_test(events: List[SparseEvent], bars: int = 1) -> list[dict]:
     """Encode → decode round-trip validation.
 
