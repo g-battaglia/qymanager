@@ -401,6 +401,49 @@ function SectionsTable({
 // Pattern Structure · Tracks
 // ───────────────────────────────────────────────────────────────────
 
+function VoiceResolutionSummary({ tracks }: { tracks: SyxAnalysisTrack[] }) {
+  const active = tracks.filter((t) => t.has_data)
+  if (active.length === 0) return null
+  const counts = {
+    db: 0,
+    nn: 0,
+    xg: 0,
+    class: 0,
+    none: 0,
+  } as Record<SyxAnalysisTrack["voice_source"], number>
+  for (const t of active) {
+    counts[t.voice_source] = (counts[t.voice_source] ?? 0) + 1
+  }
+  const resolved = counts.db + counts.nn + counts.xg
+  const pct = Math.round((resolved / active.length) * 100)
+  const chips: Array<{ label: string; value: number; className: string }> = [
+    { label: "DB exact", value: counts.db, className: "bg-emerald-100 text-emerald-800" },
+    { label: "NN fuzzy", value: counts.nn, className: "bg-lime-100 text-lime-800" },
+    { label: "XG capture", value: counts.xg, className: "bg-sky-100 text-sky-800" },
+    { label: "class only", value: counts.class, className: "bg-slate-200 text-slate-700" },
+  ].filter((c) => c.value > 0)
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-muted/30 px-3 py-2 text-[11px]">
+      <span className="font-semibold">
+        {resolved}/{active.length} voices named ({pct}%)
+      </span>
+      {chips.map((c) => (
+        <span
+          key={c.label}
+          className={`rounded px-1.5 py-0.5 font-medium ${c.className}`}
+        >
+          {c.value} {c.label}
+        </span>
+      ))}
+      {counts.class > 0 && (
+        <span className="text-muted-foreground">
+          · class-only tracks need a Merge XG Capture to become exact
+        </span>
+      )}
+    </div>
+  )
+}
+
 function TracksTable({
   tracks,
   active,
@@ -415,6 +458,7 @@ function TracksTable({
       title="Tracks"
       hint={`${active} active of ${total} · QY70 labels D1/D2/PC/BA/C1..C4 on MIDI ch 9..16`}
     >
+      <VoiceResolutionSummary tracks={tracks} />
       <div className="hidden divide-y divide-border/30 rounded-lg bg-muted/20 xl:block">
         <div className="grid grid-cols-[3.5rem_2rem_1fr_4rem_3rem_3rem_3rem_3rem] gap-2 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           <span>Track</span>
