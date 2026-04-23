@@ -17,8 +17,6 @@ def serve(
     """Start the QYConv web GUI server (FastAPI + React build)."""
     import uvicorn
 
-    from web.backend.app import create_app
-
     default_dir = Path(__file__).resolve().parents[2] / "web" / "frontend" / "dist"
     effective_dir = frontend_dir if frontend_dir is not None else default_dir
 
@@ -30,5 +28,20 @@ def serve(
         )
         effective_dir = None  # type: ignore[assignment]
 
-    app = create_app(frontend_dir=effective_dir, dev=reload)
-    uvicorn.run(app, host=host, port=port, reload=reload)
+    if reload:
+        import os
+
+        os.environ["QYCONV_FRONTEND_DIR"] = str(effective_dir or "")
+        os.environ["QYCONV_DEV"] = "1"
+        uvicorn.run(
+            "web.backend.app:create_app_lazy",
+            host=host,
+            port=port,
+            reload=True,
+            factory=True,
+        )
+    else:
+        from web.backend.app import create_app
+
+        app = create_app(frontend_dir=effective_dir, dev=reload)
+        uvicorn.run(app, host=host, port=port)

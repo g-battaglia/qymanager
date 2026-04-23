@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -28,3 +29,11 @@ def create_app(frontend_dir: Path | None = None, dev: bool = False) -> FastAPI:
         app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
     return app
+
+
+def create_app_lazy() -> FastAPI:
+    """Factory for uvicorn --reload (reads config from env vars)."""
+    frontend_str = os.environ.get("QYCONV_FRONTEND_DIR", "")
+    frontend_dir = Path(frontend_str) if frontend_str else None
+    dev = os.environ.get("QYCONV_DEV") == "1"
+    return create_app(frontend_dir=frontend_dir, dev=dev)

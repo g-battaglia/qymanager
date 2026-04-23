@@ -84,6 +84,9 @@ dmypy.json
 .DS_Store
 ._*
 
+# Dev manager runtime state
+web/.dev/
+
 # Local configuration
 *.local
 

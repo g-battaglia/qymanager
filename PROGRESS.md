@@ -139,6 +139,13 @@
 
 ---
 
+## Post-MVP extras
+
+- [x] **dev launcher** — `web/dev.sh` (start/stop/restart/status/logs, PID + log tracking under `web/.dev/`)
+- [x] **serve --reload fix** — `cli/commands/serve.py` uses import-string factory when reload=True
+
+---
+
 ## Note
 
 - **Non toccato `qymanager/` core** — zero modifiche al codice esistente.

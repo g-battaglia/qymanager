@@ -18,13 +18,20 @@ uv run qymanager serve
 ## Dev mode (hot reload)
 
 ```bash
-# Terminal 1 — backend
-uv run qymanager serve --port 8000 --reload
+# Unified launcher (recommended)
+bash web/dev.sh start              # start both backend + frontend
+bash web/dev.sh status             # show running services
+bash web/dev.sh logs backend       # tail backend logs
+bash web/dev.sh stop               # stop all
 
-# Terminal 2 — frontend Vite dev server with proxy /api
-cd web/frontend && npm run dev
+# Manual (separate terminals)
+uv run qymanager serve --port 8000 --reload   # terminal 1
+cd web/frontend && npm run dev                 # terminal 2
 # Open http://127.0.0.1:5173
 ```
+
+The dev launcher manages PID tracking and logs under `web/.dev/`.
+Run `bash web/dev.sh help` for all commands.
 
 ## Endpoint API
 
