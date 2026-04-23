@@ -71,6 +71,7 @@ Knowledge base for the QY70/QY700 reverse engineering and conversion project.
 - [Pattern Directory](pattern-directory.md) — AH=0x05 user pattern name list (20 × 16B)
 - [Pattern Editor](pattern-editor.md) — Pipeline B CLI editor: export/edit/build (Session 29f)
 - [Unified Data Model (UDM)](udm.md) — Format-agnostic Device schema + editor architecture (F1–F5)
+- [Web GUI](web-gui.md) — FastAPI + React editor (MVP-1)
 
 ## Status & History
 

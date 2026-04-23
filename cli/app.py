@@ -33,6 +33,7 @@ from cli.commands.structure import (
 )
 from cli.commands.udm_convert import udm_convert
 from cli.commands.xg import app as xg_app
+from cli.commands.serve import serve
 
 __version__ = "0.4.0"
 
@@ -73,6 +74,7 @@ app.command(name="chord-list")(chord_list)
 app.command(name="song-set")(song_set)
 app.command(name="song-list")(song_list)
 app.command(name="phrase-list")(phrase_list)
+app.command(name="serve")(serve)
 
 
 @app.command()
