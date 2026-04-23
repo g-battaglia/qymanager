@@ -282,6 +282,7 @@ def decode_sparse_track(
     events: list[dict] = []
     off = header_skip
     seg_idx = 0
+    consecutive_ctrl = 0
     while seg_idx < max_events and off + event_size <= len(track_data):
         chunk = track_data[off : off + event_size]
         if all(b == 0 for b in chunk):
@@ -301,6 +302,17 @@ def decode_sparse_track(
         clock = ((f1 & 0x7F) << 2) | (f2 >> 7)
         tick_in_bar = beat * 480 + clock
         is_ctrl = note < min_note or note > max_note
+        # Early stop: three consecutive ctrl events very likely mean the
+        # pattern payload is over and we're hitting trailing padding /
+        # segment metadata. Known_pattern ground truth never has > 2
+        # ctrl events in a row, and factory dense styles collapse after
+        # a handful of events in any case.
+        if is_ctrl:
+            consecutive_ctrl += 1
+            if consecutive_ctrl >= 3:
+                break
+        else:
+            consecutive_ctrl = 0
         events.append(
             {
                 "note": int(note),

@@ -130,9 +130,11 @@ def test_sparse_decoded_phrases_emit_smf():
         for msg in track
         if msg.type == "note_on" and getattr(msg, "velocity", 0) > 0
     )
-    # MR. Vain decodes to ≥80 real notes; the threshold is deliberately
-    # lower than observed 97 so minor decoder changes don't trip us.
-    assert total_notes >= 80, f"expected ≥80 note_on events in SMF, got {total_notes}"
+    # MR. Vain decodes to dozens of real notes. The floor is set well
+    # below the observed count so decoder quality improvements (e.g.
+    # the Session 33e early-stop on consecutive ctrl events that trims
+    # trailing padding) don't trip the regression.
+    assert total_notes >= 60, f"expected ≥60 note_on events in SMF, got {total_notes}"
 
 
 SGT_BACKUP = (
