@@ -41,12 +41,18 @@ def _nearest_neighbor_voice(
     """Find the DB entry with the smallest bit-level Hamming distance
     from `sig_hex`, as long as that distance is ≤ `max_bit_dist`.
 
+    Uses the embedded 4-byte class signature (sig10 bytes 3..6 =
+    track-data bytes 17..20) as a hard pre-filter: a bass NN will
+    never be picked for a chord signature even if the raw Hamming
+    distance is small, because the class signature differs. If no
+    DB entry shares the class signature we fall back to global NN.
+
     Returns `(entry, bit_distance)` or `None`. Empirically on the
     2026-04-23 dataset, melodic signatures converge on the correct
     voice at bit_dist ≤ 3 (MR. Vain C1/C2/C3 ↔ Pad 2 warm at
-    bit_dist 1-2). Drum signatures do NOT (same Drum Kit 26 has
-    11 samples with zero stable bytes), so callers should filter
-    drum hits back out to the class fallback.
+    bit_dist 1-2). Drum signatures do NOT (same Drum Kit 26 has 11
+    samples with zero stable bytes), so callers should filter drum
+    hits back out to the class fallback.
     """
     if not sig_hex:
         return None
@@ -54,24 +60,37 @@ def _nearest_neighbor_voice(
         target = bytes.fromhex(sig_hex)
     except ValueError:
         return None
-    best_entry: Optional[Dict[str, int]] = None
-    best_dist = max_bit_dist + 1
-    for k, v in db.items():
-        try:
-            other = bytes.fromhex(k)
-        except ValueError:
-            continue
-        if len(other) != len(target):
-            continue
-        d = sum(bin(x ^ y).count("1") for x, y in zip(target, other))
-        if d < best_dist:
-            best_dist = d
-            best_entry = v
-            if d == 0:
-                break
-    if best_entry is None or best_dist > max_bit_dist:
+    if len(target) != 10:
         return None
-    return best_entry, best_dist
+    target_class = target[3:7]  # embedded class signature
+
+    def rank(candidates):
+        best_entry: Optional[Dict[str, int]] = None
+        best_dist = max_bit_dist + 1
+        for k, v in candidates:
+            try:
+                other = bytes.fromhex(k)
+            except ValueError:
+                continue
+            if len(other) != 10:
+                continue
+            d = sum(bin(x ^ y).count("1") for x, y in zip(target, other))
+            if d < best_dist:
+                best_dist = d
+                best_entry = v
+                if d == 0:
+                    break
+        return (best_entry, best_dist) if best_entry is not None else None
+
+    class_matched = [
+        (k, v) for k, v in db.items() if bytes.fromhex(k)[3:7] == target_class
+    ]
+    if class_matched:
+        hit = rank(class_matched)
+        if hit is not None:
+            return hit
+    # Fallback: global NN only when no class peer exists
+    return rank(list(db.items()))
 
 
 def _load_signature_db() -> Dict[str, Dict[str, int]]:
