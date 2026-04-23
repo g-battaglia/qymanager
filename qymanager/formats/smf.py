@@ -180,8 +180,45 @@ def emit_udm_to_smf(device: Device, path: Optional[Union[str, Path]] = None) -> 
         ValueError: If device has no songs.
     """
     if not device.songs:
-        raise ValueError("Device has no songs to emit as SMF")
-    song = device.songs[0]
+        # Synthesize a Song from phrases_user when present. This is the
+        # normal path for QY70 .syx uploads: the bulk carries no Song
+        # object, but `parse_syx_to_udm` decodes its user-sparse tracks
+        # into `phrases_user` via the R=9 decoder. Each Phrase becomes
+        # a SongTrack so the SMF carries the real decoded notes.
+        if device.phrases_user:
+            from qymanager.model.song import Song, SongTrack
+            from qymanager.model.types import SongTrackKind, TimeSig
+
+            first_pattern = device.patterns[0] if device.patterns else None
+            tempo = first_pattern.tempo_bpm if first_pattern else 120.0
+            ts = first_pattern.time_sig if first_pattern else TimeSig()
+            synthetic_tracks = []
+            for i, ph in enumerate(device.phrases_user):
+                channel = (
+                    ph.events[0].channel
+                    if ph.events
+                    else 9  # QY70 PATT OUT default for track 0
+                )
+                synthetic_tracks.append(
+                    SongTrack(
+                        index=i,
+                        kind=SongTrackKind.SEQ,
+                        events=list(ph.events),
+                        midi_channel=channel,
+                        mute=False,
+                    )
+                )
+            song = Song(
+                index=0,
+                name=first_pattern.name if first_pattern else "Decoded",
+                tempo_bpm=tempo,
+                time_sig=ts,
+                tracks=synthetic_tracks,
+            )
+        else:
+            raise ValueError("Device has no songs or phrases to emit as SMF")
+    else:
+        song = device.songs[0]
 
     mid = mido.MidiFile(type=1, ticks_per_beat=480)
 

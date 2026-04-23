@@ -105,6 +105,36 @@ def test_summer_user_pattern_decodes():
     assert decoded >= 2, f"expected ≥2 Summer tracks decoded, got {decoded}"
 
 
+@pytest.mark.skipif(not MR_VAIN.exists(), reason="MR Vain fixture missing")
+def test_sparse_decoded_phrases_emit_smf():
+    """The full round-trip SysEx → UDM.phrases_user → SMF must produce
+    a playable MIDI file even when `device.songs` is empty (which is
+    the common case for QY70 bulks: no Song object, only phrases)."""
+    from qymanager.formats.qy70.reader import parse_syx_to_udm
+    from qymanager.formats.smf import emit_udm_to_smf
+    import mido
+    import io
+
+    device = parse_syx_to_udm(MR_VAIN.read_bytes())
+    assert device.songs == []
+    assert len(device.phrases_user) >= 4
+
+    smf_bytes = emit_udm_to_smf(device)
+    assert len(smf_bytes) > 0
+
+    # Parse back and count note_on events across all tracks.
+    mid = mido.MidiFile(file=io.BytesIO(smf_bytes))
+    total_notes = sum(
+        1
+        for track in mid.tracks
+        for msg in track
+        if msg.type == "note_on" and getattr(msg, "velocity", 0) > 0
+    )
+    # MR. Vain decodes to ≥80 real notes; the threshold is deliberately
+    # lower than observed 97 so minor decoder changes don't trip us.
+    assert total_notes >= 80, f"expected ≥80 note_on events in SMF, got {total_notes}"
+
+
 @pytest.mark.skipif(not SGT.exists(), reason="SGT fixture missing")
 def test_sgt_dense_style_does_not_flood():
     """Factory dense style — Session 19/20 proved the decoder fails.
