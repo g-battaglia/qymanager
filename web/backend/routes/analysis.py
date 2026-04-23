@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -23,6 +25,7 @@ class SyxAnalysisTrack(BaseModel):
     program: int
     voice_name: str
     voice_source: str
+    voice_bit_distance: int | None = None
     volume: int
     pan: int
     reverb_send: int
@@ -151,8 +154,11 @@ class PhrasesResponse(BaseModel):
     note: str | None = None
 
 
-def _split_voice_tag(voice_name: str) -> tuple[str, str]:
-    """Split `"Dance Kit (DB)"` → (`"Dance Kit"`, `"db"`).
+_NN_TAG_RE = re.compile(r"\(NN\s+d=(\d+)\)\s*$")
+
+
+def _split_voice_tag(voice_name: str) -> tuple[str, str, int | None]:
+    """Split `"Dance Kit (DB)"` → (`"Dance Kit"`, `"db"`, None).
 
     SyxAnalyzer suffixes voice names with confidence tags:
       - "(DB)"                       → signature-DB exact match (tier 1)
@@ -160,19 +166,22 @@ def _split_voice_tag(voice_name: str) -> tuple[str, str]:
       - "(class)"                    → short drum class match
       - "(class — exact via XG query)"  → chord/bass/sfx class match
     Names without a tag are treated as resolved from real XG state.
+
+    Returns a 3-tuple `(clean_name, source, bit_distance)` where
+    `bit_distance` is populated only for the NN case.
     """
     if not voice_name:
-        return ("", "none")
+        return ("", "none", None)
     stripped = voice_name.strip()
     if stripped.endswith("(DB)"):
-        return (stripped[: -len("(DB)")].strip(), "db")
-    idx_nn = stripped.rfind("(NN")
-    if idx_nn != -1 and stripped.endswith(")"):
-        return (stripped[:idx_nn].strip(), "nn")
+        return (stripped[: -len("(DB)")].strip(), "db", None)
+    m = _NN_TAG_RE.search(stripped)
+    if m:
+        return (stripped[: m.start()].strip(), "nn", int(m.group(1)))
     idx = stripped.rfind("(class")
     if idx != -1 and stripped.endswith(")"):
-        return (stripped[:idx].strip(), "class")
-    return (stripped, "xg")
+        return (stripped[:idx].strip(), "class", None)
+    return (stripped, "xg", None)
 
 
 @router.get("/devices/{did}/syx-analysis", response_model=SyxAnalysisResponse)
@@ -225,7 +234,7 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
 
     tracks: list[SyxAnalysisTrack] = []
     for idx, t in enumerate(analysis.qy70_tracks):
-        clean_name, voice_source = _split_voice_tag(t.voice_name)
+        clean_name, voice_source, voice_bit_distance = _split_voice_tag(t.voice_name)
         long_name = ""
         try:
             long_name = SyxAnalyzer.TRACK_LONG_NAMES[idx]
@@ -245,6 +254,7 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
                 program=t.program,
                 voice_name=clean_name,
                 voice_source=voice_source if t.has_data else "none",
+                voice_bit_distance=voice_bit_distance if t.has_data else None,
                 volume=t.volume,
                 pan=t.pan,
                 reverb_send=t.reverb_send,

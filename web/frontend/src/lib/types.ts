@@ -99,6 +99,7 @@ export type SyxAnalysisTrack = {
   program: number
   voice_name: string
   voice_source: "db" | "nn" | "class" | "xg" | "none"
+  voice_bit_distance: number | null
   volume: number
   pan: number
   reverb_send: number

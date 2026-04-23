@@ -71,7 +71,13 @@ function Divider() {
 // Small shared pieces
 // ───────────────────────────────────────────────────────────────────
 
-function VoiceSourceBadge({ source }: { source: SyxAnalysisTrack["voice_source"] }) {
+function VoiceSourceBadge({
+  source,
+  bitDistance,
+}: {
+  source: SyxAnalysisTrack["voice_source"]
+  bitDistance: number | null
+}) {
   if (source === "none") return null
   const map: Record<string, { label: string; className: string; title: string }> = {
     db: {
@@ -105,6 +111,11 @@ function VoiceSourceBadge({ source }: { source: SyxAnalysisTrack["voice_source"]
       className={`shrink-0 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wider ${spec.className}`}
     >
       {spec.label}
+      {source === "nn" && bitDistance !== null && (
+        <span className="ml-0.5 normal-case tracking-normal opacity-80">
+          d{bitDistance}
+        </span>
+      )}
     </span>
   )
 }
@@ -441,7 +452,10 @@ function TracksTable({
                     <span className="truncate font-medium">
                       {t.voice_name || `Prog ${t.program}`}
                     </span>
-                    <VoiceSourceBadge source={t.voice_source} />
+                    <VoiceSourceBadge
+                      source={t.voice_source}
+                      bitDistance={t.voice_bit_distance}
+                    />
                   </div>
                 )}
               </div>
@@ -492,7 +506,10 @@ function TracksTable({
                       <span className="truncate font-medium">
                         {t.voice_name || `Prog ${t.program}`}
                       </span>
-                      <VoiceSourceBadge source={t.voice_source} />
+                      <VoiceSourceBadge
+                      source={t.voice_source}
+                      bitDistance={t.voice_bit_distance}
+                    />
                       <span className="shrink-0 font-mono text-[9px] tabular-nums text-muted-foreground/50">
                         {t.bank_msb}/{t.bank_lsb}/{t.program}
                       </span>
