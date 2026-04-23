@@ -7,13 +7,14 @@ import {
   type SectionInfo,
   type TrackInfo,
 } from "@/lib/udm"
+import { VoiceLabel } from "@/components/VoiceLabel"
 
-function LevelBar({ value, max, color }: { value: number; max: number; color: string }) {
+function LevelBar({ value, max }: { value: number; max: number }) {
   const pct = Math.round((value / max) * 100)
   return (
-    <div className="h-1.5 w-full rounded-full bg-foreground/5">
+    <div className="h-1 w-full rounded-full bg-foreground/5">
       <div
-        className={`h-full rounded-full transition-all ${color}`}
+        className="h-full rounded-full bg-foreground/30 transition-all"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -26,10 +27,10 @@ function PanIndicator({ value }: { value: number }) {
   const isRandom = value === 0
   const left = 50 - normalized * 40
   return (
-    <div className="relative h-1.5 w-full rounded-full bg-foreground/5">
+    <div className="relative h-1 w-full rounded-full bg-foreground/5">
       {!isRandom && (
         <div
-          className={`absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ${
+          className={`absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full ${
             isCenter ? "bg-foreground/40" : "bg-foreground/60"
           }`}
           style={{ left: `${left}%` }}
@@ -48,7 +49,7 @@ function ChannelBadge({ ch }: { ch: number }) {
   const isDrum = isDrumChannel(ch)
   return (
     <span
-      className={`inline-flex h-5 min-w-[1.75rem] items-center justify-center rounded-md px-1.5 text-[10px] font-semibold tabular-nums ${
+      className={`inline-flex h-5 min-w-[1.75rem] shrink-0 items-center justify-center rounded px-1.5 text-[10px] font-semibold tabular-nums ${
         isDrum
           ? "bg-amber-100 text-amber-800"
           : "bg-foreground/5 text-foreground/60"
@@ -59,83 +60,55 @@ function ChannelBadge({ ch }: { ch: number }) {
   )
 }
 
-function TrackStrip({
+function TrackRow({
   track,
   onSelect,
 }: {
   track: TrackInfo
   onSelect: (path: string) => void
 }) {
-  const isDrum = isDrumChannel(track.midiChannel)
-  const hasVoice = track.voice.bank_msb !== 0 || track.voice.bank_lsb !== 0 || track.voice.program !== 0
   const isMuted = track.mute
-
   return (
     <button
       type="button"
       onClick={() => onSelect(track.path)}
-      className={`group w-full rounded-2xl border px-3 py-2.5 text-left transition-colors ${
-        isMuted
-          ? "border-border/40 bg-muted/20 opacity-50"
-          : "border-border/60 bg-card hover:border-foreground/15 hover:bg-muted/40"
+      className={`flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/60 ${
+        isMuted ? "opacity-50" : ""
       }`}
     >
-      <div className="flex items-center gap-2">
-        <span className="w-4 shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
-          {track.index + 1}
-        </span>
-
-        <ChannelBadge ch={track.midiChannel} />
-
-        <div className="min-w-0 flex-1">
-          {hasVoice ? (
-            <p className="truncate text-xs font-medium">
-              {isDrum ? "Drum Kit" : `Voice ${track.voice.bank_msb}/${track.voice.bank_lsb}/${track.voice.program}`}
-            </p>
-          ) : (
-            <p className="truncate text-xs text-muted-foreground">
-              {isDrum ? "Default Drum Kit" : "Default Piano"}
-            </p>
+      <span className="mt-0.5 w-4 shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">
+        {track.index + 1}
+      </span>
+      <ChannelBadge ch={track.midiChannel} />
+      <div className="min-w-0 flex-1 space-y-1">
+        <VoiceLabel
+          bankMsb={track.voice.bank_msb}
+          bankLsb={track.voice.bank_lsb}
+          program={track.voice.program}
+          channel={track.midiChannel + 1}
+          showDrumBadge={false}
+        />
+        <div className="grid grid-cols-2 gap-1.5">
+          <LevelBar value={track.volume} max={127} />
+          <PanIndicator value={track.pan} />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] tabular-nums text-muted-foreground/70">
+          <span>Vol {track.volume}</span>
+          <span>Pan {panLabel(track.pan)}</span>
+          {track.reverbSend > 0 && <span>Rev {track.reverbSend}</span>}
+          {track.chorusSend > 0 && <span>Cho {track.chorusSend}</span>}
+          {isMuted && (
+            <span className="font-medium uppercase tracking-wider text-foreground/40">
+              Mute
+            </span>
           )}
         </div>
-
-        <div className="flex shrink-0 items-center gap-1">
-          <span className="text-[10px] font-semibold tabular-nums text-muted-foreground">
-            {track.volume}
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-1.5 space-y-1 pl-6">
-        <LevelBar value={track.volume} max={127} color="bg-foreground/25 group-hover:bg-foreground/35" />
-        <PanIndicator value={track.pan} />
-      </div>
-
-      <div className="mt-1.5 flex items-center gap-2 pl-6">
-        <span className="text-[9px] tabular-nums text-muted-foreground/60">
-          Pan {panLabel(track.pan)}
-        </span>
-        {track.reverbSend > 0 && (
-          <span className="text-[9px] tabular-nums text-muted-foreground/60">
-            Rev {track.reverbSend}
-          </span>
-        )}
-        {track.chorusSend > 0 && (
-          <span className="text-[9px] tabular-nums text-muted-foreground/60">
-            Cho {track.chorusSend}
-          </span>
-        )}
-        {isMuted && (
-          <span className="text-[9px] font-medium uppercase tracking-wider text-foreground/30">
-            Mute
-          </span>
-        )}
       </div>
     </button>
   )
 }
 
-function SectionCard({
+function SectionBlock({
   section,
   isActive,
   onActivate,
@@ -148,52 +121,46 @@ function SectionCard({
 }) {
   const mutedCount = section.tracks.filter((t) => t.mute).length
   const drumTracks = section.tracks.filter((t) => isDrumChannel(t.midiChannel))
-  const melodicTracks = section.tracks.filter((t) => !isDrumChannel(t.midiChannel))
+  const melodicTracks = section.tracks.filter(
+    (t) => !isDrumChannel(t.midiChannel),
+  )
 
   return (
-    <div className="rounded-[2rem] border border-border/70 bg-card shadow-sm">
+    <div>
       <button
         type="button"
         onClick={onActivate}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+        className="group flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted/40"
       >
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Section
-          </p>
-          <h3 className="mt-1 text-lg font-semibold">{section.name.replace(/_/g, " ")}</h3>
-        </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-foreground/5 px-3 py-1 text-xs tabular-nums text-muted-foreground">
-            {section.tracks.length} tracks
+          <span className="w-3 text-sm text-muted-foreground">
+            {isActive ? "▾" : "▸"}
           </span>
-          {mutedCount > 0 && (
-            <span className="rounded-full bg-foreground/5 px-3 py-1 text-xs tabular-nums text-muted-foreground">
-              {mutedCount} muted
+          <span className="text-sm font-semibold">
+            {section.name.replace(/_/g, " ")}
+          </span>
+          {!section.enabled && (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+              Inactive
             </span>
           )}
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              section.enabled
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {section.enabled ? "Active" : "Inactive"}
-          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] tabular-nums text-muted-foreground">
+          <span>{section.tracks.length} tracks</span>
+          {mutedCount > 0 && <span>· {mutedCount} muted</span>}
         </div>
       </button>
 
       {isActive && (
-        <div className="border-t border-border/50 px-4 py-4">
+        <div className="ml-3 mt-1 space-y-3 border-l border-border/40 pl-3">
           {drumTracks.length > 0 && (
-            <div className="mb-4">
-              <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-600">
+            <div>
+              <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-amber-600">
                 Rhythm
               </p>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3">
                 {drumTracks.map((t) => (
-                  <TrackStrip key={t.index} track={t} onSelect={onSelectTrack} />
+                  <TrackRow key={t.index} track={t} onSelect={onSelectTrack} />
                 ))}
               </div>
             </div>
@@ -201,12 +168,12 @@ function SectionCard({
 
           {melodicTracks.length > 0 && (
             <div>
-              <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/50">
-                melodic
+              <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-foreground/50">
+                Melodic
               </p>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3">
                 {melodicTracks.map((t) => (
-                  <TrackStrip key={t.index} track={t} onSelect={onSelectTrack} />
+                  <TrackRow key={t.index} track={t} onSelect={onSelectTrack} />
                 ))}
               </div>
             </div>
@@ -229,39 +196,38 @@ export function PatternOverview({
     sections[0]?.name ?? "",
   )
 
-  if (sections.length === 0) {
-    return (
-      <div className="rounded-[2rem] border border-dashed border-border/80 px-6 py-8 text-center">
-        <p className="text-sm text-muted-foreground">
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+        Pattern Structure
+      </p>
+      <h3 className="mt-2 text-xl font-semibold">Tracks per Section</h3>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+        Click a track to inspect or edit its parameters.
+      </p>
+
+      {sections.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">
           No pattern sections with tracks found in this file.
         </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-          Pattern Structure
-        </p>
-        <h3 className="mt-2 text-xl font-semibold">Tracks per Section</h3>
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          Click a track strip to inspect or edit its parameters.
-        </p>
-      </div>
-
-      {sections.map((section) => (
-        <SectionCard
-          key={section.name}
-          section={section}
-          isActive={activeSection === section.name}
-          onActivate={() =>
-            setActiveSection(activeSection === section.name ? "" : section.name)
-          }
-          onSelectTrack={onSelectNode}
-        />
-      ))}
+      ) : (
+        <div className="mt-4 divide-y divide-border/40">
+          {sections.map((section) => (
+            <div key={section.name} className="py-1.5">
+              <SectionBlock
+                section={section}
+                isActive={activeSection === section.name}
+                onActivate={() =>
+                  setActiveSection(
+                    activeSection === section.name ? "" : section.name,
+                  )
+                }
+                onSelectTrack={onSelectNode}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

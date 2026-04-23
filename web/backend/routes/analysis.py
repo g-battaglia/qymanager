@@ -1,0 +1,420 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from qymanager.utils.xg_voices import get_voice_name, get_voice_category
+
+from ..session import get_session
+
+router = APIRouter(tags=["analysis"])
+
+
+class SyxAnalysisTrack(BaseModel):
+    index: int
+    name: str
+    long_name: str
+    channel: int
+    has_data: bool
+    data_bytes: int
+    active_sections: list[str]
+    bank_msb: int
+    bank_lsb: int
+    program: int
+    voice_name: str
+    voice_source: str
+    volume: int
+    pan: int
+    reverb_send: int
+    chorus_send: int
+    variation_send: int
+    is_drum_track: bool
+
+
+class SyxAnalysisSection(BaseModel):
+    index: int
+    name: str
+    has_data: bool
+    phrase_bytes: int
+    track_bytes: int
+    active_tracks: list[int]
+    bar_count: int
+    beat_count: int
+
+
+class SyxAnalysisEffect(BaseModel):
+    name: str
+    msb: int
+    lsb: int
+
+
+class SyxAnalysisStats(BaseModel):
+    total_messages: int
+    bulk_dump_messages: int
+    parameter_messages: int
+    valid_checksums: int
+    invalid_checksums: int
+    total_encoded_bytes: int
+    total_decoded_bytes: int
+
+
+class SyxAnalysisResponse(BaseModel):
+    available: bool
+    source_format: str
+    format_type: str | None = None
+    pattern_name: str | None = None
+    filesize: int = 0
+    data_density: float = 0.0
+    active_section_count: int = 0
+    section_total: int = 6
+    active_track_count: int = 0
+    track_total: int = 8
+    tempo: int | None = None
+    time_signature: str | None = None
+    reverb: SyxAnalysisEffect | None = None
+    chorus: SyxAnalysisEffect | None = None
+    variation: SyxAnalysisEffect | None = None
+    tracks: list[SyxAnalysisTrack] = Field(default_factory=list)
+    sections: list[SyxAnalysisSection] = Field(default_factory=list)
+    stats: SyxAnalysisStats | None = None
+    warnings: list[str] = Field(default_factory=list)
+    note: str | None = None
+
+
+class VoiceResolveRequest(BaseModel):
+    bank_msb: int = 0
+    bank_lsb: int = 0
+    program: int = 0
+    channel: int = 1
+
+
+class VoiceResolveResponse(BaseModel):
+    name: str
+    category: str
+    is_drum: bool
+    is_sfx: bool
+
+
+class PhraseEventModel(BaseModel):
+    tick: int
+    channel: int
+    kind: str
+    data1: int
+    data2: int
+    note_name: str | None = None
+    velocity: int | None = None
+
+
+class PhraseModel(BaseModel):
+    name: str
+    tempo: int
+    note_count: int
+    event_count: int
+    events: list[PhraseEventModel]
+
+
+class PhrasesResponse(BaseModel):
+    source: str
+    phrases: list[PhraseModel]
+    note: str | None = None
+
+
+def _split_voice_tag(voice_name: str) -> tuple[str, str]:
+    """Split `"Dance Kit (DB)"` → (`"Dance Kit"`, `"db"`).
+
+    SyxAnalyzer suffixes voice names with confidence tags:
+      - "(DB)"                       → signature-DB match (tier 1)
+      - "(class)"                    → short drum class match
+      - "(class — exact via XG query)"  → chord/bass/sfx class match
+    Names without a tag are treated as resolved from real XG state.
+    """
+    if not voice_name:
+        return ("", "none")
+    stripped = voice_name.strip()
+    if stripped.endswith("(DB)"):
+        return (stripped[: -len("(DB)")].strip(), "db")
+    idx = stripped.rfind("(class")
+    if idx != -1 and stripped.endswith(")"):
+        return (stripped[:idx].strip(), "class")
+    return (stripped, "xg")
+
+
+@router.get("/devices/{did}/syx-analysis", response_model=SyxAnalysisResponse)
+def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
+    device = get_session().get(did)
+    if device is None:
+        raise HTTPException(404, "Device not found")
+
+    source = getattr(device, "source_format", None) or "unknown"
+    if source != "syx":
+        return SyxAnalysisResponse(
+            available=False,
+            source_format=source,
+            note=f"SyX analysis is only available for .syx files (source={source}).",
+        )
+
+    raw = getattr(device, "_raw_passthrough", None)
+    if not raw:
+        return SyxAnalysisResponse(
+            available=False,
+            source_format=source,
+            note="No raw SysEx bytes retained for this device.",
+        )
+
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+
+    filename = get_session().get_filename(did) or "uploaded.syx"
+    try:
+        analysis = SyxAnalyzer().analyze_bytes(raw, name=filename)
+    except Exception as exc:
+        return SyxAnalysisResponse(
+            available=False,
+            source_format=source,
+            note=f"SyX analysis failed: {exc}",
+        )
+
+    pattern_name = analysis.pattern_name or ""
+    if not pattern_name and filename:
+        from pathlib import Path as _P
+
+        stem = _P(filename).stem
+        if " - " in stem:
+            parts = [p.strip() for p in stem.split(" - ") if p.strip()]
+            if len(parts) >= 2:
+                pattern_name = parts[1]
+            else:
+                pattern_name = stem
+        else:
+            pattern_name = stem
+
+    tracks: list[SyxAnalysisTrack] = []
+    for idx, t in enumerate(analysis.qy70_tracks):
+        clean_name, voice_source = _split_voice_tag(t.voice_name)
+        long_name = ""
+        try:
+            long_name = SyxAnalyzer.TRACK_LONG_NAMES[idx]
+        except (IndexError, AttributeError):
+            pass
+        tracks.append(
+            SyxAnalysisTrack(
+                index=idx,
+                name=t.name,
+                long_name=long_name,
+                channel=t.channel,
+                has_data=t.has_data,
+                data_bytes=t.data_bytes,
+                active_sections=list(t.active_sections or []),
+                bank_msb=t.bank_msb,
+                bank_lsb=t.bank_lsb,
+                program=t.program,
+                voice_name=clean_name,
+                voice_source=voice_source if t.has_data else "none",
+                volume=t.volume,
+                pan=t.pan,
+                reverb_send=t.reverb_send,
+                chorus_send=t.chorus_send,
+                variation_send=t.variation_send,
+                is_drum_track=t.is_drum_track,
+            )
+        )
+
+    sections: list[SyxAnalysisSection] = []
+    for s in analysis.qy70_sections:
+        sections.append(
+            SyxAnalysisSection(
+                index=s.index,
+                name=s.name,
+                has_data=s.has_data,
+                phrase_bytes=s.phrase_bytes,
+                track_bytes=s.track_bytes,
+                active_tracks=list(s.active_tracks or []),
+                bar_count=s.bar_count,
+                beat_count=s.beat_count,
+            )
+        )
+
+    time_sig = f"{analysis.time_signature[0]}/{analysis.time_signature[1]}" if analysis.time_signature else None
+
+    warnings: list[str] = []
+    any_db = any(t.voice_source == "db" for t in tracks)
+    any_class = any(t.voice_source == "class" for t in tracks)
+    if any_db or any_class:
+        parts = []
+        if any_db:
+            parts.append("(DB) tracks are matched against a 23-signature database")
+        if any_class:
+            parts.append("(class) tracks only expose their category (drum/bass/chord)")
+        warnings.append(
+            "Voice info is partial. This .syx carries an opaque ROM index for voices, not raw Bank/Program. "
+            + " · ".join(parts)
+            + ". Capture XG state alongside the bulk for full voice resolution."
+        )
+
+    return SyxAnalysisResponse(
+        available=True,
+        source_format=source,
+        format_type=analysis.format_type,
+        pattern_name=pattern_name or None,
+        filesize=analysis.filesize,
+        data_density=analysis.data_density,
+        active_section_count=analysis.active_section_count,
+        section_total=len(analysis.qy70_sections) or 6,
+        active_track_count=analysis.active_track_count,
+        track_total=len(analysis.qy70_tracks) or 8,
+        tempo=analysis.tempo,
+        time_signature=time_sig,
+        reverb=SyxAnalysisEffect(
+            name=analysis.reverb_type,
+            msb=analysis.reverb_type_msb,
+            lsb=analysis.reverb_type_lsb,
+        ),
+        chorus=SyxAnalysisEffect(
+            name=analysis.chorus_type,
+            msb=analysis.chorus_type_msb,
+            lsb=analysis.chorus_type_lsb,
+        ),
+        variation=SyxAnalysisEffect(
+            name=analysis.variation_type,
+            msb=analysis.variation_type_msb,
+            lsb=analysis.variation_type_lsb,
+        ),
+        tracks=tracks,
+        sections=sections,
+        stats=SyxAnalysisStats(
+            total_messages=analysis.total_messages,
+            bulk_dump_messages=analysis.bulk_dump_messages,
+            parameter_messages=analysis.parameter_messages,
+            valid_checksums=analysis.valid_checksums,
+            invalid_checksums=analysis.invalid_checksums,
+            total_encoded_bytes=analysis.total_encoded_bytes,
+            total_decoded_bytes=analysis.total_decoded_bytes,
+        ),
+        warnings=warnings,
+    )
+
+
+@router.post("/resolve-voice", response_model=VoiceResolveResponse)
+def resolve_voice(req: VoiceResolveRequest) -> VoiceResolveResponse:
+    name = get_voice_name(
+        program=req.program,
+        bank_msb=req.bank_msb,
+        bank_lsb=req.bank_lsb,
+        channel=req.channel,
+    )
+    category = get_voice_category(req.program) if not (req.channel == 10 or req.bank_msb == 127) else "Drum Kit"
+    is_drum = req.channel == 10 or req.bank_msb == 127
+    is_sfx = req.bank_msb == 64
+    return VoiceResolveResponse(name=name, category=category, is_drum=is_drum, is_sfx=is_sfx)
+
+
+NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+
+def _note_name(note: int) -> str:
+    octave = note // 12 - 1
+    return f"{NOTE_NAMES[note % 12]}{octave}"
+
+
+@router.get("/devices/{did}/phrases", response_model=PhrasesResponse)
+def get_device_phrases(did: str) -> PhrasesResponse:
+    device = get_session().get(did)
+    if device is None:
+        raise HTTPException(404, "Device not found")
+
+    raw = getattr(device, "_raw_passthrough", None)
+    if not raw:
+        return PhrasesResponse(
+            source=device.source_format,
+            phrases=[],
+            note="No raw file data available for phrase extraction.",
+        )
+
+    source = device.source_format or "unknown"
+
+    if source == "q7p":
+        return _parse_q7p_phrases(raw)
+    elif source == "syx":
+        return _parse_syx_phrases(raw, device)
+    else:
+        return PhrasesResponse(
+            source=source,
+            phrases=[],
+            note=f"Phrase extraction not implemented for {source} format.",
+        )
+
+
+def _parse_q7p_phrases(raw: bytes) -> PhrasesResponse:
+    from qymanager.formats.qy700.phrase_parser import parse_q7p_phrases
+
+    blocks = parse_q7p_phrases(raw)
+    phrases: list[PhraseModel] = []
+
+    for block in blocks:
+        events: list[PhraseEventModel] = []
+        for ev in block.events:
+            if ev.event_type in ("drum", "note", "alt_note"):
+                events.append(
+                    PhraseEventModel(
+                        tick=ev.delta,
+                        channel=10 if ev.event_type == "drum" else 0,
+                        kind=ev.event_type,
+                        data1=ev.note,
+                        data2=ev.velocity,
+                        note_name=_note_name(ev.note),
+                        velocity=ev.velocity if ev.velocity > 0 else None,
+                    )
+                )
+        phrases.append(
+            PhraseModel(
+                name=block.name,
+                tempo=block.tempo,
+                note_count=block.note_count,
+                event_count=len(block.events),
+                events=events,
+            )
+        )
+
+    note = None
+    if not phrases:
+        note = "No phrase blocks detected in this Q7P file."
+    elif all(p.note_count == 0 for p in phrases):
+        note = "Phrase blocks found but contain no note events."
+
+    return PhrasesResponse(source="q7p", phrases=phrases, note=note)
+
+
+def _parse_syx_phrases(raw: bytes, device: object) -> PhrasesResponse:
+    from qymanager.formats.qy70.sysex_parser import parse_qy70_sysex
+
+    try:
+        messages = parse_qy70_sysex(raw)
+    except Exception:
+        return PhrasesResponse(
+            source="syx",
+            phrases=[],
+            note=(
+                "This QY70 SysEx file could not be parsed for phrase-level events. "
+                "Sparse QY70 dumps encode pattern structure and track settings but "
+                "phrase event data is in a compressed format not yet extractable by "
+                "the web editor. Pattern structure and voice assignments are available "
+                "in the main device view."
+            ),
+        )
+
+    if not messages:
+        return PhrasesResponse(
+            source="syx",
+            phrases=[],
+            note="No SysEx messages found in this file.",
+        )
+
+    return PhrasesResponse(
+        source="syx",
+        phrases=[],
+        note=(
+            f"Parsed {len(messages)} SysEx messages. QY70 sparse dumps encode "
+            "phrase data in a compressed format that is not yet extracted into "
+            "individual note events by the web editor. Pattern structure and "
+            "voice assignments are available in the main device view."
+        ),
+    )

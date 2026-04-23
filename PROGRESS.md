@@ -159,10 +159,14 @@
 - [x] **UX.9** SPA route fallback in backend (non-API routes serve index.html)
 - [x] **UX.10** PatternOverview component: mixer-style track strips per section, rhythm/melodic separation
 - [x] **UX.11** Dashboard redesign: clean landing with format badges
-- [x] **UX.12** Track extraction helpers + tests (14 frontend tests total, 479 backend tests)
+- [x] **UX.12** Track extraction helpers + tests (14 frontend tests, 485 backend tests)
 - [x] **UX.13** Multi Part overview panel (when multi_part has data)
 - [x] **UX.14** Effects overview panel (reverb/chorus/variation type + level)
-- [ ] **UX.15** Drum Setup overview panel (when drum_setup has data)
+- [x] **UX.15** Drum Setup overview panel (when drum_setup has data)
+- [x] **UX.16** Voice resolution: `POST /api/resolve-voice` endpoint using `get_voice_name()`, shows real voice names in track/multi-part strips
+- [x] **UX.17** Phrase events: `GET /api/devices/{id}/phrases` endpoint using `QY700PhraseParser`, shows MIDI note events with note names
+- [x] **UX.18** VoiceLabel component: resolves and displays voice names with drum/SFX badges
+- [x] **UX.19** PhraseEvents component: shows phrase blocks with note events in scrollable table
 
 ---
 

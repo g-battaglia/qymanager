@@ -7,9 +7,12 @@ from web.backend.session import get_session
 
 @pytest.fixture(autouse=True)
 def clean_session():
-    get_session()._devices.clear()
+    sess = get_session()
+    sess._devices.clear()
+    sess._filenames.clear()
     yield
-    get_session()._devices.clear()
+    sess._devices.clear()
+    sess._filenames.clear()
 
 
 @pytest.fixture

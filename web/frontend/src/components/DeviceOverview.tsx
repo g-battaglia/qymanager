@@ -4,8 +4,11 @@ import {
   describeImportContext,
   getFirstPattern,
 } from "@/lib/udm"
+import { useSyxAnalysis } from "@/lib/queries"
 import { PatternOverview } from "@/components/PatternOverview"
 import { SoundOverview } from "@/components/SoundOverview"
+import { PhraseEvents } from "@/components/PhraseEvents"
+import { SyxAnalysisPanel } from "@/components/SyxAnalysisPanel"
 
 function StatCard({
   label,
@@ -16,111 +19,193 @@ function StatCard({
   value: string
   tone?: "default" | "accent"
 }) {
+  const toneClass =
+    tone === "accent"
+      ? "border-foreground/10 bg-foreground text-background"
+      : "border-border/70 bg-card"
   return (
-    <div
-      className={
-        tone === "accent"
-          ? "rounded-3xl border border-foreground/10 bg-foreground px-4 py-4 text-background shadow-sm"
-          : "rounded-3xl border border-border/70 bg-card px-4 py-4 shadow-sm"
-      }
-    >
-      <p className={tone === "accent" ? "text-xs uppercase tracking-[0.24em] text-background/70" : "text-xs uppercase tracking-[0.24em] text-muted-foreground"}>
+    <div className={`rounded-2xl border px-4 py-3 ${toneClass}`}>
+      <p
+        className={
+          tone === "accent"
+            ? "text-[10px] uppercase tracking-[0.24em] text-background/70"
+            : "text-[10px] uppercase tracking-[0.24em] text-muted-foreground"
+        }
+      >
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      <p className="mt-1 text-xl font-semibold">{value}</p>
     </div>
   )
 }
 
-export function DeviceOverview({ device, onSelectNode }: { device: UdmDevice; onSelectNode: (path: string) => void }) {
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold tabular-nums">{value}</p>
+    </div>
+  )
+}
+
+function Divider() {
+  return <hr className="border-t border-border/40" />
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
+
+export function DeviceOverview({
+  device,
+  deviceId,
+  onSelectNode,
+}: {
+  device: UdmDevice
+  deviceId: string
+  onSelectNode: (path: string) => void
+}) {
   const firstPattern = getFirstPattern(device)
   const firstPatternName = firstPattern?.["name"]
   const firstPatternTempo = firstPattern?.["tempo_bpm"]
   const firstPatternMeasures = firstPattern?.["measures"]
-  const timeSig =
+  const udmTimeSig =
     firstPattern &&
     typeof firstPattern["time_sig"] === "object" &&
     firstPattern["time_sig"] !== null
       ? `${String((firstPattern["time_sig"] as Record<string, unknown>).numerator)}/${String((firstPattern["time_sig"] as Record<string, unknown>).denominator)}`
       : "-"
-  const tempo = firstPatternTempo ? `${String(firstPatternTempo)} BPM` : "-"
-  const measures = firstPatternMeasures ? `${String(firstPatternMeasures)} bars` : "-"
-  const patternName =
+  const udmTempo = firstPatternTempo ? `${String(firstPatternTempo)} BPM` : "-"
+  const measures = firstPatternMeasures
+    ? `${String(firstPatternMeasures)} bars`
+    : "-"
+  const udmPatternName =
     typeof firstPatternName === "string" && firstPatternName.trim()
       ? firstPatternName
-      : "Untitled pattern"
+      : ""
   const importContext = describeImportContext(device)
 
+  const { data: syx } = useSyxAnalysis(deviceId)
+  const syxAvailable = syx?.available ?? false
+  const patternName =
+    (syxAvailable && syx?.pattern_name) || udmPatternName || "Untitled pattern"
+
+  const tempo =
+    syxAvailable && syx?.tempo ? `${syx.tempo} BPM` : udmTempo
+  const timeSig = syxAvailable && syx?.time_signature ? syx.time_signature : udmTimeSig
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <section className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
               Imported Device
             </p>
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight">
-                {String(device.model).toUpperCase()} {patternName !== "Untitled pattern" ? `· ${patternName}` : ""}
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                This page is organized around the UDM model. Start from the overview cards,
-                then inspect sections from the navigator on the left. Only schema-backed
-                fields are directly editable.
-              </p>
-            </div>
+            <h2 className="text-3xl font-semibold tracking-tight">
+              {String(device.model).toUpperCase()}
+              {patternName !== "Untitled pattern" ? ` · ${patternName}` : ""}
+            </h2>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              This page is organized around the UDM model. Start from the overview, then
+              inspect sections from the navigator on the left. Only schema-backed fields
+              are directly editable.
+            </p>
           </div>
-          <div className="grid min-w-[18rem] gap-3 sm:grid-cols-2">
-            <StatCard label="Source" value={String(device.source_format ?? "unknown").toUpperCase()} tone="accent" />
+          <div className="grid min-w-[16rem] gap-3 sm:grid-cols-2">
+            <StatCard
+              label="Source"
+              value={String(device.source_format ?? "unknown").toUpperCase()}
+              tone="accent"
+            />
             <StatCard label="UDM" value={String(device.udm_version ?? "1.0")} />
           </div>
         </div>
+
+        {importContext && (
+          <div className="mt-5 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-amber-950">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-amber-700">
+              Import Note
+            </p>
+            <p className="mt-1 text-sm leading-6">{importContext}</p>
+          </div>
+        )}
+
+        <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border/40 pt-5 sm:grid-cols-4 lg:grid-cols-8">
+          <MiniStat label="Tempo" value={tempo} />
+          <MiniStat label="Time Sig" value={timeSig} />
+          <MiniStat label="Length" value={measures} />
+          {syxAvailable && syx ? (
+            <>
+              <MiniStat
+                label="Sections"
+                value={`${syx.active_section_count}/${syx.section_total}`}
+              />
+              <MiniStat
+                label="Tracks"
+                value={`${syx.active_track_count}/${syx.track_total}`}
+              />
+              <MiniStat label="File Size" value={formatBytes(syx.filesize)} />
+              <MiniStat
+                label="Density"
+                value={`${syx.data_density.toFixed(1)}%`}
+              />
+              <MiniStat
+                label="Format"
+                value={(syx.format_type ?? "-").toUpperCase()}
+              />
+            </>
+          ) : (
+            <>
+              <MiniStat label="Patterns" value={String(device.patterns.length)} />
+              <MiniStat label="Songs" value={String(device.songs.length)} />
+              <MiniStat label="Parts" value={String(device.multi_part.length)} />
+              <MiniStat
+                label="Drum Overrides"
+                value={String(countDrumNoteOverrides(device))}
+              />
+              <MiniStat
+                label="User Phrases"
+                value={String(device.phrases_user.length)}
+              />
+            </>
+          )}
+        </div>
       </section>
 
-      {importContext ? (
-        <section className="rounded-[2rem] border border-amber-200/80 bg-amber-50 px-6 py-5 text-amber-950 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.24em] text-amber-700">Import Note</p>
-          <p className="mt-2 text-sm leading-6">{importContext}</p>
-        </section>
-      ) : null}
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Tempo" value={tempo} />
-        <StatCard label="Time Signature" value={timeSig} />
-        <StatCard label="Pattern Length" value={measures} />
-        <StatCard label="Patterns" value={String(device.patterns.length)} />
-        <StatCard label="Songs" value={String(device.songs.length)} />
-        <StatCard label="Multi Parts" value={String(device.multi_part.length)} />
-        <StatCard label="Drum Overrides" value={String(countDrumNoteOverrides(device))} />
-        <StatCard label="User Phrases" value={String(device.phrases_user.length)} />
-      </section>
-
-      <section className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
-        <SoundOverview device={device} onSelectNode={onSelectNode} />
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
+      {syxAvailable && syx ? (
+        <>
+          <SyxAnalysisPanel analysis={syx} />
+          <Divider />
+          <PhraseEvents deviceId={deviceId} />
+        </>
+      ) : (
+        <>
+          <SoundOverview device={device} onSelectNode={onSelectNode} />
+          <Divider />
+          <PhraseEvents deviceId={deviceId} />
+          <Divider />
           <PatternOverview device={device} onSelectNode={onSelectNode} />
-        </div>
+        </>
+      )}
 
-        <div className="rounded-[2rem] border border-border/70 bg-card px-6 py-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-            Editable Now
-          </p>
-          <h3 className="mt-2 text-xl font-semibold">Schema-backed controls</h3>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-            <li>System: master tune, volume, transpose, sync basics.</li>
-            <li>Effects: reverb, chorus, variation blocks when present.</li>
-            <li>Multi Part: voice, pan, sends, filters, EG, bend, detune.</li>
-            <li>Drum Setup: note-level tuning, level, pan, sends, filter, envelopes.</li>
-          </ul>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Pattern and song structures are visible here too, but many of those fields are
-            still read-only in the current web editor.
-          </p>
-        </div>
-      </section>
+      <Divider />
+
+      <footer className="pb-4">
+        <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+          Editable now
+        </p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+          System (master tune, volume, transpose, sync), Effects (reverb, chorus,
+          variation), Multi Part (voice, pan, sends, filter, EG) and Drum Setup
+          (note-level tuning, level, pan, sends, filter). Pattern and song structures
+          are visible here but many fields remain read-only.
+        </p>
+      </footer>
     </div>
   )
 }

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .routes import devices, diff, schema
+from .routes import devices, diff, schema, analysis
 
 
 def create_app(frontend_dir: Path | None = None, dev: bool = False) -> FastAPI:
@@ -24,6 +24,7 @@ def create_app(frontend_dir: Path | None = None, dev: bool = False) -> FastAPI:
     app.include_router(devices.router, prefix="/api")
     app.include_router(diff.router, prefix="/api")
     app.include_router(schema.router, prefix="/api")
+    app.include_router(analysis.router, prefix="/api")
 
     if frontend_dir is not None and frontend_dir.exists():
         frontend_root = frontend_dir.resolve()

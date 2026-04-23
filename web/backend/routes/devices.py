@@ -45,7 +45,7 @@ async def upload_device(file: UploadFile = File(...)) -> UploadResponse:
     finally:
         tmp_path.unlink(missing_ok=True)
 
-    did = get_session().create(device)
+    did = get_session().create(device, filename=file.filename)
     return UploadResponse(id=did, device=udm_to_dict(device))
 
 
