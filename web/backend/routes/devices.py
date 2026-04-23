@@ -110,6 +110,13 @@ async def merge_capture(did: str, file: UploadFile = File(...)) -> DeviceRespons
     except ValueError as exc:
         raise HTTPException(400, f"Capture not recognized: {exc}") from exc
 
+    # Preserve the original bulk + append the capture so downstream
+    # tools (SyxAnalyzer re-run, SMF emit, /syx-analysis xg_system
+    # readback) see the full combined stream.
+    existing_raw = getattr(enriched, "_raw_passthrough", b"") or b""
+    if capture_bytes not in existing_raw:
+        enriched._raw_passthrough = existing_raw + capture_bytes
+
     sess.update(did, enriched)
     return DeviceResponse(device=udm_to_dict(enriched))
 

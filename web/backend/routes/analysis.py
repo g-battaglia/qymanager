@@ -58,6 +58,19 @@ class SyxAnalysisStats(BaseModel):
     total_decoded_bytes: int
 
 
+class SyxAnalysisSystem(BaseModel):
+    master_tune_cents: int | None = None
+    master_volume: int | None = None
+    master_attenuator: int | None = None
+    transpose: int | None = None
+    xg_system_on: bool = False
+
+
+class SyxAnalysisSlot(BaseModel):
+    slot: int
+    name: str
+
+
 class SyxAnalysisResponse(BaseModel):
     available: bool
     source_format: str
@@ -77,6 +90,8 @@ class SyxAnalysisResponse(BaseModel):
     tracks: list[SyxAnalysisTrack] = Field(default_factory=list)
     sections: list[SyxAnalysisSection] = Field(default_factory=list)
     stats: SyxAnalysisStats | None = None
+    system: SyxAnalysisSystem | None = None
+    pattern_directory: list[SyxAnalysisSlot] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     note: str | None = None
 
@@ -250,11 +265,46 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
             + ". Capture XG state alongside the bulk for full voice resolution."
         )
 
+    system_info: SyxAnalysisSystem | None = None
+    xg_sys = getattr(analysis, "xg_system", {}) or {}
+    if xg_sys:
+        mt_nibbles = [
+            xg_sys.get(f"master_tune_nibble_{i}") or 0 for i in range(4)
+        ]
+        if any(xg_sys.get(f"master_tune_nibble_{i}") is not None for i in range(4)):
+            word = (
+                (mt_nibbles[0] << 12)
+                | (mt_nibbles[1] << 8)
+                | (mt_nibbles[2] << 4)
+                | mt_nibbles[3]
+            )
+            master_tune_cents = int(round((word - 0x0400) * 0.05))
+            master_tune_cents = max(-100, min(100, master_tune_cents))
+        else:
+            master_tune_cents = None
+        transpose_raw = xg_sys.get("master_transpose")
+        transpose = (transpose_raw - 64) if transpose_raw is not None else None
+        system_info = SyxAnalysisSystem(
+            master_tune_cents=master_tune_cents,
+            master_volume=xg_sys.get("master_volume"),
+            master_attenuator=xg_sys.get("master_attenuator"),
+            transpose=transpose,
+            xg_system_on=bool(xg_sys.get("xg_system_on", False)),
+        )
+
+    slots: list[SyxAnalysisSlot] = []
+    pdir = getattr(analysis, "pattern_directory", None) or {}
+    for slot_idx, name in sorted(pdir.items()):
+        if isinstance(name, str) and name.strip():
+            slots.append(SyxAnalysisSlot(slot=slot_idx, name=name.strip()))
+
     return SyxAnalysisResponse(
         available=True,
         source_format=source,
         format_type=analysis.format_type,
         pattern_name=pattern_name or None,
+        system=system_info,
+        pattern_directory=slots,
         filesize=analysis.filesize,
         data_density=analysis.data_density,
         active_section_count=analysis.active_section_count,
