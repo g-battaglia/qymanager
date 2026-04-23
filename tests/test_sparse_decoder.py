@@ -135,6 +135,56 @@ def test_sparse_decoded_phrases_emit_smf():
     assert total_notes >= 80, f"expected ≥80 note_on events in SMF, got {total_notes}"
 
 
+SGT_BACKUP = (
+    FIXTURES / "data" / "captures_2026_04_23" / "SGT_backup_20260423_112505.syx"
+)
+
+
+@pytest.mark.skipif(not SGT_BACKUP.exists(), reason="SGT_backup fixture missing")
+def test_sgt_backup_embedded_xg_voices_populate_udm():
+    """SGT_backup embeds an XG Multi Part bulk inside the .syx. After
+    Session 33d, `parse_syx_to_udm` folds it into `device.multi_part`
+    so the bulk alone (no merge-capture) exposes the real Bank / LSB /
+    Program / Volume / Pan / Reverb / Chorus per track."""
+    from qymanager.formats.qy70.reader import parse_syx_to_udm
+
+    device = parse_syx_to_udm(SGT_BACKUP.read_bytes())
+    per_ch = {p.rx_channel + 1: p for p in device.multi_part if p.voice.program or p.voice.bank_msb or p.voice.bank_lsb}
+
+    # Ground truth from wiki/session-32f-captures.md (INDEX.md) —
+    # verified 2026-04-23 via PATT OUT capture:
+    #   ch9  Dance Kit (Drum Kit 25)   vol 90
+    #   ch12 PickBass (0/0/34)         vol 75
+    #   ch13 WarmPad (0/0/89)          vol 90 rev 97 cho 127
+    #   ch15 TremStr var (0/40/44)     vol 92
+    #   ch16 SFX bank (126/0/0)        vol 80
+    assert per_ch[9].voice.bank_msb == 127 and per_ch[9].voice.program == 25
+    assert per_ch[9].volume == 90
+    assert per_ch[12].voice.bank_msb == 0 and per_ch[12].voice.program == 34
+    assert per_ch[12].volume == 75
+    assert per_ch[13].voice.program == 89 and per_ch[13].voice.bank_lsb == 0
+    assert per_ch[13].reverb_send == 97
+    assert per_ch[13].chorus_send == 127
+    assert per_ch[15].voice.bank_lsb == 40 and per_ch[15].voice.program == 44
+    assert per_ch[16].voice.bank_msb == 126
+
+
+@pytest.mark.skipif(not SGT_BACKUP.exists(), reason="SGT_backup fixture missing")
+def test_sgt_backup_embedded_drum_setup_populate_udm():
+    """SGT_backup also carries XG Drum Setup edits; they must land in
+    `device.drum_setup[kit].notes[N]` with the proper level/pan/sends."""
+    from qymanager.formats.qy70.reader import parse_syx_to_udm
+
+    device = parse_syx_to_udm(SGT_BACKUP.read_bytes())
+    assert len(device.drum_setup) >= 1
+    kit = device.drum_setup[0]
+    # At least the kick (36) must be configured with a non-default level.
+    assert 36 in kit.notes
+    assert kit.notes[36].level >= 100
+    # Multiple notes should be populated.
+    assert len(kit.notes) >= 5
+
+
 @pytest.mark.skipif(not MR_VAIN.exists(), reason="MR Vain fixture missing")
 def test_nearest_neighbour_resolves_chord_voices():
     """Tier 1.5 NN matcher: MR. Vain C1/C2/C3 signatures have no exact
