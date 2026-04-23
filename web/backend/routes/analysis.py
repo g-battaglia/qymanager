@@ -71,6 +71,22 @@ class SyxAnalysisSlot(BaseModel):
     name: str
 
 
+class SyxAnalysisDrumNote(BaseModel):
+    note: int
+    note_name: str
+    level: int | None = None
+    pan: int | None = None
+    reverb_send: int | None = None
+    chorus_send: int | None = None
+    pitch_coarse: int | None = None
+    pitch_fine: int | None = None
+
+
+class SyxAnalysisDrumKit(BaseModel):
+    kit_index: int
+    notes: list[SyxAnalysisDrumNote] = Field(default_factory=list)
+
+
 class SyxAnalysisResponse(BaseModel):
     available: bool
     source_format: str
@@ -92,6 +108,7 @@ class SyxAnalysisResponse(BaseModel):
     stats: SyxAnalysisStats | None = None
     system: SyxAnalysisSystem | None = None
     pattern_directory: list[SyxAnalysisSlot] = Field(default_factory=list)
+    drum_kits: list[SyxAnalysisDrumKit] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     note: str | None = None
 
@@ -295,6 +312,33 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
         if isinstance(name, str) and name.strip():
             slots.append(SyxAnalysisSlot(slot=slot_idx, name=name.strip()))
 
+    drum_kits: list[SyxAnalysisDrumKit] = []
+    xg_drum_setup = getattr(analysis, "xg_drum_setup", None) or {}
+    # Expected shape: {kit_index: {note: {"level": v, "pan": v, ...}}}
+    for kit_index, notes_dict in sorted(xg_drum_setup.items()):
+        if not isinstance(notes_dict, dict):
+            continue
+        note_entries: list[SyxAnalysisDrumNote] = []
+        for note_num, fields in sorted(notes_dict.items()):
+            if not isinstance(fields, dict):
+                continue
+            note_entries.append(
+                SyxAnalysisDrumNote(
+                    note=note_num,
+                    note_name=GM_DRUM_NOTES.get(note_num, _note_name(note_num)),
+                    level=fields.get("level"),
+                    pan=fields.get("pan"),
+                    reverb_send=fields.get("reverb_send"),
+                    chorus_send=fields.get("chorus_send"),
+                    pitch_coarse=fields.get("pitch_coarse"),
+                    pitch_fine=fields.get("pitch_fine"),
+                )
+            )
+        if note_entries:
+            drum_kits.append(
+                SyxAnalysisDrumKit(kit_index=kit_index, notes=note_entries)
+            )
+
     return SyxAnalysisResponse(
         available=True,
         source_format=source,
@@ -302,6 +346,7 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
         pattern_name=pattern_name or None,
         system=system_info,
         pattern_directory=slots,
+        drum_kits=drum_kits,
         filesize=analysis.filesize,
         data_density=analysis.data_density,
         active_section_count=analysis.active_section_count,
