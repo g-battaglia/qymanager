@@ -90,6 +90,11 @@ class TestApplySystem:
         device = parse_xg_bulk_to_udm(blob)
         assert device.system.master_tune == -4
 
+    def test_master_attenuator(self):
+        blob = _bulk(_xg(0x00, 0x00, 0x05, 25))
+        device = parse_xg_bulk_to_udm(blob)
+        assert device.system.master_attenuator == 25
+
 
 class TestApplyEffects:
     def test_reverb_type(self):

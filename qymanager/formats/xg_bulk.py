@@ -376,6 +376,8 @@ def _apply_system(system: System, msg: XGRawMessage) -> None:
     # system object in a half-updated state.
     if msg.al == 0x04 and msg.data:
         system.master_volume = max(0, min(127, msg.data[0]))
+    elif msg.al == 0x05 and msg.data:
+        system.master_attenuator = max(0, min(127, msg.data[0] & 0x7F))
     elif msg.al == 0x06 and msg.data:
         raw = msg.data[0]
         system.transpose = raw - 64

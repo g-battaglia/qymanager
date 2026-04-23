@@ -268,18 +268,15 @@ def get_device_syx_analysis(did: str) -> SyxAnalysisResponse:
     system_info: SyxAnalysisSystem | None = None
     xg_sys = getattr(analysis, "xg_system", {}) or {}
     if xg_sys:
-        mt_nibbles = [
-            xg_sys.get(f"master_tune_nibble_{i}") or 0 for i in range(4)
-        ]
         if any(xg_sys.get(f"master_tune_nibble_{i}") is not None for i in range(4)):
+            mt_nibbles = [xg_sys.get(f"master_tune_nibble_{i}") or 0 for i in range(4)]
             word = (
                 (mt_nibbles[0] << 12)
                 | (mt_nibbles[1] << 8)
                 | (mt_nibbles[2] << 4)
                 | mt_nibbles[3]
             )
-            master_tune_cents = int(round((word - 0x0400) * 0.05))
-            master_tune_cents = max(-100, min(100, master_tune_cents))
+            master_tune_cents = max(-100, min(100, int(round((word - 0x0400) * 0.05))))
         else:
             master_tune_cents = None
         transpose_raw = xg_sys.get("master_transpose")
