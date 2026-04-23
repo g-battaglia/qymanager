@@ -14,6 +14,15 @@ def test_serve_static_mount_with_temp_dir(tmp_path: Path):
     assert "ok" in r.text
 
 
+def test_serve_spa_route_falls_back_to_index(tmp_path: Path):
+    (tmp_path / "index.html").write_text("<!doctype html><html><body>spa</body></html>")
+    app = create_app(frontend_dir=tmp_path)
+    client = TestClient(app)
+    r = client.get("/device/abc123")
+    assert r.status_code == 200
+    assert "spa" in r.text
+
+
 def test_serve_api_routes_available():
     app = create_app()
     client = TestClient(app)

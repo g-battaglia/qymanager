@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSchema, usePatchField } from "@/lib/queries"
 import type { SchemaEntry } from "@/lib/types"
 import { Input } from "@/components/ui/input"
@@ -11,8 +11,9 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { humanizeKey } from "@/lib/udm"
 
-function matchSchema(
+export function matchSchema(
   path: string,
   entries: SchemaEntry[],
 ): SchemaEntry | null {
@@ -20,6 +21,16 @@ function matchSchema(
   if (direct) return direct
   const pattern = path.replace(/\[\d+\]/g, "[*]")
   return entries.find((e) => e.path === pattern) ?? null
+}
+
+function inferRawInput(value: unknown, raw: string): unknown {
+  if (typeof value === "number") {
+    return Number(raw)
+  }
+  if (typeof value === "boolean") {
+    return raw === "true"
+  }
+  return raw
 }
 
 export function FieldEditor({
@@ -33,6 +44,11 @@ export function FieldEditor({
 }) {
   const { data: schema } = useSchema()
   const { mutate, isPending } = usePatchField(deviceId)
+  const [rawValue, setRawValue] = useState(String(currentValue ?? ""))
+
+  useEffect(() => {
+    setRawValue(String(currentValue ?? ""))
+  }, [currentValue, path])
 
   const entry = useMemo(() => {
     if (!schema) return null
@@ -58,14 +74,44 @@ export function FieldEditor({
   }
 
   if (!entry) {
+    const lastSegment = path.split(".").at(-1)?.replace(/\[\d+\]/g, "") ?? path
     return (
-      <div>
-        <p className="text-muted-foreground mb-2">Raw value (no schema):</p>
-        <Input
-          defaultValue={String(currentValue ?? "")}
-          onBlur={(e) => handleChange(e.target.value)}
-          disabled={isPending}
-        />
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-dashed border-border/80 bg-muted/35 px-4 py-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Basic Editor
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <span className="font-medium text-foreground">{humanizeKey(lastSegment)}</span>{" "}
+            is not part of the explicit schema-backed web editor yet. You can still edit its
+            raw scalar value here using the current field type.
+          </p>
+        </div>
+
+        {typeof currentValue === "boolean" ? (
+          <Select
+            defaultValue={String(currentValue)}
+            onValueChange={(v: string | null) => {
+              if (v !== null) handleChange(v === "true")
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">True</SelectItem>
+              <SelectItem value="false">False</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            type={typeof currentValue === "number" ? "number" : "text"}
+            value={rawValue}
+            onChange={(e) => setRawValue(e.target.value)}
+            onBlur={(e) => handleChange(inferRawInput(currentValue, e.target.value))}
+            disabled={isPending}
+          />
+        )}
       </div>
     )
   }

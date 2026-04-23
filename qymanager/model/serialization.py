@@ -13,6 +13,10 @@ def _convert_value(val: Any) -> Any:
         return val.value
     if isinstance(val, bytes):
         return val.hex()
+    if isinstance(val, list):
+        return [_convert_value(item) for item in val]
+    if isinstance(val, dict):
+        return {str(k): _convert_value(v) for k, v in val.items()}
     if is_dataclass(val) and not isinstance(val, type):
         return udm_to_dict(val)
     return val

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from .routes import devices, diff, schema
 
@@ -26,7 +26,20 @@ def create_app(frontend_dir: Path | None = None, dev: bool = False) -> FastAPI:
     app.include_router(schema.router, prefix="/api")
 
     if frontend_dir is not None and frontend_dir.exists():
-        app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+        frontend_root = frontend_dir.resolve()
+
+        @app.get("/{full_path:path}")
+        def frontend(full_path: str) -> FileResponse:
+            requested = (frontend_root / full_path).resolve()
+            try:
+                requested.relative_to(frontend_root)
+            except ValueError:
+                return FileResponse(frontend_root / "index.html")
+
+            if requested.is_file():
+                return FileResponse(requested)
+
+            return FileResponse(frontend_root / "index.html")
 
     return app
 
