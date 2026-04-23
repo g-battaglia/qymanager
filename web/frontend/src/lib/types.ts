@@ -134,6 +134,35 @@ export type SyxAnalysisStats = {
   total_decoded_bytes: number
 }
 
+export type SyxAnalysisSystem = {
+  master_tune_cents: number | null
+  master_volume: number | null
+  master_attenuator: number | null
+  transpose: number | null
+  xg_system_on: boolean
+}
+
+export type SyxAnalysisSlot = {
+  slot: number
+  name: string
+}
+
+export type SyxAnalysisDrumNote = {
+  note: number
+  note_name: string
+  level: number | null
+  pan: number | null
+  reverb_send: number | null
+  chorus_send: number | null
+  pitch_coarse: number | null
+  pitch_fine: number | null
+}
+
+export type SyxAnalysisDrumKit = {
+  kit_index: number
+  notes: SyxAnalysisDrumNote[]
+}
+
 export type SyxAnalysisResponse = {
   available: boolean
   source_format: string
@@ -153,6 +182,9 @@ export type SyxAnalysisResponse = {
   tracks: SyxAnalysisTrack[]
   sections: SyxAnalysisSection[]
   stats: SyxAnalysisStats | null
+  system: SyxAnalysisSystem | null
+  pattern_directory: SyxAnalysisSlot[]
+  drum_kits: SyxAnalysisDrumKit[]
   warnings: string[]
   note: string | null
 }

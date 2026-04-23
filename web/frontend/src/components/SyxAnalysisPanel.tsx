@@ -313,6 +313,103 @@ export function SyxAnalysisPanel({
         </div>
       )}
 
+      {analysis.system && (
+        analysis.system.master_tune_cents !== null ||
+        analysis.system.master_volume !== null ||
+        analysis.system.master_attenuator !== null ||
+        analysis.system.transpose !== null ||
+        analysis.system.xg_system_on
+      ) ? (
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            XG System
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {analysis.system.master_tune_cents !== null && (
+              <Metric
+                label="Master Tune"
+                value={`${
+                  analysis.system.master_tune_cents > 0 ? "+" : ""
+                }${analysis.system.master_tune_cents} ¢`}
+              />
+            )}
+            {analysis.system.master_volume !== null && (
+              <Metric label="Master Vol" value={analysis.system.master_volume} />
+            )}
+            {analysis.system.master_attenuator !== null &&
+              analysis.system.master_attenuator > 0 && (
+                <Metric label="Attenuator" value={analysis.system.master_attenuator} />
+              )}
+            {analysis.system.transpose !== null &&
+              analysis.system.transpose !== 0 && (
+                <Metric
+                  label="Transpose"
+                  value={`${
+                    analysis.system.transpose > 0 ? "+" : ""
+                  }${analysis.system.transpose} st`}
+                />
+              )}
+            {analysis.system.xg_system_on && (
+              <Metric label="XG On" value="✓" />
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {analysis.pattern_directory.length > 0 && (
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            Pattern Slots
+          </p>
+          <div className="mt-2 grid gap-1 sm:grid-cols-2 lg:grid-cols-4">
+            {analysis.pattern_directory.map((s) => (
+              <div
+                key={s.slot}
+                className="flex items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-muted/40"
+              >
+                <span className="w-8 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
+                  U{s.slot.toString().padStart(2, "0")}
+                </span>
+                <span className="truncate">{s.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {analysis.drum_kits.length > 0 && (
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            XG Drum Kits
+          </p>
+          {analysis.drum_kits.map((kit) => (
+            <div key={kit.kit_index} className="mt-2">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Kit {kit.kit_index + 1} · {kit.notes.length} notes
+              </p>
+              <div className="mt-1 grid gap-x-3 gap-y-0.5 sm:grid-cols-2 lg:grid-cols-3">
+                {kit.notes.map((n) => (
+                  <div
+                    key={n.note}
+                    className="flex items-center justify-between gap-2 rounded-md px-2 py-0.5 text-[11px] hover:bg-muted/40"
+                  >
+                    <span className="truncate">
+                      <span className="font-mono text-[9px] tabular-nums text-muted-foreground/60">
+                        {n.note}
+                      </span>{" "}
+                      {n.note_name}
+                    </span>
+                    <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground/70">
+                      {n.level !== null ? `L${n.level}` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {analysis.stats && (
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
