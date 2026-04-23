@@ -101,6 +101,60 @@ These signatures tell you the voice **class** (drum/bass/chord) but NOT the spec
 
 3. **Merge bulk + XG into one .syx** — `capture_complete.py` does this automatically. The resulting file, when passed to `qymanager info`, shows complete voice info (via `syx_analyzer._parse_xg_multi_part`).
 
+## Cross-dataset byte variance (Session 33a, 9 pattern headers)
+
+Ran `analyze_header_7f.py` over 9 `AL=0x7F` headers from the repo
+(AMB01, SGT backup, STYLE2, DECAY, MR. Vain, Summer, plus duplicates).
+The first 50 offsets exhibit the following diversity pattern:
+
+| Offset | Uniq | Interpretation |
+|:---:|:---:|-----------|
+| 0 | 6 | Tempo — byte 0 of BPM formula (Session 25c) |
+| 1 | 2 | Tempo — byte 1 |
+| 4 | 2 | Unknown — candidate `time_sig` or structural flag |
+| 5 | 4 | Unknown — candidate tempo/groove parameter |
+| 6-13 | 3-6 | Pattern structure meta |
+| 14 | 3 | `00` for most, `04/0a/10/40` for a few — candidate track-class header |
+| 15-42 | 3 | Section filler (empty-marker `bf df ef f7 fb fd fe`). DECAY uses this uniformly since it's blank |
+
+All 9 headers in the dataset are **4/4 time signature**, so the
+time_sig byte **cannot be isolated by diff alone** — a capture in
+3/4 or 6/8 is required before `_extract_time_signature()` can be
+promoted above its current `return (4, 4)` stub.
+
+## Bar count is not linearly encoded in track size
+
+Per-track data sizes across the dataset:
+
+| Pattern | Known bars | Bytes / active track | Density |
+|---------|-----------|---------------------|---------|
+| `known_pattern.syx` | 1 | 128 | sparse |
+| MR. Vain | 4 | 256 | 80.4 % |
+| Summer | 4 | 384 | dense |
+| AMB01 (single-section) | 16 playback | 384 | 80.5 % |
+| STYLE2 INTRO | 20 playback | 1294 | 80.7 % |
+
+Track byte count scales with **event density**, not bar count —
+Summer (4 bars) and AMB01 (16 playback bars) share 384 B/track, while
+MR. Vain (4 bars) sits at 256. The bar count is therefore encoded
+**elsewhere in the header**, not derivable from track data size alone.
+
+## What would unblock the remaining header fields
+
+To finalize `_extract_time_signature()` and add
+`_extract_bar_count()`:
+
+1. **One 3/4 or 6/8 pattern** captured via
+   `midi_tools/capture_complete.py` → diff against any 4/4 pattern
+   in the dataset isolates the time_sig byte in one session.
+2. **One multi-bar pattern of known length** (e.g. 2-bar or 8-bar
+   solo kick) → diff against MR. Vain (4-bar) isolates the bar_count
+   byte in one session.
+
+Without those captures, further guesses would produce
+plausible-looking decoders that are actually random against ground
+truth — the same trap that caught rotation models in Session 19.
+
 ## Related pages
 
 - [bitstream.md](bitstream.md) — per-event R rotation inside track data
