@@ -17,6 +17,7 @@ from qymanager.formats.qy70.sysex_parser import SysExParser, SysExMessage
 from qymanager.model import (
     Device,
     DeviceModel,
+    MultiPart,
     Pattern as UdmPattern,
     PatternTrack,
     Phrase,
@@ -427,6 +428,37 @@ def parse_syx_to_udm(data: bytes) -> Device:
         source_format="syx",
         _raw_passthrough=data,
     )
+
+    # Some QY70 bulk dumps (e.g. SGT_backup) embed XG Multi Part bulk
+    # (AH=0x08) inside themselves — SyxAnalyzer already decodes those
+    # into `xg_voices` with real Bank/LSB/Prog/Vol/Pan/Rev/Cho, but
+    # they used to be thrown away. Fold them into device.multi_part so
+    # the bulk alone gives you the same info a merge-capture would.
+    xg_voices = getattr(analysis, "xg_voices", {}) or {}
+    if xg_voices:
+        max_part = max(xg_voices.keys())
+        while len(device.multi_part) <= max_part:
+            idx = len(device.multi_part)
+            device.multi_part.append(
+                MultiPart(part_index=idx, rx_channel=idx, voice=Voice())
+            )
+        for part_idx, fields in xg_voices.items():
+            part = device.multi_part[part_idx]
+            part.voice = Voice(
+                bank_msb=(fields.get("bank_msb") or 0) & 0x7F,
+                bank_lsb=(fields.get("bank_lsb") or 0) & 0x7F,
+                program=(fields.get("program") or 0) & 0x7F,
+            )
+            if "volume" in fields:
+                part.volume = fields["volume"] & 0x7F
+            if "pan" in fields:
+                part.pan = fields["pan"] & 0x7F
+            if "reverb" in fields:
+                part.reverb_send = fields["reverb"] & 0x7F
+            if "chorus" in fields:
+                part.chorus_send = fields["chorus"] & 0x7F
+            if "dry_level" in fields:
+                part.dry_level = fields["dry_level"] & 0x7F
 
     # Populate phrases_user from the sparse decoder when tracks clear the
     # plausibility guard (≥ 60 %). Dense factory styles collapse below
