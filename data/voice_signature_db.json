@@ -1,163 +1,260 @@
 {
-  "408087f8808e83000000": {
-    "msb": 127,
+  "00000778000f10402000": {
+    "alternates": [
+      {
+        "lsb": 0,
+        "msb": 0,
+        "prog": 9,
+        "source": "STYLE2",
+        "voice_name": "Glockenspiel"
+      }
+    ],
+    "confidence": 0.5,
     "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 2
-  },
-  "4dc40a0363042a280f8d": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "11840a836322ee081487": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "280f8d0350487f98a466": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "9ce447fe18542091a662": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 2
-  },
-  "7488f2b3838aaa340793": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "408087f8808e83414000": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 2
-  },
-  "8b8457fd055950092ffa": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "00040778000712414000": {
     "msb": 0,
-    "lsb": 96,
-    "prog": 38,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "ccc467fd056151472ffa": {
-    "msb": 0,
-    "lsb": 96,
-    "prog": 38,
-    "confidence": 1.0,
-    "sample_count": 1
+    "prog": 89,
+    "sample_count": 2,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Pad 2 (warm)"
   },
   "00000778000f10414000": {
-    "msb": 0,
-    "lsb": 0,
-    "prog": 81,
     "confidence": 0.3333333333333333,
+    "lsb": 0,
+    "msb": 0,
+    "prog": 81,
     "sample_count": 3
-  },
-  "040b1778000f10414000": {
-    "msb": 0,
-    "lsb": 16,
-    "prog": 89,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "808080800000a3008280": {
-    "msb": 0,
-    "lsb": 16,
-    "prog": 89,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "948857bd0561d2124e2a": {
-    "msb": 0,
-    "lsb": 0,
-    "prog": 24,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "408397f8808e83000000": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 0.6666666666666666,
-    "sample_count": 3
-  },
-  "34e682a3fe407894a527": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 25,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "7489d2d3fec2f0958527": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 25,
-    "confidence": 1.0,
-    "sample_count": 1
-  },
-  "0c6ffa0b9b20b25f7496": {
-    "msb": 127,
-    "lsb": 0,
-    "prog": 26,
-    "confidence": 1.0,
-    "sample_count": 1
   },
   "00040778000712000000": {
-    "msb": 0,
-    "lsb": 0,
-    "prog": 34,
     "confidence": 1.0,
-    "sample_count": 1
+    "lsb": 0,
+    "msb": 0,
+    "prog": 34,
+    "sample_count": 2,
+    "sources": [
+      "AMB01"
+    ],
+    "voice_name": "Electric Bass (pick)"
   },
-  "9fe447fd056172081487": {
-    "msb": 0,
-    "lsb": 0,
-    "prog": 34,
+  "00040778000712402000": {
     "confidence": 1.0,
+    "lsb": 66,
+    "msb": 0,
+    "prog": 38,
+    "sample_count": 1,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Synth Bass 1 (var.66)"
+  },
+  "00040778000712414000": {
+    "confidence": 1.0,
+    "lsb": 96,
+    "msb": 0,
+    "prog": 38,
     "sample_count": 1
   },
   "000b1778000f10000000": {
-    "msb": 0,
+    "confidence": 1.0,
     "lsb": 0,
-    "prog": 89,
-    "confidence": 1.0,
-    "sample_count": 2
-  },
-  "0a054778000f10000000": {
     "msb": 0,
-    "lsb": 40,
-    "prog": 44,
-    "confidence": 1.0,
-    "sample_count": 1
+    "prog": 89,
+    "sample_count": 4,
+    "sources": [
+      "AMB01"
+    ],
+    "voice_name": "Pad 2 (warm)"
   },
   "008087f8808f90000000": {
-    "msb": 126,
-    "lsb": 0,
-    "prog": 0,
     "confidence": 1.0,
+    "lsb": 0,
+    "msb": 126,
+    "prog": 0,
+    "sample_count": 2,
+    "sources": [
+      "AMB01"
+    ],
+    "voice_name": "SFX Kit 0"
+  },
+  "040b1778000f10414000": {
+    "confidence": 1.0,
+    "lsb": 16,
+    "msb": 0,
+    "prog": 89,
+    "sample_count": 1
+  },
+  "046a1778000f10402000": {
+    "confidence": 1.0,
+    "lsb": 32,
+    "msb": 0,
+    "prog": 56,
+    "sample_count": 1,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Trumpet (var.32)"
+  },
+  "0a054778000f10000000": {
+    "confidence": 1.0,
+    "lsb": 40,
+    "msb": 0,
+    "prog": 44,
+    "sample_count": 2,
+    "sources": [
+      "AMB01"
+    ],
+    "voice_name": "Tremolo Strings (var.40)"
+  },
+  "0c6ffa0b9b20b25f7496": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "10446778000f10402000": {
+    "confidence": 1.0,
+    "lsb": 66,
+    "msb": 0,
+    "prog": 38,
+    "sample_count": 1,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Synth Bass 1 (var.66)"
+  },
+  "11840a836322ee081487": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "280f8d0350487f98a466": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "34e682a3fe407894a527": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 25,
+    "sample_count": 1
+  },
+  "408087f8808e83000000": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 3,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Drum Kit 26"
+  },
+  "408087f8808e83402000": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 2,
+    "sources": [
+      "STYLE2"
+    ],
+    "voice_name": "Drum Kit 26"
+  },
+  "408087f8808e83414000": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 2
+  },
+  "408397f8808e83000000": {
+    "alternates": [
+      {
+        "lsb": 0,
+        "msb": 127,
+        "prog": 25,
+        "source": "AMB01",
+        "voice_name": "Drum Kit 25"
+      }
+    ],
+    "confidence": 0.3333333333333333,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 6,
+    "sources": [
+      "AMB01"
+    ],
+    "voice_name": "Drum Kit 26"
+  },
+  "4dc40a0363042a280f8d": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "7488f2b3838aaa340793": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "7489d2d3fec2f0958527": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 25,
+    "sample_count": 1
+  },
+  "808080800000a3008280": {
+    "confidence": 1.0,
+    "lsb": 16,
+    "msb": 0,
+    "prog": 89,
+    "sample_count": 1
+  },
+  "8b8457fd055950092ffa": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 1
+  },
+  "948857bd0561d2124e2a": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 0,
+    "prog": 24,
+    "sample_count": 1
+  },
+  "9ce447fe18542091a662": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 127,
+    "prog": 26,
+    "sample_count": 2
+  },
+  "9fe447fd056172081487": {
+    "confidence": 1.0,
+    "lsb": 0,
+    "msb": 0,
+    "prog": 34,
+    "sample_count": 1
+  },
+  "ccc467fd056151472ffa": {
+    "confidence": 1.0,
+    "lsb": 96,
+    "msb": 0,
+    "prog": 38,
     "sample_count": 1
   }
 }

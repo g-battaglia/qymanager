@@ -4,6 +4,7 @@ import { useDevice } from "@/lib/queries"
 import { UDMTree } from "@/components/UDMTree"
 import { ExportDialog } from "@/components/ExportDialog"
 import { DeviceOverview } from "@/components/DeviceOverview"
+import { MergeCaptureButton } from "@/components/MergeCaptureButton"
 import { SelectionPanel } from "@/components/SelectionPanel"
 import { getByPath } from "@/lib/path"
 import { Input } from "@/components/ui/input"
@@ -61,6 +62,7 @@ export default function DeviceView() {
             <MetaPill label="Source" value={String(device.source_format ?? "unknown").toUpperCase()} />
             <MetaPill label="Patterns" value={String(device.patterns.length)} />
             <MetaPill label="Parts" value={String(device.multi_part.length)} />
+            <MergeCaptureButton deviceId={id!} />
             <ExportDialog
               deviceId={id!}
               currentModel={String(device.model).toUpperCase()}

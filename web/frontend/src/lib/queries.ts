@@ -59,3 +59,15 @@ export function usePatchField(id: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.device(id) }),
   })
 }
+
+export function useMergeCapture(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => api.mergeCapture(id, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.device(id) })
+      qc.invalidateQueries({ queryKey: keys.syxAnalysis(id) })
+      qc.invalidateQueries({ queryKey: keys.phrases(id) })
+    },
+  })
+}

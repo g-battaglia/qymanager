@@ -57,6 +57,63 @@ def get_device(did: str) -> DeviceResponse:
     return DeviceResponse(device=udm_to_dict(device))
 
 
+@router.post("/devices/{did}/merge-capture", response_model=DeviceResponse)
+async def merge_capture(did: str, file: UploadFile = File(...)) -> DeviceResponse:
+    """Enrich an uploaded QY70 bulk with an XG capture (.json or .syx).
+
+    The capture carries the real voice assignments that the bulk dump does
+    not — Bank MSB/LSB/Program, Volume, Pan, Reverb/Chorus sends — either as
+    SysEx XG Parameter Change messages or as channel events (`Bn 00 MSB`,
+    `Bn 20 LSB`, `Cn PROG`, …). After merging, the session holds an updated
+    Device with populated `multi_part` voices and the combined raw bytes,
+    so `GET /devices/{did}` and `syx-analysis` see the enriched device.
+    """
+    import json
+
+    from qymanager.formats.xg_bulk import parse_xg_bulk_to_udm
+
+    sess = get_session()
+    device = sess.get(did)
+    if device is None:
+        raise HTTPException(404, "Device not found")
+
+    blob = await file.read()
+    if len(blob) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "Capture too large (max 5 MB)")
+
+    suffix = Path(file.filename or "capture.bin").suffix.lower()
+    if suffix == ".json":
+        try:
+            entries = json.loads(blob)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(400, f"Invalid JSON: {exc}") from exc
+        if not isinstance(entries, list):
+            raise HTTPException(400, "Capture JSON must be a list of {t,data}")
+        raw = bytearray()
+        for entry in entries:
+            hx = entry.get("data", "") if isinstance(entry, dict) else ""
+            if not hx:
+                continue
+            try:
+                raw.extend(bytes.fromhex(hx))
+            except ValueError:
+                continue
+        capture_bytes = bytes(raw)
+    else:
+        capture_bytes = blob
+
+    if not capture_bytes:
+        raise HTTPException(400, "Capture contained no usable bytes")
+
+    try:
+        enriched = parse_xg_bulk_to_udm(capture_bytes, base_device=device)
+    except ValueError as exc:
+        raise HTTPException(400, f"Capture not recognized: {exc}") from exc
+
+    sess.update(did, enriched)
+    return DeviceResponse(device=udm_to_dict(enriched))
+
+
 @router.patch("/devices/{did}/field", response_model=FieldPatchResponse)
 def patch_device_field(did: str, patch: FieldPatch) -> FieldPatchResponse:
     sess = get_session()

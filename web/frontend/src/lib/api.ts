@@ -108,4 +108,15 @@ export const api = {
     handle<SyxAnalysisResponse>(
       await fetch(`${BASE}/devices/${id}/syx-analysis`),
     ),
+
+  mergeCapture: async (id: string, file: File): Promise<DeviceResponse> => {
+    const fd = new FormData()
+    fd.append("file", file)
+    return handle<DeviceResponse>(
+      await fetch(`${BASE}/devices/${id}/merge-capture`, {
+        method: "POST",
+        body: fd,
+      }),
+    )
+  },
 }

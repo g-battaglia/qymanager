@@ -179,6 +179,15 @@ export function DeviceOverview({
 
       {syxAvailable && syx ? (
         <>
+          {device.multi_part.some((p) => {
+            const v = p.voice as Record<string, number> | undefined
+            return v && (v.bank_msb || v.bank_lsb || v.program)
+          }) && (
+            <>
+              <SoundOverview device={device} onSelectNode={onSelectNode} />
+              <Divider />
+            </>
+          )}
           <SyxAnalysisPanel analysis={syx} />
           <Divider />
           <PhraseEvents deviceId={deviceId} />

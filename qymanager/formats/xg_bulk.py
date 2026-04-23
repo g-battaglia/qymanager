@@ -71,6 +71,85 @@ def _split_sysex(blob: bytes) -> list[bytes]:
     return msgs
 
 
+@dataclass
+class ChannelEvent:
+    """Running-status-aware channel event (CC / Program Change / Note etc.)."""
+
+    channel: int  # 0..15
+    status: int  # high nibble (0x80..0xE0)
+    data1: int
+    data2: int  # 0 when the status takes a single data byte
+
+
+def _scan_channel_events(blob: bytes) -> list[ChannelEvent]:
+    """Walk `blob` and yield channel events, skipping SysEx and realtime bytes.
+
+    The QY70 XG PARM OUT stream (and capture JSONs that record it) transmit
+    voice setup as plain channel events (`Bn 00 MSB`, `Bn 20 LSB`, `Cn PROG`,
+    plus volume / pan / sends). These never become XG Parameter Change
+    messages, so `_split_sysex` alone is not enough — we need to consume the
+    interleaved channel bytes that live between SysEx frames.
+    """
+    events: list[ChannelEvent] = []
+    i = 0
+    n = len(blob)
+    running_status: int = 0
+    while i < n:
+        byte = blob[i]
+        if byte == 0xF0:
+            while i < n and blob[i] != 0xF7:
+                i += 1
+            if i < n:
+                i += 1  # consume F7
+            running_status = 0
+            continue
+        if 0xF8 <= byte <= 0xFF:
+            # Realtime / system common single-byte message — harmless.
+            i += 1
+            continue
+        if 0xF1 <= byte <= 0xF7:
+            # System Common (song pos/song sel/tune/F7 stray): consume the
+            # payload conservatively. Accurate decoding is unnecessary here
+            # because they carry no voice info.
+            running_status = 0
+            i += 1
+            if byte == 0xF2:
+                i += 2
+            elif byte in (0xF1, 0xF3):
+                i += 1
+            continue
+
+        if byte >= 0x80:
+            status = byte
+            i += 1
+        elif running_status:
+            status = running_status
+        else:
+            # Stray data byte without running status: skip.
+            i += 1
+            continue
+
+        high = status & 0xF0
+        ch = status & 0x0F
+        if high in (0x80, 0x90, 0xA0, 0xB0, 0xE0):
+            if i + 1 >= n:
+                break
+            d1, d2 = blob[i], blob[i + 1]
+            events.append(ChannelEvent(channel=ch, status=high, data1=d1, data2=d2))
+            i += 2
+            running_status = status
+        elif high in (0xC0, 0xD0):
+            if i >= n:
+                break
+            d1 = blob[i]
+            events.append(ChannelEvent(channel=ch, status=high, data1=d1, data2=0))
+            i += 1
+            running_status = status
+        else:
+            i += 1
+    return events
+
+
 def _parse_xg_message(msg: bytes) -> Optional[XGRawMessage]:
     if len(msg) < 8:
         return None
@@ -116,9 +195,10 @@ def parse_xg_bulk_to_udm(
 
     messages = _split_sysex(blob)
     xg_msgs = [x for x in (_parse_xg_message(m) for m in messages) if x is not None]
+    channel_events = _scan_channel_events(blob)
 
-    if not xg_msgs:
-        raise ValueError("No XG Parameter Change messages found in stream")
+    if not xg_msgs and not channel_events:
+        raise ValueError("No XG Parameter Change or channel events found in stream")
 
     device = base_device if base_device is not None else Device(
         model=device_model,
@@ -132,7 +212,56 @@ def parse_xg_bulk_to_udm(
     for msg in xg_msgs:
         _apply_xg_message(device, msg)
 
+    if channel_events:
+        _apply_channel_events(device, channel_events)
+
     return device
+
+
+def _find_part_for_channel(device: Device, channel_0based: int) -> MultiPart:
+    """Return the MultiPart assigned to `channel_0based` (rx_channel match).
+
+    If no part maps to that channel yet, grow `multi_part` until the slot
+    exists with `rx_channel = channel_0based` as the default.
+    """
+    for part in device.multi_part:
+        if part.rx_channel == channel_0based:
+            return part
+    while len(device.multi_part) <= channel_0based:
+        idx = len(device.multi_part)
+        device.multi_part.append(
+            MultiPart(part_index=idx, rx_channel=idx, voice=Voice())
+        )
+    return device.multi_part[channel_0based]
+
+
+def _apply_channel_events(device: Device, events: list["ChannelEvent"]) -> None:
+    """Fold CC Bank Select / Program Change / Volume / Pan / Sends into parts.
+
+    QY70 XG PARM OUT emits voice assignments as channel events
+    (`Bn 00 MSB`, `Bn 20 LSB`, `Cn PROG`, and CC 7/10/91/93 for mixer).
+    Replay them in order so later values win.
+    """
+    for ev in events:
+        part = _find_part_for_channel(device, ev.channel)
+        if ev.status == 0xB0:
+            cc, val = ev.data1 & 0x7F, ev.data2 & 0x7F
+            if cc == 0:
+                part.voice = replace(part.voice, bank_msb=val)
+            elif cc == 32:
+                part.voice = replace(part.voice, bank_lsb=val)
+            elif cc == 7:
+                part.volume = val
+            elif cc == 10:
+                part.pan = val
+            elif cc == 91:
+                part.reverb_send = val
+            elif cc == 93:
+                part.chorus_send = val
+            elif cc == 94:
+                part.variation_send = val
+        elif ev.status == 0xC0:
+            part.voice = replace(part.voice, program=ev.data1 & 0x7F)
 
 
 def _apply_xg_message(device: Device, msg: XGRawMessage) -> None:
