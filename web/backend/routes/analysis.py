@@ -155,7 +155,8 @@ def _split_voice_tag(voice_name: str) -> tuple[str, str]:
     """Split `"Dance Kit (DB)"` → (`"Dance Kit"`, `"db"`).
 
     SyxAnalyzer suffixes voice names with confidence tags:
-      - "(DB)"                       → signature-DB match (tier 1)
+      - "(DB)"                       → signature-DB exact match (tier 1)
+      - "(NN d=N)"                   → nearest-neighbour match (tier 1.5)
       - "(class)"                    → short drum class match
       - "(class — exact via XG query)"  → chord/bass/sfx class match
     Names without a tag are treated as resolved from real XG state.
@@ -165,6 +166,9 @@ def _split_voice_tag(voice_name: str) -> tuple[str, str]:
     stripped = voice_name.strip()
     if stripped.endswith("(DB)"):
         return (stripped[: -len("(DB)")].strip(), "db")
+    idx_nn = stripped.rfind("(NN")
+    if idx_nn != -1 and stripped.endswith(")"):
+        return (stripped[:idx_nn].strip(), "nn")
     idx = stripped.rfind("(class")
     if idx != -1 and stripped.endswith(")"):
         return (stripped[:idx].strip(), "class")

@@ -32,6 +32,48 @@ from qymanager.utils.xg_effects import (
 _SIGNATURE_DB: Optional[Dict[str, Dict[str, int]]] = None
 
 
+def _nearest_neighbor_voice(
+    sig_hex: str,
+    db: Dict[str, Dict[str, int]],
+    *,
+    max_bit_dist: int = 3,
+) -> Optional[Tuple[Dict[str, int], int]]:
+    """Find the DB entry with the smallest bit-level Hamming distance
+    from `sig_hex`, as long as that distance is ≤ `max_bit_dist`.
+
+    Returns `(entry, bit_distance)` or `None`. Empirically on the
+    2026-04-23 dataset, melodic signatures converge on the correct
+    voice at bit_dist ≤ 3 (MR. Vain C1/C2/C3 ↔ Pad 2 warm at
+    bit_dist 1-2). Drum signatures do NOT (same Drum Kit 26 has
+    11 samples with zero stable bytes), so callers should filter
+    drum hits back out to the class fallback.
+    """
+    if not sig_hex:
+        return None
+    try:
+        target = bytes.fromhex(sig_hex)
+    except ValueError:
+        return None
+    best_entry: Optional[Dict[str, int]] = None
+    best_dist = max_bit_dist + 1
+    for k, v in db.items():
+        try:
+            other = bytes.fromhex(k)
+        except ValueError:
+            continue
+        if len(other) != len(target):
+            continue
+        d = sum(bin(x ^ y).count("1") for x, y in zip(target, other))
+        if d < best_dist:
+            best_dist = d
+            best_entry = v
+            if d == 0:
+                break
+    if best_entry is None or best_dist > max_bit_dist:
+        return None
+    return best_entry, best_dist
+
+
 def _load_signature_db() -> Dict[str, Dict[str, int]]:
     """Load the 10-byte voice signature → (msb, lsb, prog) lookup database.
 
@@ -924,26 +966,59 @@ class SyxAnalyzer:
                     else:
                         resolved = get_voice_name(program, bank_msb, bank_lsb)
                         voice_name = f"{resolved} (DB)" if resolved else f"Voice {program}/{bank_msb}/{bank_lsb} (DB)"
-                elif voice_class in VOICE_CLASS_SIGNATURES:
-                    # Tier 2: fallback to 4-byte class signature
-                    cls, dflt_msb, dflt_prog = VOICE_CLASS_SIGNATURES[voice_class]
-                    bank_msb = dflt_msb
-                    program = dflt_prog
-                    if cls == "drum":
-                        voice_name = get_drum_kit_name(program) + " (class)"
-                    elif cls == "drum-sfx":
-                        voice_name = "Drum SFX Kit (class — exact via XG query)"
-                    elif cls == "bass":
-                        voice_name = "Bass voice (class — exact via XG query)"
-                    elif cls in ("chord", "chord-short"):
-                        voice_name = "Chord/Melodic (class — exact via XG query)"
-                    elif cls == "chord-variant":
-                        voice_name = "Chord variant (class — exact via XG query)"
+                elif voice_sig10 and (
+                    nn := _nearest_neighbor_voice(voice_sig10, sig_db, max_bit_dist=3)
+                ):
+                    # Tier 1.5: nearest-neighbour match. Empirically on the
+                    # 2026-04-23 dataset, melodic signatures converge to the
+                    # right voice at bit_dist ≤ 3 (MR. Vain ch14 bit_dist=1
+                    # → Pad 2 warm). Drum signatures often disagree across
+                    # samples so NN stays unreliable for them — we therefore
+                    # keep the threshold tight and hand drum-class tracks to
+                    # the class fallback below.
+                    nn_hit, nn_bit_dist = nn
+                    bank_msb = nn_hit.get("msb", 0)
+                    bank_lsb = nn_hit.get("lsb", 0)
+                    program = nn_hit.get("prog", 0)
+                    if bank_msb == 127:
+                        # Drum NN is noisy — punt to class fallback.
+                        voice_name = ""  # force tier-2 flow below
+                        bank_msb = 0
+                        program = 0
+                    elif bank_msb == 126:
+                        voice_name = f"SFX Kit {program} (NN d={nn_bit_dist})"
                     else:
-                        voice_name = f"Class {voice_class.hex()}"
-                else:
-                    # Tier 3: unknown class — might be XG extended or unrecognized
-                    voice_name = f"Unknown (B17-B20={voice_class.hex()})" if voice_class else "Unknown"
+                        resolved = get_voice_name(program, bank_msb, bank_lsb)
+                        voice_name = (
+                            f"{resolved} (NN d={nn_bit_dist})"
+                            if resolved
+                            else f"Voice {program}/{bank_msb}/{bank_lsb} (NN d={nn_bit_dist})"
+                        )
+                if not voice_name:
+                    # Tier 2: fallback to 4-byte class signature
+                    if voice_class in VOICE_CLASS_SIGNATURES:
+                        cls, dflt_msb, dflt_prog = VOICE_CLASS_SIGNATURES[voice_class]
+                        bank_msb = dflt_msb
+                        program = dflt_prog
+                        if cls == "drum":
+                            voice_name = get_drum_kit_name(program) + " (class)"
+                        elif cls == "drum-sfx":
+                            voice_name = "Drum SFX Kit (class — exact via XG query)"
+                        elif cls == "bass":
+                            voice_name = "Bass voice (class — exact via XG query)"
+                        elif cls in ("chord", "chord-short"):
+                            voice_name = "Chord/Melodic (class — exact via XG query)"
+                        elif cls == "chord-variant":
+                            voice_name = "Chord variant (class — exact via XG query)"
+                        else:
+                            voice_name = f"Class {voice_class.hex()}"
+                    else:
+                        # Tier 3: unknown class — XG extended / unrecognized
+                        voice_name = (
+                            f"Unknown (B17-B20={voice_class.hex()})"
+                            if voice_class
+                            else "Unknown"
+                        )
 
                 # Try to extract pan from offset 22 (based on analysis showing 0x40=64=center)
                 # But for RHY1, offset 21-22 are 0x00 0x00, which means use default

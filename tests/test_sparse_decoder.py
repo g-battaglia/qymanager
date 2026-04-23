@@ -135,6 +135,32 @@ def test_sparse_decoded_phrases_emit_smf():
     assert total_notes >= 80, f"expected ≥80 note_on events in SMF, got {total_notes}"
 
 
+@pytest.mark.skipif(not MR_VAIN.exists(), reason="MR Vain fixture missing")
+def test_nearest_neighbour_resolves_chord_voices():
+    """Tier 1.5 NN matcher: MR. Vain C1/C2/C3 signatures have no exact
+    DB entry but sit within 3 bits of Pad 2 (warm) in the DB. Before
+    this tier they resolved to 'Chord/Melodic (class — exact via XG
+    query)'; now they must come back tagged `(NN d=...)` with the
+    real voice name."""
+    from qymanager.analysis.syx_analyzer import SyxAnalyzer
+    import qymanager.analysis.syx_analyzer as mod
+
+    mod._SIGNATURE_DB = None  # force reload to pick up DB updates
+    a = SyxAnalyzer().analyze_file(str(MR_VAIN))
+    nn_tracks = [
+        t for t in a.qy70_tracks if t.has_data and "(NN" in (t.voice_name or "")
+    ]
+    assert len(nn_tracks) >= 2, (
+        f"expected ≥2 NN-resolved tracks in MR. Vain, got "
+        f"{len(nn_tracks)}: {[(t.name, t.voice_name) for t in nn_tracks]}"
+    )
+    # The chord tracks converge on Pad 2 (warm) at bit distance ≤ 3.
+    for t in nn_tracks:
+        assert "Pad" in t.voice_name or "pad" in t.voice_name.lower(), (
+            f"{t.name} unexpected NN voice: {t.voice_name}"
+        )
+
+
 @pytest.mark.skipif(not SGT.exists(), reason="SGT fixture missing")
 def test_sgt_dense_style_does_not_flood():
     """Factory dense style — Session 19/20 proved the decoder fails.

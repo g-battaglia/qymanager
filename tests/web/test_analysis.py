@@ -107,9 +107,10 @@ def test_syx_analysis_voice_source_tag():
     active = [t for t in data["tracks"] if t["has_data"]]
     assert active, "fixture should expose at least one active track"
     for t in active:
-        assert t["voice_source"] in {"db", "class", "xg"}
+        assert t["voice_source"] in {"db", "nn", "class", "xg"}
         assert t["voice_name"] != ""
         assert "(DB)" not in t["voice_name"]
+        assert "(NN" not in t["voice_name"]
         assert "(class)" not in t["voice_name"]
 
 

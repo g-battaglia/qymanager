@@ -98,7 +98,7 @@ export type SyxAnalysisTrack = {
   bank_lsb: number
   program: number
   voice_name: string
-  voice_source: "db" | "class" | "xg" | "none"
+  voice_source: "db" | "nn" | "class" | "xg" | "none"
   volume: number
   pan: number
   reverb_send: number

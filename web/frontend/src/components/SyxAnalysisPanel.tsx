@@ -77,7 +77,14 @@ function VoiceSourceBadge({ source }: { source: SyxAnalysisTrack["voice_source"]
     db: {
       label: "DB",
       className: "bg-emerald-100 text-emerald-800",
-      title: "Matched against the 29-signature pre-trained database",
+      title: "Exact 10-byte signature match in the pre-trained database",
+    },
+    nn: {
+      label: "NN",
+      className: "bg-lime-100 text-lime-800",
+      title:
+        "Nearest-neighbour signature match — within 3 bits of a DB entry. " +
+        "Very reliable for melodic voices, suppressed for drums (noisy).",
     },
     class: {
       label: "class",
