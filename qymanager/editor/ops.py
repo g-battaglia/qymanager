@@ -200,4 +200,9 @@ def make_xg_messages(
         byte_val = encode_xg(path, raw_value)
         msg = build_xg_parameter_change(ah, am, al, byte_val, device=device_number)
         out.append((path, msg))
+        # Detune is a 2-byte parameter: AL=0x09 (MSB) + AL=0x0A (LSB).
+        # Emit a second message for the LSB byte (always 0 for single-byte edits).
+        if ah == 0x08 and al == 0x09:
+            msg2 = build_xg_parameter_change(ah, am, 0x0A, 0, device=device_number)
+            out.append((path + ".__lsb", msg2))
     return out

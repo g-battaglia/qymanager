@@ -171,6 +171,30 @@ Per la parte Drum (Part 10 di default, o qualsiasi parte con Part Mode ≠ 0), q
 - Scale Tuning
 - Pitch EG
 
+## Implementation Status (Session 34, 2026-04-27)
+
+**100% coverage** — all ~70 parameters AL 0x00-0x6E implemented in:
+- `address_map.py _MULTI_PART_AL` — UDM path → (AH, AM, AL)
+- `schema.py _MULTI_PART_SPECS` — validation + XG encoding
+- `xg_bulk.py _apply_multi_part()` — XG parse → UDM
+- `syx_analyzer.py _parse_xg_multi_part()` — analysis display
+- `multi_part.py MultiPart` — dataclass with ~70 fields
+- `xg_multi_part.py MultiPartInfo` — 41-byte bulk dump decode
+- `ops.py make_xg_messages()` — UDM → XG emit (incl. detune 2-byte)
+
+| Block | AL Range | Fields | Status |
+|-------|----------|--------|--------|
+| Voice/Mode/Mixer | 0x00-0x14 | 21 | DONE |
+| Vibrato + Filter/EG | 0x15-0x1C | 8 | DONE |
+| MW Control | 0x1D-0x22 | 6 | DONE |
+| Bend Control | 0x23-0x28 | 6 | DONE |
+| Rx Switches | 0x30-0x40 | 17 | DONE |
+| Scale Tuning | 0x41-0x4C | 12 | DONE |
+| CAT Control | 0x4D-0x52 | 6 | DONE |
+| PAT Control | 0x53-0x58 | 6 | DONE |
+| AC1/AC2 | 0x59-0x66 | 14 | DONE |
+| Portamento/Pitch EG | 0x67-0x6E | 8 | DONE |
+
 ## Source
 
 - [studio4all.de main92.html](http://www.studio4all.de/htmle/main92.html)

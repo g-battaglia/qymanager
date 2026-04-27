@@ -425,30 +425,187 @@ def _apply_multi_part(device: Device, msg: XGRawMessage) -> None:
     part = _ensure_part(device, msg.am)
     if not msg.data:
         return
-    value = msg.data[0]
+    val = msg.data[0] & 0x7F
+    signed = val - 0x40
+    transpose = max(-24, min(24, signed))
 
-    if msg.al == 0x01:  # Bank MSB
-        part.voice = replace(part.voice, bank_msb=value & 0x7F)
-    elif msg.al == 0x02:  # Bank LSB
-        part.voice = replace(part.voice, bank_lsb=value & 0x7F)
-    elif msg.al == 0x03:  # Program
-        part.voice = replace(part.voice, program=value & 0x7F)
-    elif msg.al == 0x04:  # Rx Channel (0..15 = ch 1..16, 16 = OFF)
-        part.rx_channel = value & 0x1F
-    elif msg.al == 0x0B:  # Volume
-        part.volume = value & 0x7F
-    elif msg.al == 0x0E:  # Pan
-        part.pan = value & 0x7F
-    elif msg.al == 0x11:  # Dry Level (observed in XG PARM OUT)
-        part.dry_level = value & 0x7F
-    elif msg.al == 0x13:  # Reverb Send
-        part.reverb_send = value & 0x7F
-    elif msg.al == 0x12:  # Chorus Send
-        part.chorus_send = value & 0x7F
-    elif msg.al == 0x14:  # Variation Send
-        part.variation_send = value & 0x7F
-    elif msg.al == 0x23:  # Bend Pitch Control
-        part.bend_pitch = min(24, max(0, value - 0x40 + 2))
+    if msg.al == 0x00:
+        part.element_reserve = min(32, val)
+    elif msg.al == 0x01:
+        part.voice = replace(part.voice, bank_msb=val)
+    elif msg.al == 0x02:
+        part.voice = replace(part.voice, bank_lsb=val)
+    elif msg.al == 0x03:
+        part.voice = replace(part.voice, program=val)
+    elif msg.al == 0x04:
+        part.rx_channel = val & 0x1F
+    elif msg.al == 0x05:
+        part.mono_poly = val
+    elif msg.al == 0x06:
+        part.key_on_assign = val
+    elif msg.al == 0x07:
+        part.part_mode = min(3, val)
+    elif msg.al == 0x08:
+        part.note_shift = transpose
+    elif msg.al == 0x09:
+        part.detune = max(-64, min(63, signed))
+    elif msg.al == 0x0B:
+        part.volume = val
+    elif msg.al == 0x0C:
+        part.velocity_sense_depth = val
+    elif msg.al == 0x0D:
+        part.velocity_sense_offset = val
+    elif msg.al == 0x0E:
+        part.pan = val
+    elif msg.al == 0x0F:
+        part.note_limit_low = val
+    elif msg.al == 0x10:
+        part.note_limit_high = val
+    elif msg.al == 0x11:
+        part.dry_level = val
+    elif msg.al == 0x12:
+        part.chorus_send = val
+    elif msg.al == 0x13:
+        part.reverb_send = val
+    elif msg.al == 0x14:
+        part.variation_send = val
+    elif msg.al == 0x15:
+        part.vibrato_rate = max(-64, min(63, signed))
+    elif msg.al == 0x16:
+        part.vibrato_depth = max(-64, min(63, signed))
+    elif msg.al == 0x17:
+        part.vibrato_delay = max(-64, min(63, signed))
+    elif msg.al == 0x18:
+        part.cutoff = max(-64, min(63, signed))
+    elif msg.al == 0x19:
+        part.resonance = max(-64, min(63, signed))
+    elif msg.al == 0x1A:
+        part.eg_attack = max(-64, min(63, signed))
+    elif msg.al == 0x1B:
+        part.eg_decay = max(-64, min(63, signed))
+    elif msg.al == 0x1C:
+        part.eg_release = max(-64, min(63, signed))
+    elif msg.al == 0x1D:
+        part.mw_pitch_control = transpose
+    elif msg.al == 0x1E:
+        part.mw_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x1F:
+        part.mw_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x20:
+        part.mw_lfo_pitch_depth = val
+    elif msg.al == 0x21:
+        part.mw_lfo_filter_depth = val
+    elif msg.al == 0x22:
+        part.mw_lfo_amplitude_depth = val
+    elif msg.al == 0x23:
+        part.bend_pitch = min(24, max(0, val - 0x40 + 2))
+    elif msg.al == 0x24:
+        part.bend_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x25:
+        part.bend_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x26:
+        part.bend_lfo_pitch_depth = max(-64, min(63, signed))
+    elif msg.al == 0x27:
+        part.bend_lfo_filter_depth = max(-64, min(63, signed))
+    elif msg.al == 0x28:
+        part.bend_lfo_amplitude_depth = max(-64, min(63, signed))
+    # Block 2: Receive Switches (AL 0x30-0x40)
+    elif 0x30 <= msg.al <= 0x40:
+        _RX_FIELDS = {
+            0x30: "rx_pitch_bend", 0x31: "rx_channel_aftertouch",
+            0x32: "rx_program_change", 0x33: "rx_control_change",
+            0x34: "rx_poly_aftertouch", 0x35: "rx_note_messages",
+            0x36: "rx_rpn", 0x37: "rx_nrpn",
+            0x38: "rx_modulation", 0x39: "rx_volume",
+            0x3A: "rx_pan", 0x3B: "rx_expression",
+            0x3C: "rx_hold_pedal", 0x3D: "rx_portamento",
+            0x3E: "rx_sostenuto", 0x3F: "rx_soft_pedal",
+            0x40: "rx_bank_select",
+        }
+        field = _RX_FIELDS.get(msg.al)
+        if field:
+            setattr(part, field, bool(val))
+    # Block 3: Scale Tuning (AL 0x41-0x4C)
+    elif 0x41 <= msg.al <= 0x4C:
+        _SCALE = [
+            "scale_tuning_c", "scale_tuning_cs", "scale_tuning_d",
+            "scale_tuning_ds", "scale_tuning_e", "scale_tuning_f",
+            "scale_tuning_fs", "scale_tuning_g", "scale_tuning_gs",
+            "scale_tuning_a", "scale_tuning_as", "scale_tuning_b",
+        ]
+        setattr(part, _SCALE[msg.al - 0x41], max(-64, min(63, signed)))
+    # Block 4: CAT Control (AL 0x4D-0x52)
+    elif msg.al == 0x4D:
+        part.cat_pitch_control = transpose
+    elif msg.al == 0x4E:
+        part.cat_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x4F:
+        part.cat_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x50:
+        part.cat_lfo_pitch_depth = val
+    elif msg.al == 0x51:
+        part.cat_lfo_filter_depth = val
+    elif msg.al == 0x52:
+        part.cat_lfo_amplitude_depth = val
+    # Block 5: PAT Control (AL 0x53-0x58)
+    elif msg.al == 0x53:
+        part.pat_pitch_control = transpose
+    elif msg.al == 0x54:
+        part.pat_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x55:
+        part.pat_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x56:
+        part.pat_lfo_pitch_depth = val
+    elif msg.al == 0x57:
+        part.pat_lfo_filter_depth = val
+    elif msg.al == 0x58:
+        part.pat_lfo_amplitude_depth = val
+    # Block 6: AC1 (AL 0x59-0x5F) / AC2 (AL 0x60-0x66)
+    elif msg.al == 0x59:
+        part.ac1_cc_number = min(95, val)
+    elif msg.al == 0x5A:
+        part.ac1_pitch_control = transpose
+    elif msg.al == 0x5B:
+        part.ac1_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x5C:
+        part.ac1_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x5D:
+        part.ac1_lfo_pitch_depth = val
+    elif msg.al == 0x5E:
+        part.ac1_lfo_filter_depth = val
+    elif msg.al == 0x5F:
+        part.ac1_lfo_amplitude_depth = val
+    elif msg.al == 0x60:
+        part.ac2_cc_number = min(95, val)
+    elif msg.al == 0x61:
+        part.ac2_pitch_control = transpose
+    elif msg.al == 0x62:
+        part.ac2_filter_control = max(-64, min(63, signed))
+    elif msg.al == 0x63:
+        part.ac2_amplitude_control = max(-64, min(63, signed))
+    elif msg.al == 0x64:
+        part.ac2_lfo_pitch_depth = val
+    elif msg.al == 0x65:
+        part.ac2_lfo_filter_depth = val
+    elif msg.al == 0x66:
+        part.ac2_lfo_amplitude_depth = val
+    # Block 7: Portamento & Pitch EG (AL 0x67-0x6E)
+    elif msg.al == 0x67:
+        part.portamento_switch = bool(val)
+    elif msg.al == 0x68:
+        part.portamento_time = val
+    elif msg.al == 0x69:
+        part.pitch_eg_initial_level = max(-64, min(63, signed))
+    elif msg.al == 0x6A:
+        part.pitch_eg_attack_time = max(-64, min(63, signed))
+    elif msg.al == 0x6B:
+        part.pitch_eg_release_level = max(-64, min(63, signed))
+    elif msg.al == 0x6C:
+        part.pitch_eg_release_time = max(-64, min(63, signed))
+    elif msg.al == 0x6D:
+        part.velocity_limit_low = max(1, min(127, val))
+    elif msg.al == 0x6E:
+        part.velocity_limit_high = max(1, min(127, val))
 
 
 def emit_udm_to_xg_bulk(device: Device) -> bytes:

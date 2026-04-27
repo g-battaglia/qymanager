@@ -533,7 +533,7 @@ def test_xg_drum_setup_extraction():
 
 
 def test_xg_multi_part_extended_params():
-    """Verify extended XG Multi Part params (dry_level, filter_cutoff, etc.)."""
+    """Verify extended XG Multi Part params (dry_level, bend_pitch, etc.)."""
     p = CAPTURES / "SGT_backup_20260423_112505.syx"
     _needs(p)
 
@@ -543,7 +543,7 @@ def test_xg_multi_part_extended_params():
     # Part 8 (ch9) should have extended params beyond core voice selection
     part8 = a.xg_voices.get(8, {})
     assert part8.get("dry_level") == 127
-    assert part8.get("filter_cutoff") == 66
+    assert part8.get("bend_pitch") == 66  # AL=0x23 = Bend Pitch Control (0x42 = +2 semi)
     assert part8.get("part_mode") == 1  # drum mode
 
 

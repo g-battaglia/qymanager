@@ -23,6 +23,7 @@ class MonoPoly(str, Enum):
 class KeyOnAssign(str, Enum):
     SINGLE = "single"
     MULTI = "multi"
+    INST = "inst"
 
 
 class NoteOffMode(str, Enum):

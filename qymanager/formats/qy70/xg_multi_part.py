@@ -13,24 +13,62 @@ Use via:
         print(f"Part {part_num}: Bank {part_info['bank_msb']}/{part_info['bank_lsb']} Prog {part_info['program']}")
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
 @dataclass
 class MultiPartInfo:
-    """Decoded XG Multi Part data for one part."""
+    """Decoded XG Multi Part data for one part (41-byte bulk dump payload)."""
     part_num: int
+    # AL 0x00-0x08
     element_reserve: int = 0x02
     bank_msb: int = 0
     bank_lsb: int = 0
     program: int = 0
     rcv_channel: int = 0
-    mono_poly: int = 1      # 0=mono, 1=poly
-    key_on_assign: int = 1  # 0=single, 1=multi
-    part_mode: int = 0      # 0=normal, 1=drum, 2=drum1, 3=drum2
-    note_shift: int = 0x40  # 0x40=center (no shift)
-    additional: bytes = field(default_factory=bytes)
+    mono_poly: int = 1
+    key_on_assign: int = 1
+    part_mode: int = 0
+    note_shift: int = 0x40
+    # AL 0x09-0x0A (Detune 2-byte)
+    detune_msb: int = 0x08
+    detune_lsb: int = 0x00
+    # AL 0x0B-0x14 (Volume, Velocity, Pan, Limits, Dry, Sends)
+    volume: int = 0x64
+    velocity_sense_depth: int = 0x40
+    velocity_sense_offset: int = 0x40
+    pan: int = 0x40
+    note_limit_low: int = 0x00
+    note_limit_high: int = 0x7F
+    dry_level: int = 0x7F
+    chorus_send: int = 0x00
+    reverb_send: int = 0x28
+    variation_send: int = 0x00
+    # AL 0x15-0x17 (Vibrato)
+    vibrato_rate: int = 0x40
+    vibrato_depth: int = 0x40
+    vibrato_delay: int = 0x40
+    # AL 0x18-0x1C (Filter & EG)
+    cutoff: int = 0x40
+    resonance: int = 0x40
+    eg_attack: int = 0x40
+    eg_decay: int = 0x40
+    eg_release: int = 0x40
+    # AL 0x1D-0x22 (MW Control)
+    mw_pitch_control: int = 0x40
+    mw_filter_control: int = 0x40
+    mw_amplitude_control: int = 0x40
+    mw_lfo_pitch_depth: int = 0x0A
+    mw_lfo_filter_depth: int = 0x00
+    mw_lfo_amplitude_depth: int = 0x00
+    # AL 0x23-0x28 (Bend Control)
+    bend_pitch: int = 0x42
+    bend_filter_control: int = 0x40
+    bend_amplitude_control: int = 0x40
+    bend_lfo_pitch_depth: int = 0x40
+    bend_lfo_filter_depth: int = 0x40
+    bend_lfo_amplitude_depth: int = 0x40
 
     @property
     def is_drum(self) -> bool:
@@ -73,18 +111,52 @@ def parse_multi_part_response(data: bytes) -> Optional[MultiPartInfo]:
     if len(payload) < 10:
         return None
 
+    def _b(i: int) -> int:
+        return payload[i] if i < len(payload) else 0
+
     return MultiPartInfo(
         part_num=part_num,
-        element_reserve=payload[0],
-        bank_msb=payload[1],
-        bank_lsb=payload[2],
-        program=payload[3],
-        rcv_channel=payload[4],
-        mono_poly=payload[5],
-        key_on_assign=payload[6],
-        part_mode=payload[7],
-        note_shift=payload[8],
-        additional=bytes(payload[9:]),
+        element_reserve=_b(0),
+        bank_msb=_b(1),
+        bank_lsb=_b(2),
+        program=_b(3),
+        rcv_channel=_b(4),
+        mono_poly=_b(5),
+        key_on_assign=_b(6),
+        part_mode=_b(7),
+        note_shift=_b(8),
+        detune_msb=_b(9),
+        detune_lsb=_b(10),
+        volume=_b(11),
+        velocity_sense_depth=_b(12),
+        velocity_sense_offset=_b(13),
+        pan=_b(14),
+        note_limit_low=_b(15),
+        note_limit_high=_b(16),
+        dry_level=_b(17),
+        chorus_send=_b(18),
+        reverb_send=_b(19),
+        variation_send=_b(20),
+        vibrato_rate=_b(21),
+        vibrato_depth=_b(22),
+        vibrato_delay=_b(23),
+        cutoff=_b(24),
+        resonance=_b(25),
+        eg_attack=_b(26),
+        eg_decay=_b(27),
+        eg_release=_b(28),
+        mw_pitch_control=_b(29),
+        mw_filter_control=_b(30),
+        mw_amplitude_control=_b(31),
+        mw_lfo_pitch_depth=_b(32),
+        mw_lfo_filter_depth=_b(33),
+        mw_lfo_amplitude_depth=_b(34),
+        bend_pitch=_b(35),
+        bend_filter_control=_b(36),
+        bend_amplitude_control=_b(37),
+        bend_lfo_pitch_depth=_b(38),
+        bend_lfo_filter_depth=_b(39),
+        bend_lfo_amplitude_depth=_b(40),
     )
 
 

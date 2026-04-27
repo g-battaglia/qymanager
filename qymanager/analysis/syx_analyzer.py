@@ -455,11 +455,29 @@ class SyxAnalyzer:
                             voices[part]["reverb"] = data_val
                         elif al == 0x14:
                             voices[part]["variation"] = data_val
-                        # Filter
-                        elif al == 0x23:
+                        # Vibrato
+                        elif al == 0x15:
+                            voices[part]["vibrato_rate"] = data_val
+                        elif al == 0x16:
+                            voices[part]["vibrato_depth"] = data_val
+                        elif al == 0x17:
+                            voices[part]["vibrato_delay"] = data_val
+                        # Filter & EG
+                        elif al == 0x18:
                             voices[part]["filter_cutoff"] = data_val
-                        elif al == 0x24:
+                        elif al == 0x19:
                             voices[part]["filter_resonance"] = data_val
+                        elif al == 0x1A:
+                            voices[part]["eg_attack"] = data_val
+                        elif al == 0x1B:
+                            voices[part]["eg_decay"] = data_val
+                        elif al == 0x1C:
+                            voices[part]["eg_release"] = data_val
+                        # Bend Control
+                        elif al == 0x23:
+                            voices[part]["bend_pitch"] = data_val
+                        elif al == 0x24:
+                            voices[part]["bend_filter"] = data_val
                     elif ah == 0x02 and am == 0x01:  # Effect block
                         # AL 0x00-0x01 = Reverb type MSB/LSB
                         # AL 0x20-0x21 = Chorus type MSB/LSB

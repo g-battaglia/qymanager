@@ -2,6 +2,47 @@
 
 Chronological record of sessions, discoveries, and wiki changes.
 
+## [2026-04-27] session-34 XG Multi Part 100% coverage + 5 critical bug fixes
+
+Completamento editor XG Multi Part: tutti i ~70 parametri AL 0x00-0x6E
+ora mappati end-to-end (address_map → schema → xg_bulk parser → syx_analyzer).
+
+### Bug fixes (Fase 0)
+1. `address_map _MULTI_PART_AL`: filter/EG AL off-by-3 (vibrato 0x15-0x17 era saltato)
+2. `address_map`: entry duplicata `same_note_number_key` rimossa; part_mode→0x07, note_shift��0x08, detune→0x09
+3. `address_map _DRUM_NOTE_AL`: filter/EG corretti da 0x14-0x18 a 0x0B-0x0F
+4. `syx_analyzer`: AL=0x23 rinominato da filter_cutoff a bend_pitch; AL=0x24 da filter_resonance a bend_filter
+5. `xg_bulk _apply_multi_part`: esteso da 11 a 70+ handler AL
+
+### New fields (Fasi 1-2)
+~60 nuovi campi in MultiPart dataclass:
+- Block 1 (0x00-0x28): element_reserve, part_mode, note_shift, detune, velocity_sense, note_limit, vibrato×3, cutoff/resonance/EG (AL corretti), MW control×6, bend extended×5
+- Block 2 (0x30-0x40): 17 rx switches (bool)
+- Block 3 (0x41-0x4C): 12 scale tuning
+- Block 4-5 (0x4D-0x58): CAT + PAT control×6 each
+- Block 6 (0x59-0x66): AC1/AC2×7 each
+- Block 7 (0x67-0x6E): portamento, pitch EG, velocity limits
+
+### Detune 2-byte (Fase 3)
+ops.py make_xg_messages emette MSB (AL=0x09) + LSB (AL=0x0A).
+
+### Tests
+185 nuovi test in 2 file:
+- `test_address_map_xg_spec.py`: parametric cross-reference vs XG spec per ogni AL
+- `test_multi_part_completeness.py`: coverage, parse round-trip, set→emit→parse round-trip, schema validation
+
+691 passed, 3 skipped (da 506).
+
+### Files modified
+- `qymanager/model/types.py` — KeyOnAssign +INST
+- `qymanager/model/multi_part.py` — ~60 new fields + validate()
+- `qymanager/editor/address_map.py` — fixed + expanded _MULTI_PART_AL, fixed _DRUM_NOTE_AL
+- `qymanager/editor/schema.py` — expanded _MULTI_PART_SPECS
+- `qymanager/formats/xg_bulk.py` — comprehensive _apply_multi_part
+- `qymanager/analysis/syx_analyzer.py` — fixed AL labels + new parsers
+- `qymanager/formats/qy70/xg_multi_part.py` — full 41-byte decode
+- `qymanager/editor/ops.py` — detune 2-byte emit
+
 ## [2026-04-23] session-33d Voice RE breakthroughs: NN matcher + embedded XG propagation
 
 Due avanzamenti strutturali che alzano la copertura "dal SysEx bulk
